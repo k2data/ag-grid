@@ -219,7 +219,7 @@ export class PaginationController {
         var startRow = this.currentPage * this.datasource.pageSize;
         var endRow = (this.currentPage + 1) * this.datasource.pageSize;
 
-        this.lbCurrent.innerHTML = this.myToLocaleString(this.currentPage + 1);
+        this.lbCurrent.value = this.myToLocaleString(this.currentPage + 1);
 
         this.callVersion++;
         var callVersionCopy = this.callVersion;
