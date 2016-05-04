@@ -4,5 +4,5 @@
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { RowNode } from "./entities/rowNode";
 export declare class SelectionRendererFactory {
-    createSelectionCheckbox(rowNode: RowNode, rowIndex: any, addRenderedRowEventListener: Function): HTMLInputElement;
+    createSelectionCheckbox(rowNode: RowNode, addRenderedRowEventListener: Function): HTMLInputElement;
 }

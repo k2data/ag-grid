@@ -47,4 +47,5 @@ export declare class Events {
     static EVENT_ROW_DOUBLE_CLICKED: string;
     static EVENT_GRID_READY: string;
     static EVENT_GRID_SIZE_CHANGED: string;
+    static EVENT_VIEWPORT_CHANGED: string;
 }

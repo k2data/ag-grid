@@ -8,6 +8,8 @@ export declare class StandardMenuFactory implements IMenuFactory {
     private filterManager;
     private popupService;
     private gridOptionsWrapper;
-    showMenu(column: Column, eventSource: HTMLElement): void;
+    showMenuAfterMouseEvent(column: Column, mouseEvent: MouseEvent): void;
+    showMenuAfterButtonClick(column: Column, eventSource: HTMLElement): void;
+    showPopup(column: Column, positionCallback: (eMenu: HTMLElement) => void): void;
     isMenuEnabled(column: Column): boolean;
 }

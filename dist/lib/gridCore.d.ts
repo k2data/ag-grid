@@ -29,14 +29,14 @@ export declare class GridCore {
     private logger;
     constructor(loggerFactory: LoggerFactory);
     init(): void;
+    getRootGui(): HTMLElement;
     private createSouthPanel();
     private onRowGroupChanged();
-    agApplicationBoot(): void;
     private addWindowResizeListener();
     private periodicallyDoLayout();
     showToolPanel(show: any): void;
     isToolPanelShowing(): boolean;
-    agDestroy(): void;
+    private destroy();
     ensureNodeVisible(comparator: any): void;
     doLayout(): void;
 }

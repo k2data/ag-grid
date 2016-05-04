@@ -30,5 +30,5 @@ export declare class TextFilter implements Filter {
     private onFilterChanged();
     private filterChanged();
     private createApi();
-    private getApi();
+    getApi(): any;
 }

@@ -18,6 +18,7 @@ export declare class CellNavigationService {
     private getCellAbove(lastCell);
     private getLastBodyCell();
     private getLastFloatingTopRow();
+    getNextTabbedCell(gridCell: GridCell, backwards: boolean): GridCell;
     getNextTabbedCellForwards(gridCell: GridCell): GridCell;
     getNextTabbedCellBackwards(gridCell: GridCell): GridCell;
 }

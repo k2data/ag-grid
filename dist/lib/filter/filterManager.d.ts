@@ -14,6 +14,7 @@ export declare class FilterManager {
     private rowModel;
     private eventService;
     private enterprise;
+    private context;
     private allFilters;
     private quickFilter;
     private advancedFilterPresent;
@@ -37,10 +38,11 @@ export declare class FilterManager {
     private createValueGetter(column);
     getFilterApi(column: Column): any;
     getOrCreateFilterWrapper(column: Column): FilterWrapper;
+    destroyFilter(column: Column): void;
     private createFilterWrapper(column);
     private getFilterFromCache(filterType);
     private onNewColumnsLoaded();
-    agDestroy(): void;
+    destroy(): void;
     private assertMethodHasNoParameters(theMethod);
 }
 export interface FilterWrapper {

@@ -10,4 +10,6 @@ export interface Filter {
         hidePopup?: Function;
     }): void;
     onNewRowsLoaded?(): void;
+    destroy?(): void;
+    getApi?(): any;
 }

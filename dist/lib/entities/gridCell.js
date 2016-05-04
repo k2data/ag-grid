@@ -4,7 +4,7 @@
  * @link http://www.ag-grid.com/
  * @license MIT
  */
-var utils_1 = require('../utils');
+var utils_1 = require("../utils");
 var gridRow_1 = require("./gridRow");
 var GridCell = (function () {
     function GridCell(rowIndex, floating, column) {

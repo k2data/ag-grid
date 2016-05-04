@@ -25,11 +25,12 @@ export declare class Context {
     private methodWireBean(bean);
     private getBeansForParameters(parameters, beanName);
     private lookupBeanInstance(wiringBean, beanName, optional?);
-    private postWire(beans);
-    private wireCompleteBeans(beans);
+    private postConstruct(beans);
+    getBean(name: string): any;
     destroy(): void;
 }
 export declare function PostConstruct(target: Object, methodName: string, descriptor: TypedPropertyDescriptor<any>): void;
+export declare function PreDestroy(target: Object, methodName: string, descriptor: TypedPropertyDescriptor<any>): void;
 export declare function Bean(beanName: string): Function;
 export declare function Autowired(name?: string): Function;
 export declare function Optional(name?: string): Function;

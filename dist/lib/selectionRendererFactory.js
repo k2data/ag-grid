@@ -20,7 +20,7 @@ var utils_1 = require('./utils');
 var SelectionRendererFactory = (function () {
     function SelectionRendererFactory() {
     }
-    SelectionRendererFactory.prototype.createSelectionCheckbox = function (rowNode, rowIndex, addRenderedRowEventListener) {
+    SelectionRendererFactory.prototype.createSelectionCheckbox = function (rowNode, addRenderedRowEventListener) {
         var eCheckbox = document.createElement('input');
         eCheckbox.type = "checkbox";
         eCheckbox.name = "name";

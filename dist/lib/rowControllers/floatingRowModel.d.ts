@@ -6,6 +6,7 @@ import { RowNode } from "../entities/rowNode";
 export declare class FloatingRowModel {
     private gridOptionsWrapper;
     private eventService;
+    private context;
     private floatingTopRows;
     private floatingBottomRows;
     init(): void;

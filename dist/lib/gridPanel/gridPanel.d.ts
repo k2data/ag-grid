@@ -19,6 +19,7 @@ export declare class GridPanel {
     private clipboardService;
     private csvCreator;
     private mouseEventService;
+    private focusedCellController;
     private layout;
     private logger;
     private forPrint;

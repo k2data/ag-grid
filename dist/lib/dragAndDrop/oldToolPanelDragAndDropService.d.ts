@@ -12,7 +12,7 @@ export declare class OldToolPanelDragAndDropService {
     private logger;
     private destroyFunctions;
     agWire(loggerFactory: LoggerFactory): void;
-    agDestroy(): void;
+    private destroy();
     private stopDragging();
     private setDragCssClasses(eListItem, dragging);
     addDragSource(eDragSource: any, dragSourceCallback: any): void;

@@ -23,8 +23,11 @@ export declare class Constants {
     static KEY_C: number;
     static KEY_V: number;
     static KEY_D: number;
+    static KEY_F2: number;
     static ROW_MODEL_TYPE_PAGINATION: string;
     static ROW_MODEL_TYPE_VIRTUAL: string;
+    static ROW_MODEL_TYPE_VIEWPORT: string;
+    static ROW_MODEL_TYPE_NORMAL: string;
     static ALWAYS: string;
     static ONLY_WHEN_GROUPING: string;
     static FLOATING_TOP: string;

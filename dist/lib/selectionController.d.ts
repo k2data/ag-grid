@@ -3,14 +3,13 @@
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { RowNode } from "./entities/rowNode";
-import { LoggerFactory } from "./logger";
 export declare class SelectionController {
     private eventService;
     private rowModel;
     private gridOptionsWrapper;
     private selectedNodes;
     private logger;
-    agWire(loggerFactory: LoggerFactory): void;
+    private setBeans(loggerFactory);
     init(): void;
     getSelectedNodes(): RowNode[];
     getSelectedRows(): any[];

@@ -18,22 +18,23 @@ import {Constants} from "../constants";
 
 var template =
         '<div class="ag-paging-panel ag-font-style">'+
-            '<span id="pageRowSummaryPanel" class="ag-paging-row-summary-panel">'+
+            '<span id="pageRowSummaryPanel" class="ag-paging-row-summary-panel" style="display:none">'+
                 '<span id="firstRowOnPage"></span>'+
                 ' [TO] '+
                 '<span id="lastRowOnPage"></span>'+
                 ' [OF] '+
                 '<span id="recordCount"></span>'+
             '</span>'+
-            '<span class="ag-paging-page-summary-panel">'+
-                '<button type="button" class="ag-paging-button" id="btFirst">[FIRST]</button>'+
-                '<button type="button" class="ag-paging-button" id="btPrevious">[PREVIOUS]</button>'+
-                '[PAGE] '+
-                '<span id="current"></span>'+
+            '<span class="ag-paging-page-summary-panel" style="float:right;line-height:30px;">'+
+                '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A2" id="btFirst"></button>'+
+                '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A" id="btPrevious"></button>'+
+                //'[PAGE] '+
+                //'<span id="current"></span>'+
+                '<input id="current" style="width:30px;border:1px solid gray;text-align:center"/>' + //根据项目需求修改了当前页可输入
                 ' [OF] '+
                 '<span id="total"></span>'+
-                '<button type="button" class="ag-paging-button" id="btNext">[NEXT]</button>'+
-                '<button type="button" class="ag-paging-button" id="btLast">[LAST]</button>'+
+                '<button type="button" class="ag-paging-button icon--" id="btNext"></button>'+
+                '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A3" id="btLast"></button>'+
             '</span>'+
         '</div>';
 

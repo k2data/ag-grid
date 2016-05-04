@@ -8,6 +8,7 @@ export declare class FlattenStage implements IRowNodeStage {
     private gridOptionsWrapper;
     private selectionController;
     private eventService;
+    private context;
     execute(rowsToFlatten: RowNode[]): RowNode[];
     private recursivelyAddToRowsToDisplay(rowsToFlatten, result, nextRowTop);
     private addRowNodeToRowsToDisplay(rowNode, result, nextRowTop);

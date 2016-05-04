@@ -8,5 +8,6 @@ export declare class Grid {
     private static enterpriseBeans;
     static setEnterpriseBeans(enterpriseBeans: any[]): void;
     constructor(eGridDiv: HTMLElement, gridOptions: GridOptions, globalEventListener?: Function, $scope?: any, $compile?: any, quickFilterOnScope?: any);
+    private getRowModelClass(gridOptions);
     destroy(): void;
 }

@@ -67,14 +67,15 @@ var ValueService = (function () {
             var currentObject = data;
             for (var i = 0; i < fields.length; i++) {
                 currentObject = currentObject[fields[i]];
-                if (!currentObject) {
+                if (utils_1.Utils.missing(currentObject)) {
                     return null;
                 }
             }
             return currentObject;
         }
     };
-    ValueService.prototype.setValue = function (rowNode, column, newValue) {
+    ValueService.prototype.setValue = function (rowNode, colKey, newValue) {
+        var column = this.columnController.getColumn(colKey);
         if (!rowNode || !column) {
             return;
         }

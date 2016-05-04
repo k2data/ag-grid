@@ -7,9 +7,10 @@ export declare class PaginationController {
     private gridPanel;
     private gridOptionsWrapper;
     private selectionController;
-    private rowModel;
     private sortController;
     private eventService;
+    private rowModel;
+    private inMemoryRowModel;
     private eGui;
     private btNext;
     private btPrevious;

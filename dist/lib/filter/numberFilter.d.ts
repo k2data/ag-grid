@@ -30,5 +30,5 @@ export declare class NumberFilter implements Filter {
     private filterChanged();
     private onFilterChanged();
     private createApi();
-    private getApi();
+    getApi(): any;
 }

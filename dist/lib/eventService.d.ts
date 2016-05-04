@@ -3,7 +3,8 @@
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { LoggerFactory } from "./logger";
-export declare class EventService {
+import { IEventEmitter } from "./interfaces/iEventEmitter";
+export declare class EventService implements IEventEmitter {
     private allListeners;
     private globalListeners;
     private logger;
