@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v4.1.4
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -24,23 +24,25 @@ var context_3 = require("../context/context");
 var eventService_1 = require("../eventService");
 var events_1 = require("../events");
 var filterManager_1 = require("../filter/filterManager");
-var template = '<div class="ag-paging-panel ag-font-style">' +
-    '<span id="pageRowSummaryPanel" class="ag-paging-row-summary-panel">' +
+var constants_1 = require("../constants");
+var template = '<div class="ag-paging-panel ag-font-style" id="test">' +
+    '<span id="pageRowSummaryPanel" class="ag-paging-row-summary-panel" style="display:none">' +
     '<span id="firstRowOnPage"></span>' +
     ' [TO] ' +
     '<span id="lastRowOnPage"></span>' +
     ' [OF] ' +
     '<span id="recordCount"></span>' +
     '</span>' +
-    '<span class="ag-paging-page-summary-panel">' +
-    '<button type="button" class="ag-paging-button" id="btFirst">[FIRST]</button>' +
-    '<button type="button" class="ag-paging-button" id="btPrevious">[PREVIOUS]</button>' +
-    '[PAGE] ' +
-    '<span id="current"></span>' +
+    '<span class="ag-paging-page-summary-panel" style="float:right;line-height:30px;">' +
+      '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A2" id="btFirst"></button>' +//首页
+    '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A" id="btPrevious"></button>' +//前一页
+    // '[PAGE] ' +
+    //'<span id="current"></span>' +
+    '<input id="current" style="width:30px;border:1px solid gray;text-align:center"/>' + //根据项目需求修改了当前页可输入
     ' [OF] ' +
     '<span id="total"></span>' +
-    '<button type="button" class="ag-paging-button" id="btNext">[NEXT]</button>' +
-    '<button type="button" class="ag-paging-button" id="btLast">[LAST]</button>' +
+    '<button type="button" class="ag-paging-button icon--" id="btNext"></button>' +//下一页
+    '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A3" id="btLast"></button>' +//最后一页
     '</span>' +
     '</div>';
 var PaginationController = (function () {
@@ -48,6 +50,12 @@ var PaginationController = (function () {
     }
     PaginationController.prototype.init = function () {
         var _this = this;
+        // if we are doing pagination, we are guaranteed that the model type
+        // is normal. if it is not, then this paginationController service
+        // will never be called.
+        if (this.rowModel.getType() === constants_1.Constants.ROW_MODEL_TYPE_NORMAL) {
+            this.inMemoryRowModel = this.rowModel;
+        }
         this.setupComponents();
         this.callVersion = 0;
         var paginationEnabled = this.gridOptionsWrapper.isRowModelPagination();
@@ -128,7 +136,7 @@ var PaginationController = (function () {
     };
     PaginationController.prototype.pageLoaded = function (rows, lastRowIndex) {
         var firstId = this.currentPage * this.pageSize;
-        this.rowModel.setRowData(rows, true, firstId);
+        this.inMemoryRowModel.setRowData(rows, true, firstId);
         // see if we hit the last row
         if (!this.foundMaxRow && typeof lastRowIndex === 'number' && lastRowIndex >= 0) {
             this.foundMaxRow = true;
@@ -167,7 +175,7 @@ var PaginationController = (function () {
         this.enableOrDisableButtons();
         var startRow = this.currentPage * this.datasource.pageSize;
         var endRow = (this.currentPage + 1) * this.datasource.pageSize;
-        this.lbCurrent.innerHTML = this.myToLocaleString(this.currentPage + 1);
+        this.lbCurrent.value = this.myToLocaleString(this.currentPage + 1); //根据项目修改了显示当前页时的value值
         this.callVersion++;
         var callVersionCopy = this.callVersion;
         var that = this;
@@ -208,7 +216,7 @@ var PaginationController = (function () {
             // set in an empty set of rows, this will at
             // least get rid of the loading panel, and
             // stop blocking things
-            that.rowModel.setRowData([], true);
+            that.inMemoryRowModel.setRowData([], true);
         }
     };
     PaginationController.prototype.isCallDaemon = function (versionCopy) {
@@ -286,41 +294,41 @@ var PaginationController = (function () {
         });
     };
     __decorate([
-        context_2.Autowired('filterManager'), 
+        context_2.Autowired('filterManager'),
         __metadata('design:type', filterManager_1.FilterManager)
     ], PaginationController.prototype, "filterManager", void 0);
     __decorate([
-        context_2.Autowired('gridPanel'), 
+        context_2.Autowired('gridPanel'),
         __metadata('design:type', gridPanel_1.GridPanel)
     ], PaginationController.prototype, "gridPanel", void 0);
     __decorate([
-        context_2.Autowired('gridOptionsWrapper'), 
+        context_2.Autowired('gridOptionsWrapper'),
         __metadata('design:type', gridOptionsWrapper_1.GridOptionsWrapper)
     ], PaginationController.prototype, "gridOptionsWrapper", void 0);
     __decorate([
-        context_2.Autowired('selectionController'), 
+        context_2.Autowired('selectionController'),
         __metadata('design:type', selectionController_1.SelectionController)
     ], PaginationController.prototype, "selectionController", void 0);
     __decorate([
-        context_2.Autowired('rowModel'), 
-        __metadata('design:type', Object)
-    ], PaginationController.prototype, "rowModel", void 0);
-    __decorate([
-        context_2.Autowired('sortController'), 
+        context_2.Autowired('sortController'),
         __metadata('design:type', sortController_1.SortController)
     ], PaginationController.prototype, "sortController", void 0);
     __decorate([
-        context_2.Autowired('eventService'), 
+        context_2.Autowired('eventService'),
         __metadata('design:type', eventService_1.EventService)
     ], PaginationController.prototype, "eventService", void 0);
     __decorate([
-        context_3.PostConstruct, 
-        __metadata('design:type', Function), 
-        __metadata('design:paramtypes', []), 
+        context_2.Autowired('rowModel'),
+        __metadata('design:type', Object)
+    ], PaginationController.prototype, "rowModel", void 0);
+    __decorate([
+        context_3.PostConstruct,
+        __metadata('design:type', Function),
+        __metadata('design:paramtypes', []),
         __metadata('design:returntype', void 0)
     ], PaginationController.prototype, "init", null);
     PaginationController = __decorate([
-        context_1.Bean('paginationController'), 
+        context_1.Bean('paginationController'),
         __metadata('design:paramtypes', [])
     ], PaginationController);
     return PaginationController;
