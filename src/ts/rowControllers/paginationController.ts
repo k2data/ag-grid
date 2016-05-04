@@ -26,15 +26,15 @@ var template =
                 '<span id="recordCount"></span>'+
             '</span>'+
             '<span class="ag-paging-page-summary-panel" style="float:right;line-height:30px;">'+
-                '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A2" id="btFirst"></button>'+
-                '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A" id="btPrevious"></button>'+
+                '<button type="button" class="ag-paging-button" id="btFirst"><i class="fa fa-angle-double-left" aria-hidden="true"></i></button>'+
+                '<button type="button" class="ag-paging-button" id="btPrevious"><i class="fa fa-angle-left" aria-hidden="true"></i></button>'+
                 //'[PAGE] '+
                 //'<span id="current"></span>'+
-                '<input id="current" style="width:30px;border:1px solid gray;text-align:center"/>' + //根据项目需求修改了当前页可输入
+                '<input id="current" style="width:30px;height:20px;border:1px solid gray;text-align:center"/>' + //根据项目需求修改了当前页可输入
                 ' [OF] '+
                 '<span id="total"></span>'+
-                '<button type="button" class="ag-paging-button icon--" id="btNext"></button>'+
-                '<button type="button" class="ag-paging-button icon-Latin_Capital_Letter_A3" id="btLast"></button>'+
+                '<button type="button" class="ag-paging-button" id="btNext"><i class="fa fa-angle-right" aria-hidden="true"></i></button>'+
+                '<button type="button" class="ag-paging-button" id="btLast"><i class="fa fa-angle-double-right" aria-hidden="true"></i></button>'+
             '</span>'+
         '</div>';
 
