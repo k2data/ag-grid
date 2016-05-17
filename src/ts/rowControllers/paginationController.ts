@@ -297,8 +297,11 @@ export class PaginationController {
     }
 
     private onInput(event) {
+        var reg = /^\+?[1-9][0-9]*$/;
         this.currentPage = parseInt(event.target.value) - 1;
-        this.loadPage();
+        if(event.target.value !== '' && reg.test(event.target.value)){
+          this.loadPage();
+        }
     }
 
     private isZeroPagesToDisplay() {
