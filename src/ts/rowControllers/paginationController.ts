@@ -296,6 +296,11 @@ export class PaginationController {
         this.loadPage();
     }
 
+    private onInput(event) {
+        this.currentPage = parseInt(event.target.value) - 1;
+        this.loadPage();
+    }
+
     private isZeroPagesToDisplay() {
         return this.foundMaxRow && this.totalPages === 0;
     }
@@ -364,6 +369,10 @@ export class PaginationController {
 
         this.btLast.addEventListener('click', function () {
             that.onBtLast();
+        });
+
+        this.lbCurrent.addEventListener('keyup', function () {
+            that.onInput(event);
         });
     }
 }

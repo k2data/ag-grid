@@ -43,6 +43,7 @@ export declare class PaginationController {
     private onBtPrevious();
     private onBtFirst();
     private onBtLast();
+    private onInput(event);
     private isZeroPagesToDisplay();
     private enableOrDisableButtons();
     private createTemplate();

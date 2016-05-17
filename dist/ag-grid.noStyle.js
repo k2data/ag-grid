@@ -10369,6 +10369,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.currentPage = this.totalPages - 1;
 	        this.loadPage();
 	    };
+	    PaginationController.prototype.onInput = function (event) {
+	        this.currentPage = parseInt(event.target.value) - 1;
+	        this.loadPage();
+	    };
 	    PaginationController.prototype.isZeroPagesToDisplay = function () {
 	        return this.foundMaxRow && this.totalPages === 0;
 	    };
@@ -10422,6 +10426,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	        this.btLast.addEventListener('click', function () {
 	            that.onBtLast();
+	        });
+	        this.lbCurrent.addEventListener('keyup', function () {
+	            that.onInput(event);
 	        });
 	    };
 	    __decorate([
