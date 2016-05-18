@@ -10358,10 +10358,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return versionCopy !== this.callVersion;
 	    };
 	    PaginationController.prototype.onBtNext = function () {
+	        this.currentPage = this.currentPage ? this.currentPage : this.lbCurrent.value - 1;
 	        this.currentPage++;
 	        this.loadPage();
 	    };
 	    PaginationController.prototype.onBtPrevious = function () {
+	        this.currentPage = this.currentPage ? this.currentPage : this.lbCurrent.value - 1;
 	        this.currentPage--;
 	        this.loadPage();
 	    };

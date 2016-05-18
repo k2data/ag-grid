@@ -223,10 +223,12 @@ var PaginationController = (function () {
         return versionCopy !== this.callVersion;
     };
     PaginationController.prototype.onBtNext = function () {
+        this.currentPage = this.currentPage ? this.currentPage : this.lbCurrent.value - 1;
         this.currentPage++;
         this.loadPage();
     };
     PaginationController.prototype.onBtPrevious = function () {
+        this.currentPage = this.currentPage ? this.currentPage : this.lbCurrent.value - 1;
         this.currentPage--;
         this.loadPage();
     };

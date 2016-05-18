@@ -277,11 +277,13 @@ export class PaginationController {
     }
 
     private onBtNext() {
+        this.currentPage = this.currentPage ? this.currentPage : this.lbCurrent.value - 1
         this.currentPage++;
         this.loadPage();
     }
 
     private onBtPrevious() {
+        this.currentPage = this.currentPage ? this.currentPage : this.lbCurrent.value - 1
         this.currentPage--;
         this.loadPage();
     }
