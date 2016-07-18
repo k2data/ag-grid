@@ -1,6 +1,10 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
+<<<<<<< HEAD
  * @version v4.0.5
+=======
+ * @version v5.0.3
+>>>>>>> upstream/master
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -18,7 +22,10 @@ var utils_1 = require('../utils');
 var gridOptionsWrapper_1 = require("../gridOptionsWrapper");
 var eventService_1 = require("../eventService");
 var expressionService_1 = require("../expressionService");
+<<<<<<< HEAD
 var selectionRendererFactory_1 = require("../selectionRendererFactory");
+=======
+>>>>>>> upstream/master
 var animateSlideCellRenderer_1 = require("./cellRenderers/animateSlideCellRenderer");
 var animateShowChangeCellRenderer_1 = require("./cellRenderers/animateShowChangeCellRenderer");
 var groupCellRenderer_1 = require("./cellRenderers/groupCellRenderer");
@@ -30,9 +37,20 @@ var CellRendererFactory = (function () {
         this.cellRendererMap[CellRendererFactory.ANIMATE_SLIDE] = animateSlideCellRenderer_1.AnimateSlideCellRenderer;
         this.cellRendererMap[CellRendererFactory.ANIMATE_SHOW_CHANGE] = animateShowChangeCellRenderer_1.AnimateShowChangeCellRenderer;
         this.cellRendererMap[CellRendererFactory.GROUP] = groupCellRenderer_1.GroupCellRenderer;
+<<<<<<< HEAD
     };
     CellRendererFactory.prototype.registerRenderersFromGridOptions = function () {
     };
+=======
+        // this.registerRenderersFromGridOptions();
+    };
+    // private registerRenderersFromGridOptions(): void {
+    //     var userProvidedCellRenderers = this.gridOptionsWrapper.getCellRenderers();
+    //     _.iterateObject(userProvidedCellRenderers, (key: string, cellRenderer: {new(): ICellRenderer} | ICellRendererFunc)=> {
+    //         this.addCellRenderer(key, cellRenderer);
+    //     });
+    // }
+>>>>>>> upstream/master
     CellRendererFactory.prototype.addCellRenderer = function (key, cellRenderer) {
         this.cellRendererMap[key] = cellRenderer;
     };
@@ -52,10 +70,13 @@ var CellRendererFactory = (function () {
         __metadata('design:type', gridOptionsWrapper_1.GridOptionsWrapper)
     ], CellRendererFactory.prototype, "gridOptionsWrapper", void 0);
     __decorate([
+<<<<<<< HEAD
         context_1.Autowired('selectionRendererFactory'), 
         __metadata('design:type', selectionRendererFactory_1.SelectionRendererFactory)
     ], CellRendererFactory.prototype, "selectionRendererFactory", void 0);
     __decorate([
+=======
+>>>>>>> upstream/master
         context_1.Autowired('expressionService'), 
         __metadata('design:type', expressionService_1.ExpressionService)
     ], CellRendererFactory.prototype, "expressionService", void 0);

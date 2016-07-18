@@ -4,6 +4,19 @@ import {RowNode} from "./entities/rowNode";
 var FUNCTION_STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var FUNCTION_ARGUMENT_NAMES = /([^\s,]+)/g;
 
+// util class, only used when debugging, for printing time to console
+export class Timer {
+
+    private timestamp = new Date().getTime();
+    
+    public print(msg: string) {
+        var duration = (new Date().getTime()) - this.timestamp;
+        console.log(`${msg} = ${duration}`);
+        this.timestamp = new Date().getTime();
+    }
+    
+}
+
 export class Utils {
 
     // taken from:
@@ -12,6 +25,13 @@ export class Utils {
     // unit tests and we don't have references to window or document in the unit tests
     private static isSafari: boolean;
     private static isIE: boolean;
+
+    static getNameOfClass(TheClass: any) {
+        var funcNameRegex = /function (.{1,})\(/;
+        var funcAsString = TheClass.toString();
+        var results  = (funcNameRegex).exec(funcAsString);
+        return (results && results.length > 1) ? results[1] : "";
+    }
 
     static iterateObject(object: any, callback: (key:string, value: any) => void) {
         if (this.missing(object)) { return; }
@@ -313,13 +333,41 @@ export class Utils {
         }
     }
 
+    static removeRepeatsFromArray<T>(array: T[], object: T) {
+        if (!array) { return; }
+        for (var index = array.length - 2; index >= 0; index--) {
+            var thisOneMatches = array[index]===object;
+            var nextOneMatches = array[index+1]===object;
+            if (thisOneMatches && nextOneMatches) {
+                array.splice(index+1, 1);
+            }
+        }
+
+    }
+    
     static removeFromArray<T>(array: T[], object: T) {
         if (array.indexOf(object) >= 0) {
             array.splice(array.indexOf(object), 1);
         }
-
     }
 
+    static insertIntoArray<T>(array: T[], object: T, toIndex: number) {
+        array.splice(toIndex, 0, object);
+    }
+
+    static moveInArray<T>(array: T[], objectsToMove: T[], toIndex: number) {
+        // first take out it items from the array
+        objectsToMove.forEach( (obj)=> {
+            this.removeFromArray(array, obj);
+        });
+
+        // now add the objects, in same order as provided to us, that means we start at the end
+        // as the objects will be pushed to the right as they are inserted
+        objectsToMove.slice().reverse().forEach( (obj)=> {
+            this.insertIntoArray(array, obj, toIndex);
+        });
+    }
+    
     static defaultComparator(valueA: any, valueB: any): number {
         var valueAMissing = valueA === null || valueA === undefined;
         var valueBMissing = valueB === null || valueB === undefined;
@@ -333,6 +381,16 @@ export class Utils {
             return 1;
         }
 
+        if (typeof valueA === "string") {
+            try {
+                // using local compare also allows chinese comparisons
+                return valueA.localeCompare(valueB);
+            } catch (e) {
+                // if something wrong with localeCompare, eg not supported
+                // by browser, then just continue without using it
+            }
+        }
+
         if (valueA < valueB) {
             return -1;
         } else if (valueA > valueB) {
@@ -342,6 +400,24 @@ export class Utils {
         }
     }
 
+    static compareArrays(array1: any[], array2: any[]): boolean {
+        if (this.missing(array1) && this.missing(array2)) {
+            return true;
+        }
+        if (this.missing(array1) || this.missing(array2)) {
+            return false;
+        }
+        if (array1.length !== array2.length) {
+            return false;
+        }
+        for (var i = 0; i<array1.length; i++) {
+            if (array1[i]!==array2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     static formatWidth(width: number | string) {
         if (typeof width === "number") {
             return width + "px";
@@ -363,13 +439,13 @@ export class Utils {
      * If icon provided, use this (either a string, or a function callback).
      * if not, then use the second parameter, which is the svgFactory function
      */
-    static createIcon(iconName: string, gridOptionsWrapper: GridOptionsWrapper, column: Column, svgFactoryFunc: () => Node) {
+    static createIcon(iconName: string, gridOptionsWrapper: GridOptionsWrapper, column: Column, svgFactoryFunc: () => HTMLElement): HTMLElement {
         var eResult = document.createElement('span');
         eResult.appendChild(this.createIconNoSpan(iconName, gridOptionsWrapper, column, svgFactoryFunc));
         return eResult;
     }
 
-    static createIconNoSpan(iconName: string, gridOptionsWrapper: GridOptionsWrapper, colDefWrapper: Column, svgFactoryFunc: () => Node) {
+    static createIconNoSpan(iconName: string, gridOptionsWrapper: GridOptionsWrapper, colDefWrapper: Column, svgFactoryFunc: () => HTMLElement): HTMLElement {
         var userProvidedIcon: Function | string;
         // check col for icon first
         if (colDefWrapper && colDefWrapper.getColDef().icons) {
@@ -398,7 +474,11 @@ export class Utils {
             }
         } else {
             // otherwise we use the built in icon
-            return svgFactoryFunc();
+            if (svgFactoryFunc) {
+                return svgFactoryFunc();
+            } else {
+                return null;
+            }
         }
     }
 
@@ -521,7 +601,7 @@ export class Utils {
                     keyParts.push(node.key);
                     var key = keyParts.join('|');
                     callback(node, key);
-                    recursiveSearchNodes(node.children);
+                    recursiveSearchNodes(node.childrenAfterGroup);
                     keyParts.pop();
                 }
             });
@@ -681,3 +761,13 @@ export class Utils {
     }
 }
 
+export class NumberSequence {
+
+    private nextValue = 0;
+
+    public next() : number {
+        var valToReturn = this.nextValue;
+        this.nextValue++;
+        return valToReturn;
+    }
+}

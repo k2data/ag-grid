@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -20,8 +20,16 @@ var selectionController_1 = require("../selectionController");
 var valueService_1 = require("../valueService");
 var columnController_1 = require("../columnController/columnController");
 var context_1 = require("../context/context");
+<<<<<<< HEAD
 var RowNode = (function () {
     function RowNode() {
+=======
+var constants_1 = require("../constants");
+var RowNode = (function () {
+    function RowNode() {
+        /** Children mapped by the pivot columns */
+        this.childrenMapped = {};
+>>>>>>> upstream/master
         this.selected = false;
     }
     RowNode.prototype.setData = function (data) {
@@ -41,7 +49,11 @@ var RowNode = (function () {
     // this method is for the client to call, so the cell listens for the change
     // event, and also flashes the cell when the change occurs.
     RowNode.prototype.setDataValue = function (colKey, newValue) {
+<<<<<<< HEAD
         var column = this.columnController.getColumn(colKey);
+=======
+        var column = this.columnController.getGridColumn(colKey);
+>>>>>>> upstream/master
         this.valueService.setValue(this, column, newValue);
         var event = { column: column, newValue: newValue };
         this.dispatchLocalEvent(RowNode.EVENT_CELL_CHANGED, event);
@@ -57,8 +69,8 @@ var RowNode = (function () {
         return this.selected;
     };
     RowNode.prototype.deptFirstSearch = function (callback) {
-        if (this.children) {
-            this.children.forEach(function (child) { return child.deptFirstSearch(callback); });
+        if (this.childrenAfterGroup) {
+            this.childrenAfterGroup.forEach(function (child) { return child.deptFirstSearch(callback); });
         }
         callback(this);
     };
@@ -68,9 +80,9 @@ var RowNode = (function () {
         var atLeastOneDeSelected = false;
         var atLeastOneMixed = false;
         var newSelectedValue;
-        if (this.children) {
-            for (var i = 0; i < this.children.length; i++) {
-                var childState = this.children[i].isSelected();
+        if (this.childrenAfterGroup) {
+            for (var i = 0; i < this.childrenAfterGroup.length; i++) {
+                var childState = this.childrenAfterGroup[i].isSelected();
                 switch (childState) {
                     case true:
                         atLeastOneSelected = true;
@@ -111,6 +123,19 @@ var RowNode = (function () {
     RowNode.prototype.setSelected = function (newValue, clearSelection, tailingNodeInSequence) {
         if (clearSelection === void 0) { clearSelection = false; }
         if (tailingNodeInSequence === void 0) { tailingNodeInSequence = false; }
+        this.setSelectedParams({
+            newValue: newValue,
+            clearSelection: clearSelection,
+            tailingNodeInSequence: tailingNodeInSequence,
+            rangeSelect: false
+        });
+    };
+    // to make calling code more readable, this is the same method as setSelected except it takes names parameters
+    RowNode.prototype.setSelectedParams = function (params) {
+        var newValue = params.newValue === true;
+        var clearSelection = params.clearSelection === true;
+        var tailingNodeInSequence = params.tailingNodeInSequence === true;
+        var rangeSelect = params.rangeSelect === true;
         if (this.floating) {
             console.log('ag-Grid: cannot select floating rows');
             return;
@@ -118,8 +143,17 @@ var RowNode = (function () {
         // if we are a footer, we don't do selection, just pass the info
         // to the sibling (the parent of the group)
         if (this.footer) {
-            this.sibling.setSelected(newValue, clearSelection, tailingNodeInSequence);
+            this.sibling.setSelectedParams(params);
             return;
+        }
+        if (rangeSelect) {
+            var rowModelNormal = this.rowModel.getType() === constants_1.Constants.ROW_MODEL_TYPE_NORMAL;
+            var newRowClicked = this.selectionController.getLastSelectedNode() !== this;
+            var allowMultiSelect = this.gridOptionsWrapper.isRowSelectionMulti();
+            if (rowModelNormal && newRowClicked && allowMultiSelect) {
+                this.doRowRangeSelection();
+                return;
+            }
         }
         this.selectThisNode(newValue);
         var groupSelectsChildren = this.gridOptionsWrapper.isGroupSelectsChildren();
@@ -138,7 +172,79 @@ var RowNode = (function () {
             // this is the very end of the 'action node', so we are finished all the updates,
             // include any parent / child changes that this method caused
             this.mainEventService.dispatchEvent(events_1.Events.EVENT_SELECTION_CHANGED);
+            // so if user next does shift-select, we know where to start the selection from
+            if (newValue) {
+                this.selectionController.setLastSelectedNode(this);
+            }
         }
+    };
+    // selects all rows between this node and the last selected node (or the top if this is the first selection).
+    // not to be mixed up with 'cell range selection' where you drag the mouse, this is row range selection, by
+    // holding down 'shift'.
+    RowNode.prototype.doRowRangeSelection = function () {
+        var _this = this;
+        var lastSelectedNode = this.selectionController.getLastSelectedNode();
+        // if lastSelectedNode is missing, we start at the first row
+        var firstRowHit = !lastSelectedNode;
+        var lastRowHit = false;
+        var lastRow;
+        var groupsSelectChildren = this.gridOptionsWrapper.isGroupSelectsChildren();
+        var inMemoryRowModel = this.rowModel;
+        inMemoryRowModel.forEachNodeAfterFilterAndSort(function (rowNode) {
+            var lookingForLastRow = firstRowHit && !lastRowHit;
+            // check if we need to flip the select switch
+            if (!firstRowHit) {
+                if (rowNode === lastSelectedNode || rowNode === _this) {
+                    firstRowHit = true;
+                }
+            }
+            var skipThisGroupNode = rowNode.group && groupsSelectChildren;
+            if (!skipThisGroupNode) {
+                var inRange = firstRowHit && !lastRowHit;
+                var childOfLastRow = rowNode.isParentOfNode(lastRow);
+                rowNode.selectThisNode(inRange || childOfLastRow);
+            }
+            if (lookingForLastRow) {
+                if (rowNode === lastSelectedNode || rowNode === _this) {
+                    lastRowHit = true;
+                    if (rowNode === lastSelectedNode) {
+                        lastRow = lastSelectedNode;
+                    }
+                    else {
+                        lastRow = _this;
+                    }
+                }
+            }
+        });
+        if (groupsSelectChildren) {
+            this.calculatedSelectedForAllGroupNodes();
+        }
+        this.mainEventService.dispatchEvent(events_1.Events.EVENT_SELECTION_CHANGED);
+    };
+    RowNode.prototype.isParentOfNode = function (potentialParent) {
+        var parentNode = this.parent;
+        while (parentNode) {
+            if (parentNode === potentialParent) {
+                return true;
+            }
+            parentNode = parentNode.parent;
+        }
+        return false;
+    };
+    RowNode.prototype.calculatedSelectedForAllGroupNodes = function () {
+        // we have to make sure we do this dept first, as parent nodes
+        // will have dependencies on the children having correct values
+        var inMemoryRowModel = this.rowModel;
+        inMemoryRowModel.getTopLevelNodes().forEach(function (topLevelNode) {
+            if (topLevelNode.group) {
+                topLevelNode.deptFirstSearch(function (childNode) {
+                    if (childNode.group) {
+                        childNode.calculateSelectedFromChildren();
+                    }
+                });
+                topLevelNode.calculateSelectedFromChildren();
+            }
+        });
     };
     RowNode.prototype.selectThisNode = function (newValue) {
         if (this.selected !== newValue) {
@@ -151,8 +257,12 @@ var RowNode = (function () {
         }
     };
     RowNode.prototype.selectChildNodes = function (newValue) {
-        for (var i = 0; i < this.children.length; i++) {
-            this.children[i].setSelected(newValue, false, true);
+        for (var i = 0; i < this.childrenAfterGroup.length; i++) {
+            this.childrenAfterGroup[i].setSelectedParams({
+                newValue: newValue,
+                clearSelection: false,
+                tailingNodeInSequence: true
+            });
         }
     };
     RowNode.prototype.addEventListener = function (eventType, listener) {
@@ -164,9 +274,20 @@ var RowNode = (function () {
     RowNode.prototype.removeEventListener = function (eventType, listener) {
         this.eventService.removeEventListener(eventType, listener);
     };
+    RowNode.prototype.onMouseEnter = function () {
+        this.dispatchLocalEvent(RowNode.EVENT_MOUSE_ENTER);
+    };
+    RowNode.prototype.onMouseLeave = function () {
+        this.dispatchLocalEvent(RowNode.EVENT_MOUSE_LEAVE);
+    };
     RowNode.EVENT_ROW_SELECTED = 'rowSelected';
     RowNode.EVENT_DATA_CHANGED = 'dataChanged';
     RowNode.EVENT_CELL_CHANGED = 'cellChanged';
+<<<<<<< HEAD
+=======
+    RowNode.EVENT_MOUSE_ENTER = 'mouseEnter';
+    RowNode.EVENT_MOUSE_LEAVE = 'mouseLeave';
+>>>>>>> upstream/master
     __decorate([
         context_1.Autowired('eventService'), 
         __metadata('design:type', eventService_1.EventService)
@@ -187,6 +308,13 @@ var RowNode = (function () {
         context_1.Autowired('valueService'), 
         __metadata('design:type', valueService_1.ValueService)
     ], RowNode.prototype, "valueService", void 0);
+<<<<<<< HEAD
+=======
+    __decorate([
+        context_1.Autowired('rowModel'), 
+        __metadata('design:type', Object)
+    ], RowNode.prototype, "rowModel", void 0);
+>>>>>>> upstream/master
     return RowNode;
 })();
 exports.RowNode = RowNode;

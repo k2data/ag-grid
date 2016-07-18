@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -27,23 +27,38 @@ export declare class RenderedRow {
     private rowIsHeaderThatSpans;
     private parentScope;
     private rowRenderer;
-    private pinningLeft;
-    private pinningRight;
     private eBodyContainer;
     private ePinnedLeftContainer;
     private ePinnedRightContainer;
+    private eGroupRow;
+    private eGroupRowPaddingCentre;
+    private eGroupRowPaddingRight;
     private destroyFunctions;
     private renderedRowEventService;
+<<<<<<< HEAD
+=======
+    private initialised;
+>>>>>>> upstream/master
     constructor(parentScope: any, rowRenderer: RowRenderer, eBodyContainer: HTMLElement, ePinnedLeftContainer: HTMLElement, ePinnedRightContainer: HTMLElement, node: RowNode, rowIndex: number);
     init(): void;
+    private angular1Compile();
     private addColumnListener();
-    private onColumnChanged(event);
+    private onDisplayedColumnsChanged(event);
+    private onVirtualColumnsChanged(event);
+    private onGridColumnsChanged();
     private refreshCellsIntoRow();
+    private removeRenderedCells(colIds);
     private ensureCellInCorrectRow(renderedCell);
     private getOrCreateCell(column);
     private addRowSelectedListener();
+    private addHoverFunctionality();
+    private addHoverClass(hover);
     private addCellFocusedListener();
+<<<<<<< HEAD
     private forEachRenderedCell(callback);
+=======
+    forEachRenderedCell(callback: (renderedCell: RenderedCell) => void): void;
+>>>>>>> upstream/master
     private addNodeDataChangedListener();
     private createContainers();
     private attachContainers();
@@ -52,14 +67,13 @@ export declare class RenderedRow {
     private addRowIds();
     addEventListener(eventType: string, listener: Function): void;
     removeEventListener(eventType: string, listener: Function): void;
-    softRefresh(): void;
     getRenderedCellForColumn(column: Column): RenderedCell;
     getCellForCol(column: Column): HTMLElement;
     destroy(): void;
     private destroyScope();
     isDataInList(rows: any[]): boolean;
     isGroup(): boolean;
-    private createGroupRow();
+    private refreshGroupRow();
     private createGroupSpanningEntireRowCell(padding);
     private createChildScopeOrNull(data);
     private addDynamicStyles();

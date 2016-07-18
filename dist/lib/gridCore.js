@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -33,6 +33,7 @@ var focusedCellController_1 = require("./focusedCellController");
 var component_1 = require("./widgets/component");
 var GridCore = (function () {
     function GridCore(loggerFactory) {
+        this.destroyFunctions = [];
         this.logger = loggerFactory.create('GridCore');
     }
     GridCore.prototype.init = function () {
@@ -43,14 +44,11 @@ var GridCore = (function () {
         if (this.toolPanel && !this.gridOptionsWrapper.isForPrint()) {
             toolPanelGui = this.toolPanel.getGui();
         }
-        var rowGroupGui;
-        if (this.rowGroupPanel) {
-            rowGroupGui = this.rowGroupPanel.getGui();
-        }
+        var createTopPanelGui = this.createNorthPanel();
         this.eRootPanel = new borderLayout_1.BorderLayout({
             center: this.gridPanel.getLayout(),
             east: toolPanelGui,
-            north: rowGroupGui,
+            north: createTopPanelGui,
             south: eSouthPanel,
             dontFill: this.gridOptionsWrapper.isForPrint(),
             name: 'eRootPanel'
@@ -68,11 +66,43 @@ var GridCore = (function () {
         this.doLayout();
         this.finished = false;
         this.periodicallyDoLayout();
+<<<<<<< HEAD
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_ROW_GROUP_CHANGE, this.onRowGroupChanged.bind(this));
+=======
+        this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_ROW_GROUP_CHANGED, this.onRowGroupChanged.bind(this));
+>>>>>>> upstream/master
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_EVERYTHING_CHANGED, this.onRowGroupChanged.bind(this));
         this.onRowGroupChanged();
         this.logger.log('ready');
     };
+<<<<<<< HEAD
+=======
+    GridCore.prototype.createNorthPanel = function () {
+        var _this = this;
+        if (!this.gridOptionsWrapper.isEnterprise()) {
+            return null;
+        }
+        var topPanelGui = document.createElement('div');
+        var dropPanelVisibleListener = this.onDropPanelVisible.bind(this);
+        this.rowGroupComp = this.rowGroupCompFactory.create();
+        this.pivotComp = this.pivotCompFactory.create();
+        topPanelGui.appendChild(this.rowGroupComp.getGui());
+        topPanelGui.appendChild(this.pivotComp.getGui());
+        this.rowGroupComp.addEventListener(component_1.Component.EVENT_VISIBLE_CHANGED, dropPanelVisibleListener);
+        this.pivotComp.addEventListener(component_1.Component.EVENT_VISIBLE_CHANGED, dropPanelVisibleListener);
+        this.destroyFunctions.push(function () {
+            _this.rowGroupComp.removeEventListener(component_1.Component.EVENT_VISIBLE_CHANGED, dropPanelVisibleListener);
+            _this.pivotComp.removeEventListener(component_1.Component.EVENT_VISIBLE_CHANGED, dropPanelVisibleListener);
+        });
+        this.onDropPanelVisible();
+        return topPanelGui;
+    };
+    GridCore.prototype.onDropPanelVisible = function () {
+        var bothVisible = this.rowGroupComp.isVisible() && this.pivotComp.isVisible();
+        this.rowGroupComp.addOrRemoveCssClass('ag-width-half', bothVisible);
+        this.pivotComp.addOrRemoveCssClass('ag-width-half', bothVisible);
+    };
+>>>>>>> upstream/master
     GridCore.prototype.getRootGui = function () {
         return this.eRootPanel.getGui();
     };
@@ -95,20 +125,24 @@ var GridCore = (function () {
         return eSouthPanel;
     };
     GridCore.prototype.onRowGroupChanged = function () {
-        if (!this.rowGroupPanel) {
+        if (!this.rowGroupComp) {
             return;
         }
         var rowGroupPanelShow = this.gridOptionsWrapper.getRowGroupPanelShow();
         if (rowGroupPanelShow === constants_1.Constants.ALWAYS) {
-            this.eRootPanel.setNorthVisible(true);
+            this.rowGroupComp.setVisible(true);
         }
         else if (rowGroupPanelShow === constants_1.Constants.ONLY_WHEN_GROUPING) {
             var grouping = !this.columnController.isRowGroupEmpty();
-            this.eRootPanel.setNorthVisible(grouping);
+            this.rowGroupComp.setVisible(grouping);
         }
         else {
-            this.eRootPanel.setNorthVisible(false);
+            this.rowGroupComp.setVisible(false);
         }
+<<<<<<< HEAD
+=======
+        this.eRootPanel.doLayout();
+>>>>>>> upstream/master
     };
     GridCore.prototype.addWindowResizeListener = function () {
         var that = this;
@@ -122,13 +156,24 @@ var GridCore = (function () {
         window.addEventListener('resize', this.windowResizeListener);
     };
     GridCore.prototype.periodicallyDoLayout = function () {
+        var _this = this;
         if (!this.finished) {
-            var that = this;
-            setTimeout(function () {
-                that.doLayout();
-                that.gridPanel.periodicallyCheck();
-                that.periodicallyDoLayout();
-            }, 500);
+            var intervalMillis = this.gridOptionsWrapper.getLayoutInterval();
+            // if interval is negative, this stops the layout from happening
+            if (intervalMillis > 0) {
+                setTimeout(function () {
+                    _this.doLayout();
+                    _this.gridPanel.periodicallyCheck();
+                    _this.periodicallyDoLayout();
+                }, intervalMillis);
+            }
+            else {
+                // if user provided negative number, we still do the check every 5 seconds,
+                // in case the user turns the number positive again
+                setTimeout(function () {
+                    _this.periodicallyDoLayout();
+                }, 5000);
+            }
         }
     };
     GridCore.prototype.showToolPanel = function (show) {
@@ -138,7 +183,10 @@ var GridCore = (function () {
             return;
         }
         this.toolPanelShowing = show;
-        this.eRootPanel.setEastVisible(show);
+        if (this.toolPanel) {
+            this.toolPanel.setVisible(show);
+            this.eRootPanel.doLayout();
+        }
     };
     GridCore.prototype.isToolPanelShowing = function () {
         return this.toolPanelShowing;
@@ -151,6 +199,7 @@ var GridCore = (function () {
         this.finished = true;
         this.eGridDiv.removeChild(this.eRootPanel.getGui());
         this.logger.log('Grid DOM removed');
+        this.destroyFunctions.forEach(function (func) { return func(); });
     };
     GridCore.prototype.ensureNodeVisible = function (comparator) {
         if (this.doingVirtualPaging) {
@@ -252,10 +301,21 @@ var GridCore = (function () {
         __metadata('design:type', focusedCellController_1.FocusedCellController)
     ], GridCore.prototype, "focusedCellController", void 0);
     __decorate([
+<<<<<<< HEAD
         context_1.Optional('rowGroupPanel'), 
         __metadata('design:type', component_1.Component)
     ], GridCore.prototype, "rowGroupPanel", void 0);
     __decorate([
+=======
+        context_1.Optional('rowGroupCompFactory'), 
+        __metadata('design:type', Object)
+    ], GridCore.prototype, "rowGroupCompFactory", void 0);
+    __decorate([
+        context_1.Optional('pivotCompFactory'), 
+        __metadata('design:type', Object)
+    ], GridCore.prototype, "pivotCompFactory", void 0);
+    __decorate([
+>>>>>>> upstream/master
         context_1.Optional('toolPanel'), 
         __metadata('design:type', component_1.Component)
     ], GridCore.prototype, "toolPanel", void 0);

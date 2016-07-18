@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -18,11 +18,9 @@ var eventService_1 = require("./eventService");
 var oldToolPanelDragAndDropService_1 = require("./dragAndDrop/oldToolPanelDragAndDropService");
 var gridPanel_1 = require("./gridPanel/gridPanel");
 var gridApi_1 = require("./gridApi");
-var constants_1 = require("./constants");
 var headerTemplateLoader_1 = require("./headerRendering/headerTemplateLoader");
 var balancedColumnTreeBuilder_1 = require("./columnController/balancedColumnTreeBuilder");
 var displayedGroupCreator_1 = require("./columnController/displayedGroupCreator");
-var selectionRendererFactory_1 = require("./selectionRendererFactory");
 var expressionService_1 = require("./expressionService");
 var templateService_1 = require("./templateService");
 var popupService_1 = require("./widgets/popupService");
@@ -41,18 +39,30 @@ var focusedCellController_1 = require("./focusedCellController");
 var mouseEventService_1 = require("./gridPanel/mouseEventService");
 var cellNavigationService_1 = require("./cellNavigationService");
 var utils_1 = require("./utils");
+<<<<<<< HEAD
 var fillterStage_1 = require("./rowControllers/inMemory/fillterStage");
+=======
+var filterStage_1 = require("./rowControllers/inMemory/filterStage");
+>>>>>>> upstream/master
 var sortStage_1 = require("./rowControllers/inMemory/sortStage");
 var flattenStage_1 = require("./rowControllers/inMemory/flattenStage");
 var focusService_1 = require("./misc/focusService");
 var cellEditorFactory_1 = require("./rendering/cellEditorFactory");
 var events_1 = require("./events");
+<<<<<<< HEAD
 var viewportRowModel_1 = require("./rowControllers/viewportRowModel");
+=======
+>>>>>>> upstream/master
 var virtualPageRowModel_1 = require("./rowControllers/virtualPageRowModel");
 var inMemoryRowModel_1 = require("./rowControllers/inMemory/inMemoryRowModel");
 var cellRendererFactory_1 = require("./rendering/cellRendererFactory");
 var cellRendererService_1 = require("./rendering/cellRendererService");
 var valueFormatterService_1 = require("./rendering/valueFormatterService");
+<<<<<<< HEAD
+=======
+var agCheckbox_1 = require("./widgets/agCheckbox");
+var largeTextCellEditor_1 = require("./rendering/cellEditors/largeTextCellEditor");
+>>>>>>> upstream/master
 var Grid = (function () {
     function Grid(eGridDiv, gridOptions, globalEventListener, $scope, $compile, quickFilterOnScope) {
         if (globalEventListener === void 0) { globalEventListener = null; }
@@ -80,26 +90,60 @@ var Grid = (function () {
             },
             beans: [rowModelClass, cellRendererFactory_1.CellRendererFactory, horizontalDragService_1.HorizontalDragService, headerTemplateLoader_1.HeaderTemplateLoader, floatingRowModel_1.FloatingRowModel, dragService_1.DragService,
                 displayedGroupCreator_1.DisplayedGroupCreator, eventService_1.EventService, gridOptionsWrapper_1.GridOptionsWrapper, selectionController_1.SelectionController,
-                filterManager_1.FilterManager, selectionRendererFactory_1.SelectionRendererFactory, columnController_1.ColumnController, rowRenderer_1.RowRenderer,
+                filterManager_1.FilterManager, columnController_1.ColumnController, rowRenderer_1.RowRenderer,
                 headerRenderer_1.HeaderRenderer, expressionService_1.ExpressionService, balancedColumnTreeBuilder_1.BalancedColumnTreeBuilder, csvCreator_1.CsvCreator,
                 templateService_1.TemplateService, gridPanel_1.GridPanel, popupService_1.PopupService, valueService_1.ValueService, masterSlaveService_1.MasterSlaveService,
                 logger_1.LoggerFactory, oldToolPanelDragAndDropService_1.OldToolPanelDragAndDropService, columnUtils_1.ColumnUtils, autoWidthCalculator_1.AutoWidthCalculator, gridApi_1.GridApi,
                 paginationController_1.PaginationController, popupService_1.PopupService, gridCore_1.GridCore, standardMenu_1.StandardMenuFactory,
                 dragAndDropService_1.DragAndDropService, sortController_1.SortController, columnController_1.ColumnApi, focusedCellController_1.FocusedCellController, mouseEventService_1.MouseEventService,
+<<<<<<< HEAD
                 cellNavigationService_1.CellNavigationService, fillterStage_1.FilterStage, sortStage_1.SortStage, flattenStage_1.FlattenStage, focusService_1.FocusService,
                 cellEditorFactory_1.CellEditorFactory, cellRendererService_1.CellRendererService, valueFormatterService_1.ValueFormatterService],
             debug: !!gridOptions.debug
         });
+=======
+                cellNavigationService_1.CellNavigationService, filterStage_1.FilterStage, sortStage_1.SortStage, flattenStage_1.FlattenStage, focusService_1.FocusService,
+                cellEditorFactory_1.CellEditorFactory, cellRendererService_1.CellRendererService, valueFormatterService_1.ValueFormatterService],
+            components: [{ componentName: 'AgCheckbox', theClass: agCheckbox_1.AgCheckbox }],
+            debug: !!gridOptions.debug
+        });
+        this.context.getBean('cellEditorFactory').addCellEditor(Grid.LARGE_TEXT, largeTextCellEditor_1.LargeTextCellEditor);
+>>>>>>> upstream/master
         var eventService = this.context.getBean('eventService');
         var readyEvent = {
             api: gridOptions.api,
             columnApi: gridOptions.columnApi
         };
         eventService.dispatchEvent(events_1.Events.EVENT_GRID_READY, readyEvent);
+<<<<<<< HEAD
+=======
+        if (gridOptions.debug) {
+            console.log('ag-Grid -> initialised successfully, enterprise = ' + enterprise);
+        }
+>>>>>>> upstream/master
     }
-    Grid.setEnterpriseBeans = function (enterpriseBeans) {
+    Grid.setEnterpriseBeans = function (enterpriseBeans, rowModelClasses) {
         this.enterpriseBeans = enterpriseBeans;
+        // the enterprise can inject additional row models. this is how it injects the viewportRowModel
+        utils_1.Utils.iterateObject(rowModelClasses, function (key, value) { return Grid.RowModelClasses[key] = value; });
     };
+    Grid.prototype.getRowModelClass = function (gridOptions) {
+        var rowModelType = gridOptions.rowModelType;
+        if (utils_1.Utils.exists(rowModelType)) {
+            var rowModelClass = Grid.RowModelClasses[rowModelType];
+            if (utils_1.Utils.exists(rowModelClass)) {
+                return rowModelClass;
+            }
+            else {
+                console.error('ag-Grid: count not find matching row model for rowModelType ' + rowModelType);
+                if (rowModelType === 'viewport') {
+                    console.error('ag-Grid: rowModelType viewport is only available in ag-Grid Enterprise');
+                }
+            }
+        }
+        return inMemoryRowModel_1.InMemoryRowModel;
+    };
+<<<<<<< HEAD
     Grid.prototype.getRowModelClass = function (gridOptions) {
         if (gridOptions.rowModelType === constants_1.Constants.ROW_MODEL_TYPE_VIEWPORT) {
             return viewportRowModel_1.ViewportRowModel;
@@ -111,9 +155,18 @@ var Grid = (function () {
             return inMemoryRowModel_1.InMemoryRowModel;
         }
     };
+=======
+>>>>>>> upstream/master
     ;
     Grid.prototype.destroy = function () {
         this.context.destroy();
+    };
+    Grid.LARGE_TEXT = 'largeText';
+    // the default is InMemoryRowModel, which is also used for pagination.
+    // the enterprise adds viewport to this list.
+    Grid.RowModelClasses = {
+        virtual: virtualPageRowModel_1.VirtualPageRowModel,
+        pagination: inMemoryRowModel_1.InMemoryRowModel
     };
     return Grid;
 })();

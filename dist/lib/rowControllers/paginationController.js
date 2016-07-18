@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -172,6 +172,7 @@ var PaginationController = (function () {
         this.ePageRowSummaryPanel.style.visibility = "";
     };
     PaginationController.prototype.loadPage = function () {
+        var _this = this;
         this.enableOrDisableButtons();
         var startRow = this.currentPage * this.datasource.pageSize;
         var endRow = (this.currentPage + 1) * this.datasource.pageSize;
@@ -194,7 +195,8 @@ var PaginationController = (function () {
             successCallback: successCallback,
             failCallback: failCallback,
             sortModel: sortModel,
-            filterModel: filterModel
+            filterModel: filterModel,
+            context: this.gridOptionsWrapper.getContext()
         };
         // check if old version of datasource used
         var getRowsParams = utils_1.Utils.getFunctionParameters(this.datasource.getRows);
@@ -202,7 +204,10 @@ var PaginationController = (function () {
             console.warn('ag-grid: It looks like your paging datasource is of the old type, taking more than one parameter.');
             console.warn('ag-grid: From ag-grid 1.9.0, now the getRows takes one parameter. See the documentation for details.');
         }
-        this.datasource.getRows(params);
+        // put in timeout, to force result to be async
+        setTimeout(function () {
+            _this.datasource.getRows(params);
+        }, 0);
         function successCallback(rows, lastRowIndex) {
             if (that.isCallDaemon(callVersionCopy)) {
                 return;

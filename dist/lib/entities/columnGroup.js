@@ -1,18 +1,24 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
 var column_1 = require("./column");
+var eventService_1 = require("../eventService");
 var ColumnGroup = (function () {
     function ColumnGroup(originalColumnGroup, groupId, instanceId) {
         // depends on the open/closed state of the group, only displaying columns are stored here
         this.displayedChildren = [];
+        this.moving = false;
+        this.eventService = new eventService_1.EventService();
         this.groupId = groupId;
         this.instanceId = instanceId;
         this.originalColumnGroup = originalColumnGroup;
     }
+    ColumnGroup.prototype.getUniqueId = function () {
+        return this.groupId + '_' + this.instanceId;
+    };
     // returns header name if it exists, otherwise null. if will not exist if
     // this group is a padding group, as they don't have colGroupDef's
     ColumnGroup.prototype.getHeaderName = function () {
@@ -22,6 +28,45 @@ var ColumnGroup = (function () {
         else {
             return null;
         }
+    };
+    ColumnGroup.prototype.checkLeft = function () {
+        // first get all children to setLeft, as it impacts our decision below
+        this.displayedChildren.forEach(function (child) {
+            if (child instanceof ColumnGroup) {
+                child.checkLeft();
+            }
+        });
+        // set our left based on first displayed column
+        if (this.displayedChildren.length > 0) {
+            var firstChildLeft = this.displayedChildren[0].getLeft();
+            this.setLeft(firstChildLeft);
+        }
+        else {
+            // this should never happen, as if we have no displayed columns, then
+            // this groups should not even exist.
+            this.setLeft(null);
+        }
+    };
+    ColumnGroup.prototype.getLeft = function () {
+        return this.left;
+    };
+    ColumnGroup.prototype.setLeft = function (left) {
+        if (this.left !== left) {
+            this.left = left;
+            this.eventService.dispatchEvent(ColumnGroup.EVENT_LEFT_CHANGED);
+        }
+    };
+    ColumnGroup.prototype.addEventListener = function (eventType, listener) {
+        this.eventService.addEventListener(eventType, listener);
+    };
+    ColumnGroup.prototype.removeEventListener = function (eventType, listener) {
+        this.eventService.removeEventListener(eventType, listener);
+    };
+    ColumnGroup.prototype.setMoving = function (moving) {
+        this.getDisplayedLeafColumns().forEach(function (column) { return column.setMoving(moving); });
+    };
+    ColumnGroup.prototype.isMoving = function () {
+        return this.moving;
     };
     ColumnGroup.prototype.getGroupId = function () {
         return this.groupId;
@@ -120,6 +165,9 @@ var ColumnGroup = (function () {
     ColumnGroup.prototype.getColumnGroupShow = function () {
         return this.originalColumnGroup.getColumnGroupShow();
     };
+    ColumnGroup.prototype.getOriginalColumnGroup = function () {
+        return this.originalColumnGroup;
+    };
     ColumnGroup.prototype.calculateDisplayedColumns = function () {
         // clear out last time we calculated
         this.displayedChildren = [];
@@ -154,6 +202,7 @@ var ColumnGroup = (function () {
     };
     ColumnGroup.HEADER_GROUP_SHOW_OPEN = 'open';
     ColumnGroup.HEADER_GROUP_SHOW_CLOSED = 'closed';
+    ColumnGroup.EVENT_LEFT_CHANGED = 'leftChanged';
     return ColumnGroup;
 })();
 exports.ColumnGroup = ColumnGroup;

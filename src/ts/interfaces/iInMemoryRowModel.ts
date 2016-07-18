@@ -10,9 +10,13 @@ export interface IInMemoryRowModel extends IRowModel {
      * nodes only. */
     getTopLevelNodes(): RowNode[];
     /** InMemory model only. */
+    forEachLeafNode(callback: (rowNode: RowNode)=>void): void;
+    /** InMemory model only. */
     forEachNodeAfterFilter(callback: (rowNode: RowNode)=>void): void;
     /** InMemory model only. */
     forEachNodeAfterFilterAndSort(callback: (rowNode: RowNode)=>void): void;
+    /** InMemory model only. */
+    forEachPivotNode(callback: (rowNode: RowNode)=>void): void;
     /** InMemory model only. */
     expandOrCollapseAll(expand: boolean): void;
     /** InMemory model only. */

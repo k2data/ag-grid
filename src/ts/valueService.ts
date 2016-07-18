@@ -2,13 +2,10 @@ import {GridOptionsWrapper} from "./gridOptionsWrapper";
 import {ExpressionService} from "./expressionService";
 import {ColumnController} from "./columnController/columnController";
 import {ColDef} from "./entities/colDef";
-import {Bean} from "./context/context";
-import {Qualifier} from "./context/context";
-import {Autowired} from "./context/context";
-import {PostConstruct} from "./context/context";
+import {Bean, Autowired, PostConstruct} from "./context/context";
 import {RowNode} from "./entities/rowNode";
 import {Column} from "./entities/column";
-import {Utils as _} from './utils';
+import {Utils as _} from "./utils";
 import {Events} from "./events";
 import {EventService} from "./eventService";
 
@@ -21,35 +18,51 @@ export class ValueService {
     @Autowired('eventService') private eventService: EventService;
 
     private suppressDotNotation: boolean;
+    private cellExpressions: boolean;
+    private userProvidedTheGroups: boolean;
+    private suppressUseColIdForGroups: boolean;
+
+    private initialised = false;
 
     @PostConstruct
     public init(): void {
         this.suppressDotNotation = this.gridOptionsWrapper.isSuppressFieldDotNotation();
+        this.cellExpressions = this.gridOptionsWrapper.isEnableCellExpressions();
+        this.userProvidedTheGroups = _.exists(this.gridOptionsWrapper.getNodeChildDetailsFunc());
+        this.suppressUseColIdForGroups = this.gridOptionsWrapper.isSuppressUseColIdForGroups();
+        this.initialised = true;
     }
 
     public getValue(column: Column, node: RowNode): any {
         return this.getValueUsingSpecificData(column, node.data, node);
     }
 
-    public getValueUsingSpecificData(column: Column, data: any, node: any): any {
+    public getValueUsingSpecificData(column: Column, data: any, node: RowNode): any {
 
-        var cellExpressions = this.gridOptionsWrapper.isEnableCellExpressions();
+        // hack - the grid is getting refreshed before this bean gets initialised, race condition.
+        // really should have a way so they get initialised in the right order???
+        if (!this.initialised) { this.init(); }
+
         var colDef = column.getColDef();
         var field = colDef.field;
 
         var result: any;
 
         // if there is a value getter, this gets precedence over a field
-        if (colDef.valueGetter) {
+        // - need to revisit this, we check 'data' as this is the way for the grid to
+        //   not render when on the footer row
+        if (data && node.group && !this.userProvidedTheGroups && !this.suppressUseColIdForGroups) {
+            result = node.data ? node.data[column.getId()] : undefined;
+        } else if (colDef.valueGetter) {
             result = this.executeValueGetter(colDef.valueGetter, data, column, node);
         } else if (field && data) {
-            result = this.getValueUsingField(data, field);
+            result = this.getValueUsingField(data, field, column.isFieldContainsDots());
         } else {
             result = undefined;
         }
 
         // the result could be an expression itself, if we are allowing cell values to be expressions
-        if (cellExpressions && (typeof result === 'string') && result.indexOf('=') === 0) {
+        if (this.cellExpressions && (typeof result === 'string') && result.indexOf('=') === 0) {
             var cellValueGetter = result.substring(1);
             result = this.executeValueGetter(cellValueGetter, data, column, node);
         }
@@ -57,12 +70,12 @@ export class ValueService {
         return result;
     }
 
-    private getValueUsingField(data: any, field: string): void {
+    private getValueUsingField(data: any, field: string, fieldContainsDots: boolean): any {
         if (!field || !data) {
             return;
         }
         // if no '.', then it's not a deep value
-        if (this.suppressDotNotation || field.indexOf('.')<0) {
+        if (!fieldContainsDots) {
             return data[field];
         } else {
             // otherwise it is a deep value, so need to dig for it
@@ -79,7 +92,7 @@ export class ValueService {
     }
 
     public setValue(rowNode: RowNode, colKey: string|ColDef|Column, newValue: any): void {
-        var column = this.columnController.getColumn(colKey);
+        var column = this.columnController.getPrimaryColumn(colKey);
         
         if (!rowNode || !column) {
             return;
@@ -112,7 +125,7 @@ export class ValueService {
         if (newValueHandler) {
             newValueHandler(paramsForCallbacks);
         } else {
-            this.setValueUsingField(data, field, newValue);
+            this.setValueUsingField(data, field, newValue, column.isFieldContainsDots());
         }
 
         // reset quick filter on this row
@@ -126,9 +139,9 @@ export class ValueService {
         this.eventService.dispatchEvent(Events.EVENT_CELL_VALUE_CHANGED, paramsForCallbacks);
     }
 
-    private setValueUsingField(data: any, field: string, newValue: any): void {
+    private setValueUsingField(data: any, field: string, newValue: any, isFieldContainsDots: boolean): void {
         // if no '.', then it's not a deep value
-        if (this.suppressDotNotation || field.indexOf('.')<0) {
+        if (!isFieldContainsDots) {
             data[field] = newValue;
         } else {
             // otherwise it is a deep value, so need to dig for it
@@ -169,7 +182,7 @@ export class ValueService {
     }
 
     private getValueCallback(data: any, node: RowNode, field: string): any {
-        var otherColumn = this.columnController.getColumn(field);
+        var otherColumn = this.columnController.getPrimaryColumn(field);
         if (otherColumn) {
             return this.getValueUsingSpecificData(otherColumn, data, node);
         } else {

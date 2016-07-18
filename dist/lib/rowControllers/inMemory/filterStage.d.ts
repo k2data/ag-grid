@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -7,8 +7,7 @@ import { IRowNodeStage } from "../../interfaces/iRowNodeStage";
 export declare class FilterStage implements IRowNodeStage {
     private gridOptionsWrapper;
     private filterManager;
-    execute(rowsToFilter: RowNode[]): RowNode[];
-    private filterItems(rowNodes);
-    private recursivelyResetFilter(nodes);
-    private getTotalChildCount(rowNodes);
+    execute(rowNode: RowNode): any;
+    private recursivelyFilter(rowNode, filterActive);
+    private setAllChildrenCount(rowNode);
 }

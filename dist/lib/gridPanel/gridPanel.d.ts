@@ -1,10 +1,9 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { BorderLayout } from "../layout/borderLayout";
 import { LoggerFactory } from "../logger";
-import { ColumnChangeEvent } from "../columnChangeEvent";
 export declare class GridPanel {
     private masterSlaveService;
     private gridOptionsWrapper;
@@ -20,11 +19,17 @@ export declare class GridPanel {
     private csvCreator;
     private mouseEventService;
     private focusedCellController;
+<<<<<<< HEAD
+=======
+    private $scope;
+>>>>>>> upstream/master
     private layout;
     private logger;
     private forPrint;
     private scrollWidth;
+    private requestAnimationFrameExists;
     private scrollLagCounter;
+    private scrollLagTicking;
     private eBodyViewport;
     private eRoot;
     private eBody;
@@ -54,10 +59,14 @@ export declare class GridPanel {
     private lastLeftPosition;
     private lastTopPosition;
     private animationThreadCount;
+    private destroyFunctions;
+    private useScrollLag;
     agWire(loggerFactory: LoggerFactory): void;
+    private destroy();
     private onRowDataChanged();
     getLayout(): BorderLayout;
     private init();
+    private addAngularApplyCheck();
     private disableBrowserDragging();
     private addEventListeners();
     private addDragListeners();
@@ -106,7 +115,8 @@ export declare class GridPanel {
     private centerMouseWheelListener(event);
     private pinnedLeftMouseWheelListener(event);
     private generalMouseWheelListener(event, targetPanel);
-    onColumnsChanged(event: ColumnChangeEvent): void;
+    onColumnResized(): void;
+    onDisplayedColumnsChanged(): void;
     private setWidthsOfContainers();
     private showPinnedColContainersIfNeeded();
     private sizeHeaderAndBody();
@@ -115,7 +125,9 @@ export declare class GridPanel {
     getHorizontalScrollPosition(): number;
     turnOnAnimationForABit(): void;
     private addScrollListener();
-    private requestDrawVirtualRows();
+    private setLeftAndRightBounds();
+    private isUseScrollLag();
+    private debounce(callback);
     horizontallyScrollHeaderCenterAndFloatingCenter(): void;
     private verticallyScrollLeftPinned(bodyTopPosition);
     private verticallyScrollBody(position);

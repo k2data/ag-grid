@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -9,6 +9,7 @@ var logger_1 = require("../logger");
 var Context = (function () {
     function Context(params) {
         this.beans = {};
+        this.componentsMappedByName = {};
         this.destroyed = false;
         if (!params || !params.beans) {
             return;
@@ -16,11 +17,50 @@ var Context = (function () {
         this.contextParams = params;
         this.logger = new logger_1.Logger('Context', this.contextParams.debug);
         this.logger.log('>> creating ag-Application Context');
+        this.setupComponents();
         this.createBeans();
         var beans = utils_1.Utils.mapObject(this.beans, function (beanEntry) { return beanEntry.beanInstance; });
         this.wireBeans(beans);
         this.logger.log('>> ag-Application Context ready - component is alive');
     }
+    Context.prototype.setupComponents = function () {
+        var _this = this;
+        if (this.contextParams.components) {
+            this.contextParams.components.forEach(function (componentMeta) { return _this.addComponent(componentMeta); });
+        }
+    };
+    Context.prototype.addComponent = function (componentMeta) {
+        // get name of the class as a string
+        // var className = _.getNameOfClass(ComponentClass);
+        // insert a dash after every capital letter
+        // var classEscaped = className.replace(/([A-Z])/g, "-$1").toLowerCase();
+        var classEscaped = componentMeta.componentName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        // put all to upper case
+        var classUpperCase = classEscaped.toUpperCase();
+        // finally store
+        this.componentsMappedByName[classUpperCase] = componentMeta.theClass;
+    };
+    Context.prototype.createComponent = function (element) {
+        var key = element.nodeName;
+        if (this.componentsMappedByName && this.componentsMappedByName[key]) {
+            var newComponent = new this.componentsMappedByName[key];
+            this.copyAttributesFromNode(element, newComponent.getGui());
+            this.wireBean(newComponent);
+            return newComponent;
+        }
+        else {
+            return null;
+        }
+    };
+    Context.prototype.copyAttributesFromNode = function (fromNode, toNode) {
+        if (fromNode.attributes) {
+            var count = fromNode.attributes.length;
+            for (var i = 0; i < count; i++) {
+                var attr = fromNode.attributes[i];
+                toNode.setAttribute(attr.name, attr.value);
+            }
+        }
+    };
     Context.prototype.wireBean = function (bean) {
         this.wireBeans([bean]);
     };

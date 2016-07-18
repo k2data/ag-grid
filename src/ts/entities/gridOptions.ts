@@ -5,7 +5,7 @@ import {Column} from "./column";
 import {IViewportDatasource} from "../interfaces/iViewportDatasource";
 import {MenuItem} from "../widgets/menuItemComponent";
 import {ICellRendererFunc, ICellRenderer} from "../rendering/cellRenderers/iCellRenderer";
-import {ICellEditor} from "../rendering/cellEditors/iCellEditor";
+import {IAggFunc} from "./colDef";
 
 /****************************************************************
  * Don't forget to update ComponentUtil if changing this class. *
@@ -17,8 +17,10 @@ export interface GridOptions {
      ****************************************************************/
 
     // set once in init, can never change
-    toolPanelSuppressGroups?: boolean;
+    toolPanelSuppressRowGroups?: boolean;
     toolPanelSuppressValues?: boolean;
+    toolPanelSuppressPivots?: boolean;
+    toolPanelSuppressPivotMode?: boolean;
     suppressRowClickSelection?: boolean;
     suppressCellSelection?: boolean;
     sortingOrder?: string[];
@@ -33,6 +35,8 @@ export interface GridOptions {
     enableFilter?: boolean;
     enableServerSideFilter?: boolean;
     enableStatusBar?: boolean;
+    suppressMiddleClickScrolls?: boolean;
+    suppressPreventDefaultOnMouseWheel?: boolean;
     colWidth?: number;
     minColWidth?: number;
     maxColWidth?: number;
@@ -48,13 +52,20 @@ export interface GridOptions {
     suppressAutoSize?: boolean;
     suppressColumnMoveAnimation?: boolean;
     suppressMovableColumns?: boolean;
+    suppressDragLeaveHidesColumns?: boolean;
     suppressParentsInRowNodes?: boolean;
     suppressFieldDotNotation?: boolean;
+    suppressUseColIdForGroups?: boolean;
+    suppressCopyRowsToClipboard?: boolean;
+    suppressAggFuncInHeader?: boolean;
+    suppressFocusAfterRefresh?: boolean;
     rowModelType?: string;
+    pivotMode?: boolean;
     enableRangeSelection?: boolean;
     suppressEnterprise?: boolean;
     // enterprise only
     rowGroupPanelShow?: string;
+    pivotPanelShow?: string;
     suppressContextMenu?: boolean;
     suppressMenuFilterPanel?: boolean;
     suppressMenuMainPanel?: boolean;
@@ -63,6 +74,12 @@ export interface GridOptions {
     viewportRowModelPageSize?: number;
     viewportRowModelBufferSize?: number;
     enableCellChangeFlash?: boolean;
+    quickFilterText?: string;
+    aggFuncs?: {[key: string]: IAggFunc};
+    suppressColumnVirtualisation?: boolean;
+    layoutInterval?: number;
+    functionsReadOnly?: boolean;
+    functionsPassive?: boolean;
 
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
@@ -73,9 +90,9 @@ export interface GridOptions {
     localeTextFunc?: Function;
     suppressScrollLag?: boolean;
     /* a map of strings (cellRenderer keys) to cellRenderers (that can be ICellRenderer or ICellRendererFunc) */
-    cellRenderers?: {[key: string]: {new(): ICellRenderer} | ICellRendererFunc};
+    // cellRenderers?: {[key: string]: {new(): ICellRenderer} | ICellRendererFunc};
     /* a map of strings (cellEditor keys) to cellEditors */
-    cellEditors?: {[key: string]: {new(): ICellEditor}};
+    // cellEditors?: {[key: string]: {new(): ICellEditor}};
 
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
@@ -138,12 +155,12 @@ export interface GridOptions {
     getRowClass?: Function;
     getRowHeight?: Function;
     headerCellRenderer?: any;
-    groupAggFunction?(nodes: any[]): any;
+    groupRowAggNodes?(nodes: RowNode[]): any;
     getBusinessKeyForNode?(node: RowNode): string;
     getHeaderCellTemplate?: (params: any) => string | HTMLElement;
     getNodeChildDetails?(dataItem: any): NodeChildDetails;
-    getContextMenuItems?: GetContextMenuItems,
-    getMainMenuItems?: GetMainMenuItems,
+    getContextMenuItems?: GetContextMenuItems;
+    getMainMenuItems?: GetMainMenuItems;
     processRowPostCreate?(params: ProcessRowParams): void;
     processCellForClipboard?(params: ProcessCellForExportParams): any;
 
@@ -154,17 +171,29 @@ export interface GridOptions {
     // events
     onColumnEverythingChanged?(event?: any): void;
     onNewColumnsLoaded?(event?: any): void;
+    onColumnPivotModeChanged?(event?: any): void;
     onColumnRowGroupChanged?(event?: any): void;
+    onColumnPivotChanged?(event?: any): void;
+    onGridColumnsChanged?(event?: any): void;
     onColumnValueChanged?(event?: any): void;
     onColumnMoved?(event?: any): void;
     onColumnVisible?(event?: any): void;
     onColumnPinned?(event?: any): void;
     onColumnGroupOpened?(event?: any): void;
     onColumnResized?(event?: any): void;
+    onDisplayedColumnsChanged?(event?: any): void;
+    onVirtualColumnsChanged?(event?: any): void;
     onRowGroupOpened?(event?: any): void;
     onRowDataChanged?(event?: any): void;
     onFloatingRowDataChanged?(event?: any): void;
     onRangeSelectionChanged?(event?: any): void;
+    onColumnRowGroupAddRequest?(event?: any): void;
+    onColumnRowGroupRemoveRequest?(event?: any): void;
+    onColumnPivotAddRequest?(event?: any): void;
+    onColumnPivotRemoveRequest?(event?: any): void;
+    onColumnValueAddRequest?(event?: any): void;
+    onColumnValueRemoveRequest?(event?: any): void;
+    onColumnAggFuncChangeRequest?(event?: any): void;
     onClipboardPaste?(event?: any): void;
     onHeaderHeightChanged?(event?: any): void;
     onModelUpdated?(event?: any): void;
@@ -188,6 +217,8 @@ export interface GridOptions {
     onGridReady?(event?: any): void;
     onGridSizeChanged?(event?: any): void;
     onViewportChanged?(event?: any): void;
+    onDragStarted?(event?: any): void;
+    onDragStopped?(event?: any): void;
 
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
@@ -207,7 +238,7 @@ export interface NodeChildDetails {
 }
 
 export interface GetContextMenuItemsParams {
-    defaultItems: [string],
+    defaultItems: string[],
     column: Column,
     node: RowNode,
     value: any,
@@ -217,7 +248,7 @@ export interface GetContextMenuItemsParams {
 }
 
 export interface GetContextMenuItems {
-    (params: GetContextMenuItemsParams): [string|MenuItem]
+    (params: GetContextMenuItemsParams): (string|MenuItem)[]
 }
 
 export interface GetMainMenuItemsParams {
@@ -229,7 +260,7 @@ export interface GetMainMenuItemsParams {
 }
 
 export interface GetMainMenuItems {
-    (params: GetMainMenuItemsParams): [string|MenuItem]
+    (params: GetMainMenuItemsParams): (string|MenuItem)[]
 }
 
 export interface ProcessRowParams {

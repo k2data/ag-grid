@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -9,8 +9,15 @@ export declare class SelectionController {
     private gridOptionsWrapper;
     private selectedNodes;
     private logger;
+<<<<<<< HEAD
+=======
+    private lastSelectedNode;
+    private groupSelectsChildren;
+>>>>>>> upstream/master
     private setBeans(loggerFactory);
     init(): void;
+    setLastSelectedNode(rowNode: RowNode): void;
+    getLastSelectedNode(): RowNode;
     getSelectedNodes(): RowNode[];
     getSelectedRows(): any[];
     removeGroupsFromSelection(): void;
@@ -25,8 +32,8 @@ export declare class SelectionController {
     isEmpty(): boolean;
     deselectAllRowNodes(): void;
     selectAllRowNodes(): void;
-    selectNode(rowNode: RowNode, tryMulti: boolean, suppressEvents?: boolean): void;
-    deselectIndex(rowIndex: number, suppressEvents?: boolean): void;
-    deselectNode(rowNode: RowNode, suppressEvents?: boolean): void;
-    selectIndex(index: any, tryMulti: boolean, suppressEvents?: boolean): void;
+    selectNode(rowNode: RowNode, tryMulti: boolean): void;
+    deselectIndex(rowIndex: number): void;
+    deselectNode(rowNode: RowNode): void;
+    selectIndex(index: any, tryMulti: boolean): void;
 }

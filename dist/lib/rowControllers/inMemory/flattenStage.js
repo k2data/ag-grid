@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -19,31 +19,39 @@ var utils_1 = require("../../utils");
 var gridOptionsWrapper_1 = require("../../gridOptionsWrapper");
 var selectionController_1 = require("../../selectionController");
 var eventService_1 = require("../../eventService");
+var columnController_1 = require("../../columnController/columnController");
 var FlattenStage = (function () {
     function FlattenStage() {
     }
-    FlattenStage.prototype.execute = function (rowsToFlatten) {
+    FlattenStage.prototype.execute = function (rootNode) {
         // even if not doing grouping, we do the mapping, as the client might
         // of passed in data that already has a grouping in it somewhere
         var result = [];
         // putting value into a wrapper so it's passed by reference
         var nextRowTop = { value: 0 };
-        this.recursivelyAddToRowsToDisplay(rowsToFlatten, result, nextRowTop);
+        var pivotMode = this.columnController.isPivotMode();
+        // if we are reducing, and not grouping, then we want to show the root node, as that
+        // is where the pivot values are
+        var showRootNode = pivotMode && rootNode.leafGroup;
+        var topList = showRootNode ? [rootNode] : rootNode.childrenAfterSort;
+        this.recursivelyAddToRowsToDisplay(topList, result, nextRowTop, pivotMode);
         return result;
     };
-    FlattenStage.prototype.recursivelyAddToRowsToDisplay = function (rowsToFlatten, result, nextRowTop) {
+    FlattenStage.prototype.recursivelyAddToRowsToDisplay = function (rowsToFlatten, result, nextRowTop, reduce) {
         if (utils_1.Utils.missingOrEmpty(rowsToFlatten)) {
             return;
         }
         var groupSuppressRow = this.gridOptionsWrapper.isGroupSuppressRow();
         for (var i = 0; i < rowsToFlatten.length; i++) {
             var rowNode = rowsToFlatten[i];
-            var skipGroupNode = groupSuppressRow && rowNode.group;
+            var skipBecauseSuppressRow = groupSuppressRow && rowNode.group;
+            var skipBecauseReduce = reduce && !rowNode.group;
+            var skipGroupNode = skipBecauseReduce || skipBecauseSuppressRow;
             if (!skipGroupNode) {
                 this.addRowNodeToRowsToDisplay(rowNode, result, nextRowTop);
             }
             if (rowNode.group && rowNode.expanded) {
-                this.recursivelyAddToRowsToDisplay(rowNode.childrenAfterSort, result, nextRowTop);
+                this.recursivelyAddToRowsToDisplay(rowNode.childrenAfterSort, result, nextRowTop, reduce);
                 // put a footer in if user is looking for it
                 if (this.gridOptionsWrapper.isGroupIncludeFooter()) {
                     var footerNode = this.createFooterNode(rowNode);
@@ -89,6 +97,13 @@ var FlattenStage = (function () {
         context_1.Autowired('context'), 
         __metadata('design:type', context_1.Context)
     ], FlattenStage.prototype, "context", void 0);
+<<<<<<< HEAD
+=======
+    __decorate([
+        context_1.Autowired('columnController'), 
+        __metadata('design:type', columnController_1.ColumnController)
+    ], FlattenStage.prototype, "columnController", void 0);
+>>>>>>> upstream/master
     FlattenStage = __decorate([
         context_1.Bean('flattenStage'), 
         __metadata('design:paramtypes', [])

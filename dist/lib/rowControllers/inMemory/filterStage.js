@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -20,7 +20,7 @@ var filterManager_1 = require("../../filter/filterManager");
 var FilterStage = (function () {
     function FilterStage() {
     }
-    FilterStage.prototype.execute = function (rowsToFilter) {
+    FilterStage.prototype.execute = function (rowNode) {
         var filterActive;
         if (this.gridOptionsWrapper.isEnableServerSideFilter()) {
             filterActive = false;
@@ -28,62 +28,54 @@ var FilterStage = (function () {
         else {
             filterActive = this.filterManager.isAnyFilterPresent();
         }
-        var result;
+        this.recursivelyFilter(rowNode, filterActive);
+    };
+    FilterStage.prototype.recursivelyFilter = function (rowNode, filterActive) {
+        var _this = this;
+        // recursively get all children that are groups to also filter
+        rowNode.childrenAfterGroup.forEach(function (child) {
+            if (child.group) {
+                _this.recursivelyFilter(child, filterActive);
+            }
+        });
+        // result of filter for this node
+        var filterResult;
         if (filterActive) {
-            result = this.filterItems(rowsToFilter);
+            filterResult = [];
+            rowNode.childrenAfterGroup.forEach(function (childNode) {
+                if (childNode.group) {
+                    // a group is included in the result if it has any children of it's own.
+                    // by this stage, the child groups are already filtered
+                    if (childNode.childrenAfterFilter.length > 0) {
+                        filterResult.push(childNode);
+                    }
+                }
+                else {
+                    // a leaf level node is included if it passes the filter
+                    if (_this.filterManager.doesRowPassFilter(childNode)) {
+                        filterResult.push(childNode);
+                    }
+                }
+            });
         }
         else {
-            // do it here
-            result = rowsToFilter;
-            this.recursivelyResetFilter(rowsToFilter);
+            // if not filtering, the result is the original list
+            filterResult = rowNode.childrenAfterGroup;
         }
-        return result;
+        rowNode.childrenAfterFilter = filterResult;
+        this.setAllChildrenCount(rowNode);
     };
-    FilterStage.prototype.filterItems = function (rowNodes) {
-        var result = [];
-        for (var i = 0, l = rowNodes.length; i < l; i++) {
-            var node = rowNodes[i];
-            if (node.group) {
-                // deal with group
-                node.childrenAfterFilter = this.filterItems(node.children);
-                if (node.childrenAfterFilter.length > 0) {
-                    node.allChildrenCount = this.getTotalChildCount(node.childrenAfterFilter);
-                    result.push(node);
-                }
+    FilterStage.prototype.setAllChildrenCount = function (rowNode) {
+        var allChildrenCount = 0;
+        rowNode.childrenAfterFilter.forEach(function (child) {
+            if (child.group) {
+                allChildrenCount += child.allChildrenCount;
             }
             else {
-                if (this.filterManager.doesRowPassFilter(node)) {
-                    result.push(node);
-                }
+                allChildrenCount++;
             }
-        }
-        return result;
-    };
-    FilterStage.prototype.recursivelyResetFilter = function (nodes) {
-        if (!nodes) {
-            return;
-        }
-        for (var i = 0, l = nodes.length; i < l; i++) {
-            var node = nodes[i];
-            if (node.group && node.children) {
-                node.childrenAfterFilter = node.children;
-                this.recursivelyResetFilter(node.children);
-                node.allChildrenCount = this.getTotalChildCount(node.childrenAfterFilter);
-            }
-        }
-    };
-    FilterStage.prototype.getTotalChildCount = function (rowNodes) {
-        var count = 0;
-        for (var i = 0, l = rowNodes.length; i < l; i++) {
-            var item = rowNodes[i];
-            if (item.group) {
-                count += item.allChildrenCount;
-            }
-            else {
-                count++;
-            }
-        }
-        return count;
+        });
+        rowNode.allChildrenCount = allChildrenCount;
     };
     __decorate([
         context_2.Autowired('gridOptionsWrapper'), 

@@ -7,18 +7,24 @@ import {Column} from "./column";
 import {ValueService} from "../valueService";
 import {ColumnController} from "../columnController/columnController";
 import {Autowired} from "../context/context";
+import {IRowModel} from "../interfaces/iRowModel";
+import {Constants} from "../constants";
+import {InMemoryRowModel} from "../rowControllers/inMemory/inMemoryRowModel";
 
 export class RowNode {
 
     public static EVENT_ROW_SELECTED = 'rowSelected';
     public static EVENT_DATA_CHANGED = 'dataChanged';
     public static EVENT_CELL_CHANGED = 'cellChanged';
+    public static EVENT_MOUSE_ENTER = 'mouseEnter';
+    public static EVENT_MOUSE_LEAVE = 'mouseLeave';
 
     @Autowired('eventService') private mainEventService: EventService;
     @Autowired('gridOptionsWrapper') private gridOptionsWrapper: GridOptionsWrapper;
     @Autowired('selectionController') private selectionController: SelectionController;
     @Autowired('columnController') private columnController: ColumnController;
     @Autowired('valueService') private valueService: ValueService;
+    @Autowired('rowModel') private rowModel: IRowModel;
 
     /** Unique ID for the node. Can be thought of as the index of the row in the original list. */
     public id: number;
@@ -30,6 +36,8 @@ export class RowNode {
     public level: number;
     /** True if this node is a group node (ie has children) */
     public group: boolean;
+    /** True if this node is a group and the group is the bottom level in the tree */
+    public leafGroup: boolean;
     /** True if this is the first child in this group */
     public firstChild: boolean;
     /** True if this is the last child in this group */
@@ -42,18 +50,26 @@ export class RowNode {
     public quickFilterAggregateText: string;
     /** Groups only - True if row is a footer. Footers  have group = true and footer = true */
     public footer: boolean;
-    /** Groups only - Children of this group */
-    public children: RowNode[];
     /** Groups only - The field we are grouping on eg Country*/
     public field: string;
     /** Groups only - The key for the group eg Ireland, UK, USA */
     public key: any;
+
+    /** All user provided nodes */
+    public allLeafChildren: RowNode[];
+
+    /** Groups only - Children of this group */
+    public childrenAfterGroup: RowNode[];
     /** Groups only - Filtered children of this group */
     public childrenAfterFilter: RowNode[];
     /** Groups only - Sorted children of this group */
     public childrenAfterSort: RowNode[];
     /** Groups only - Number of children and grand children */
     public allChildrenCount: number;
+
+    /** Children mapped by the pivot columns */
+    public childrenMapped: {[key: string]: any} = {};
+
     /** Groups only - True if group is expanded, otherwise false */
     public expanded: boolean;
     /** Groups only - If doing footers, reference to the footer node for this group */
@@ -87,7 +103,7 @@ export class RowNode {
     // this method is for the client to call, so the cell listens for the change
     // event, and also flashes the cell when the change occurs.
     public setDataValue(colKey: string|ColDef|Column, newValue: any): void {
-        var column = this.columnController.getColumn(colKey);
+        var column = this.columnController.getGridColumn(colKey);
         this.valueService.setValue(this, column, newValue);
         var event = {column: column, newValue: newValue};
         this.dispatchLocalEvent(RowNode.EVENT_CELL_CHANGED, event);
@@ -107,8 +123,8 @@ export class RowNode {
     }
 
     public deptFirstSearch( callback: (rowNode: RowNode) => void ): void {
-        if (this.children) {
-            this.children.forEach( child => child.deptFirstSearch(callback) );
+        if (this.childrenAfterGroup) {
+            this.childrenAfterGroup.forEach( child => child.deptFirstSearch(callback) );
         }
         callback(this);
     }
@@ -120,9 +136,9 @@ export class RowNode {
         var atLeastOneMixed = false;
 
         var newSelectedValue:boolean;
-        if (this.children) {
-            for (var i = 0; i < this.children.length; i++) {
-                var childState = this.children[i].isSelected();
+        if (this.childrenAfterGroup) {
+            for (var i = 0; i < this.childrenAfterGroup.length; i++) {
+                var childState = this.childrenAfterGroup[i].isSelected();
                 switch (childState) {
                     case true:
                         atLeastOneSelected = true;
@@ -161,16 +177,42 @@ export class RowNode {
 
     /** Returns true if this row is selected */
     public setSelected(newValue: boolean, clearSelection: boolean = false, tailingNodeInSequence: boolean = false) {
+        this.setSelectedParams({
+            newValue: newValue,
+            clearSelection: clearSelection,
+            tailingNodeInSequence: tailingNodeInSequence,
+            rangeSelect: false
+        });
+    }
+
+    // to make calling code more readable, this is the same method as setSelected except it takes names parameters
+    public setSelectedParams(params: {newValue: boolean, clearSelection?: boolean, tailingNodeInSequence?: boolean, rangeSelect?: boolean}): void {
+
+        var newValue = params.newValue === true;
+        var clearSelection = params.clearSelection === true;
+        var tailingNodeInSequence = params.tailingNodeInSequence === true;
+        var rangeSelect = params.rangeSelect === true;
 
         if (this.floating) {
             console.log('ag-Grid: cannot select floating rows');
             return;
         }
+
         // if we are a footer, we don't do selection, just pass the info
         // to the sibling (the parent of the group)
         if (this.footer) {
-            this.sibling.setSelected(newValue, clearSelection, tailingNodeInSequence);
+            this.sibling.setSelectedParams(params);
             return;
+        }
+
+        if (rangeSelect) {
+            var rowModelNormal = this.rowModel.getType()===Constants.ROW_MODEL_TYPE_NORMAL;
+            var newRowClicked = this.selectionController.getLastSelectedNode() !== this;
+            var allowMultiSelect = this.gridOptionsWrapper.isRowSelectionMulti();
+            if (rowModelNormal && newRowClicked && allowMultiSelect) {
+                this.doRowRangeSelection();
+                return;
+            }
         }
 
         this.selectThisNode(newValue);
@@ -195,9 +237,92 @@ export class RowNode {
 
             // this is the very end of the 'action node', so we are finished all the updates,
             // include any parent / child changes that this method caused
-            this.mainEventService.dispatchEvent(Events.EVENT_SELECTION_CHANGED)
+            this.mainEventService.dispatchEvent(Events.EVENT_SELECTION_CHANGED);
 
+            // so if user next does shift-select, we know where to start the selection from
+            if (newValue) {
+                this.selectionController.setLastSelectedNode(this);
+            }
         }
+    }
+
+    // selects all rows between this node and the last selected node (or the top if this is the first selection).
+    // not to be mixed up with 'cell range selection' where you drag the mouse, this is row range selection, by
+    // holding down 'shift'.
+    private doRowRangeSelection(): void {
+        var lastSelectedNode = this.selectionController.getLastSelectedNode();
+
+        // if lastSelectedNode is missing, we start at the first row
+        var firstRowHit = !lastSelectedNode;
+        var lastRowHit = false;
+        var lastRow: RowNode;
+
+        var groupsSelectChildren = this.gridOptionsWrapper.isGroupSelectsChildren();
+
+        var inMemoryRowModel = <InMemoryRowModel> this.rowModel;
+        inMemoryRowModel.forEachNodeAfterFilterAndSort( (rowNode: RowNode) => {
+
+            var lookingForLastRow = firstRowHit && !lastRowHit;
+
+            // check if we need to flip the select switch
+            if (!firstRowHit) {
+                if (rowNode===lastSelectedNode || rowNode===this) {
+                    firstRowHit = true;
+                }
+            }
+
+            var skipThisGroupNode = rowNode.group && groupsSelectChildren;
+            if (!skipThisGroupNode) {
+                var inRange = firstRowHit && !lastRowHit;
+                var childOfLastRow = rowNode.isParentOfNode(lastRow);
+                rowNode.selectThisNode(inRange || childOfLastRow);
+            }
+
+            if (lookingForLastRow) {
+                if (rowNode===lastSelectedNode || rowNode===this) {
+
+                    lastRowHit = true;
+                    if (rowNode===lastSelectedNode) {
+                        lastRow = lastSelectedNode;
+                    } else {
+                        lastRow = this;
+                    }
+                }
+            }
+        });
+
+        if (groupsSelectChildren) {
+            this.calculatedSelectedForAllGroupNodes();
+        }
+
+        this.mainEventService.dispatchEvent(Events.EVENT_SELECTION_CHANGED);
+    }
+
+    private isParentOfNode(potentialParent: RowNode): boolean {
+        var parentNode = this.parent;
+        while (parentNode) {
+            if (parentNode === potentialParent) {
+                return true;
+            }
+            parentNode = parentNode.parent;
+        }
+        return false;
+    }
+
+    private calculatedSelectedForAllGroupNodes(): void {
+        // we have to make sure we do this dept first, as parent nodes
+        // will have dependencies on the children having correct values
+        var inMemoryRowModel = <InMemoryRowModel> this.rowModel;
+        inMemoryRowModel.getTopLevelNodes().forEach( topLevelNode => {
+            if (topLevelNode.group) {
+                topLevelNode.deptFirstSearch( childNode => {
+                    if (childNode.group) {
+                        childNode.calculateSelectedFromChildren();
+                    }
+                });
+                topLevelNode.calculateSelectedFromChildren();
+            }
+        });
     }
 
     public selectThisNode(newValue: boolean): void {
@@ -214,8 +339,12 @@ export class RowNode {
     }
 
     private selectChildNodes(newValue: boolean): void {
-        for (var i = 0; i<this.children.length; i++) {
-            this.children[i].setSelected(newValue, false, true);
+        for (var i = 0; i<this.childrenAfterGroup.length; i++) {
+            this.childrenAfterGroup[i].setSelectedParams({
+                newValue: newValue,
+                clearSelection: false,
+                tailingNodeInSequence: true
+            });
         }
     }
 
@@ -228,4 +357,11 @@ export class RowNode {
         this.eventService.removeEventListener(eventType, listener);
     }
 
+    public onMouseEnter(): void {
+        this.dispatchLocalEvent(RowNode.EVENT_MOUSE_ENTER);
+    }
+
+    public onMouseLeave(): void {
+        this.dispatchLocalEvent(RowNode.EVENT_MOUSE_LEAVE);
+    }
 }

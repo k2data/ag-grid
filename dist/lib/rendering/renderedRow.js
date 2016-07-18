@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -30,6 +30,7 @@ var RenderedRow = (function () {
     function RenderedRow(parentScope, rowRenderer, eBodyContainer, ePinnedLeftContainer, ePinnedRightContainer, node, rowIndex) {
         this.renderedCells = {};
         this.destroyFunctions = [];
+        this.initialised = false;
         this.parentScope = parentScope;
         this.rowRenderer = rowRenderer;
         this.eBodyContainer = eBodyContainer;
@@ -39,15 +40,12 @@ var RenderedRow = (function () {
         this.rowNode = node;
     }
     RenderedRow.prototype.init = function () {
-        var _this = this;
-        this.pinningLeft = this.columnController.isPinningLeft();
-        this.pinningRight = this.columnController.isPinningRight();
         this.createContainers();
         var groupHeaderTakesEntireRow = this.gridOptionsWrapper.isGroupUseEntireRow();
         this.rowIsHeaderThatSpans = this.rowNode.group && groupHeaderTakesEntireRow;
         this.scope = this.createChildScopeOrNull(this.rowNode.data);
         if (this.rowIsHeaderThatSpans) {
-            this.createGroupRow();
+            this.refreshGroupRow();
         }
         else {
             this.refreshCellsIntoRow();
@@ -60,6 +58,7 @@ var RenderedRow = (function () {
         this.addCellFocusedListener();
         this.addNodeDataChangedListener();
         this.addColumnListener();
+        this.addHoverFunctionality();
         this.attachContainers();
         this.gridOptionsWrapper.executeProcessRowPostCreateFunc({
             eRow: this.eBodyRow,
@@ -72,43 +71,66 @@ var RenderedRow = (function () {
             columnApi: this.gridOptionsWrapper.getColumnApi(),
             context: this.gridOptionsWrapper.getContext()
         });
+        this.angular1Compile();
+        this.initialised = true;
+    };
+    RenderedRow.prototype.angular1Compile = function () {
+        var _this = this;
         if (this.scope) {
             this.eLeftCenterAndRightRows.forEach(function (row) { return _this.$compile(row)(_this.scope); });
         }
     };
     RenderedRow.prototype.addColumnListener = function () {
         var _this = this;
-        var columnListener = this.onColumnChanged.bind(this);
-        this.mainEventService.addEventListener(events_1.Events.EVENT_COLUMN_GROUP_OPENED, columnListener);
-        //this.mainEventService.addEventListener(Events.EVENT_COLUMN_MOVED, columnListener);
-        //this.mainEventService.addEventListener(Events.EVENT_COLUMN_ROW_GROUP_CHANGE, columnListener);
-        //this.mainEventService.addEventListener(Events.EVENT_COLUMN_RESIZED, columnListener);
-        //this.mainEventService.addEventListener(Events.EVENT_COLUMN_VALUE_CHANGE, columnListener);
-        this.mainEventService.addEventListener(events_1.Events.EVENT_COLUMN_VISIBLE, columnListener);
-        this.mainEventService.addEventListener(events_1.Events.EVENT_COLUMN_PINNED, columnListener);
+        var columnListener = this.onDisplayedColumnsChanged.bind(this);
+        var virtualListener = this.onVirtualColumnsChanged.bind(this);
+        var gridColumnsChangedListener = this.onGridColumnsChanged.bind(this);
+        this.mainEventService.addEventListener(events_1.Events.EVENT_DISPLAYED_COLUMNS_CHANGED, columnListener);
+        this.mainEventService.addEventListener(events_1.Events.EVENT_VIRTUAL_COLUMNS_CHANGED, virtualListener);
+        this.mainEventService.addEventListener(events_1.Events.EVENT_COLUMN_RESIZED, columnListener);
+        this.mainEventService.addEventListener(events_1.Events.EVENT_GRID_COLUMNS_CHANGED, gridColumnsChangedListener);
         this.destroyFunctions.push(function () {
-            _this.mainEventService.removeEventListener(events_1.Events.EVENT_COLUMN_GROUP_OPENED, columnListener);
-            //this.mainEventService.removeEventListener(Events.EVENT_COLUMN_MOVED, columnListener);
-            //this.mainEventService.removeEventListener(Events.EVENT_COLUMN_ROW_GROUP_CHANGE, columnListener);
-            //this.mainEventService.removeEventListener(Events.EVENT_COLUMN_RESIZED, columnListener);
-            //this.mainEventService.removeEventListener(Events.EVENT_COLUMN_VALUE_CHANGE, columnListener);
-            _this.mainEventService.removeEventListener(events_1.Events.EVENT_COLUMN_VISIBLE, columnListener);
-            _this.mainEventService.removeEventListener(events_1.Events.EVENT_COLUMN_PINNED, columnListener);
+            _this.mainEventService.removeEventListener(events_1.Events.EVENT_DISPLAYED_COLUMNS_CHANGED, columnListener);
+            _this.mainEventService.removeEventListener(events_1.Events.EVENT_VIRTUAL_COLUMNS_CHANGED, virtualListener);
+            _this.mainEventService.removeEventListener(events_1.Events.EVENT_COLUMN_RESIZED, columnListener);
+            _this.mainEventService.removeEventListener(events_1.Events.EVENT_GRID_COLUMNS_CHANGED, gridColumnsChangedListener);
         });
     };
-    RenderedRow.prototype.onColumnChanged = function (event) {
-        // if row is a group row that spans, then it's not impacted by column changes
+    RenderedRow.prototype.onDisplayedColumnsChanged = function (event) {
+        // if row is a group row that spans, then it's not impacted by column changes, with exception of pinning
         if (this.rowIsHeaderThatSpans) {
-            return;
+            var columnPinned = event.getType() === events_1.Events.EVENT_COLUMN_PINNED;
+            if (columnPinned) {
+                this.refreshGroupRow();
+            }
         }
-        this.refreshCellsIntoRow();
+        else {
+            this.refreshCellsIntoRow();
+            this.angular1Compile();
+        }
     };
+    RenderedRow.prototype.onVirtualColumnsChanged = function (event) {
+        // if row is a group row that spans, then it's not impacted by column changes, with exception of pinning
+        if (!this.rowIsHeaderThatSpans) {
+            this.refreshCellsIntoRow();
+            this.angular1Compile();
+        }
+    };
+<<<<<<< HEAD
+=======
+    // when grid columns change, then all cells should be cleaned out,
+    // as the new columns could have same id as the previous columns and may conflict
+    RenderedRow.prototype.onGridColumnsChanged = function () {
+        var allRenderedCellIds = Object.keys(this.renderedCells);
+        this.removeRenderedCells(allRenderedCellIds);
+    };
+>>>>>>> upstream/master
     // method makes sure the right cells are present, and are in the right container. so when this gets called for
     // the first time, it sets up all the cells. but then over time the cells might appear / dissappear or move
     // container (ie into pinned)
     RenderedRow.prototype.refreshCellsIntoRow = function () {
         var _this = this;
-        var columns = this.columnController.getAllDisplayedColumns();
+        var columns = this.columnController.getAllDisplayedVirtualColumns();
         var renderedCellKeys = Object.keys(this.renderedCells);
         columns.forEach(function (column) {
             var renderedCell = _this.getOrCreateCell(column);
@@ -116,10 +138,14 @@ var RenderedRow = (function () {
             utils_1.Utils.removeFromArray(renderedCellKeys, column.getColId());
         });
         // remove old cells from gui, but we don't destroy them, we might use them again
-        renderedCellKeys.forEach(function (key) {
+        this.removeRenderedCells(renderedCellKeys);
+    };
+    RenderedRow.prototype.removeRenderedCells = function (colIds) {
+        var _this = this;
+        colIds.forEach(function (key) {
             var renderedCell = _this.renderedCells[key];
             // could be old reference, ie removed cell
-            if (!renderedCell) {
+            if (utils_1.Utils.missing(renderedCell)) {
                 return;
             }
             if (renderedCell.getParentRow()) {
@@ -179,6 +205,30 @@ var RenderedRow = (function () {
         this.destroyFunctions.push(function () {
             _this.rowNode.removeEventListener(rowNode_1.RowNode.EVENT_ROW_SELECTED, rowSelectedListener);
         });
+    };
+    RenderedRow.prototype.addHoverFunctionality = function () {
+        var _this = this;
+        var onGuiMouseEnter = this.rowNode.onMouseEnter.bind(this.rowNode);
+        var onGuiMouseLeave = this.rowNode.onMouseLeave.bind(this.rowNode);
+        this.eLeftCenterAndRightRows.forEach(function (eRow) {
+            eRow.addEventListener('mouseenter', onGuiMouseEnter);
+            eRow.addEventListener('mouseleave', onGuiMouseLeave);
+        });
+        var onNodeMouseEnter = this.addHoverClass.bind(this, true);
+        var onNodeMouseLeave = this.addHoverClass.bind(this, false);
+        this.rowNode.addEventListener(rowNode_1.RowNode.EVENT_MOUSE_ENTER, onNodeMouseEnter);
+        this.rowNode.addEventListener(rowNode_1.RowNode.EVENT_MOUSE_LEAVE, onNodeMouseLeave);
+        this.destroyFunctions.push(function () {
+            _this.eLeftCenterAndRightRows.forEach(function (eRow) {
+                eRow.removeEventListener('mouseenter', onGuiMouseEnter);
+                eRow.removeEventListener('mouseleave', onGuiMouseLeave);
+            });
+            _this.rowNode.removeEventListener(rowNode_1.RowNode.EVENT_MOUSE_ENTER, onNodeMouseEnter);
+            _this.rowNode.removeEventListener(rowNode_1.RowNode.EVENT_MOUSE_LEAVE, onNodeMouseLeave);
+        });
+    };
+    RenderedRow.prototype.addHoverClass = function (hover) {
+        this.eLeftCenterAndRightRows.forEach(function (eRow) { return utils_1.Utils.addOrRemoveCssClass(eRow, 'ag-row-hover', hover); });
     };
     RenderedRow.prototype.addCellFocusedListener = function () {
         var _this = this;
@@ -274,6 +324,7 @@ var RenderedRow = (function () {
     RenderedRow.prototype.removeEventListener = function (eventType, listener) {
         this.renderedRowEventService.removeEventListener(eventType, listener);
     };
+<<<<<<< HEAD
     RenderedRow.prototype.softRefresh = function () {
         this.forEachRenderedCell(function (renderedCell) {
             if (renderedCell.isVolatile()) {
@@ -281,6 +332,8 @@ var RenderedRow = (function () {
             }
         });
     };
+=======
+>>>>>>> upstream/master
     RenderedRow.prototype.getRenderedCellForColumn = function (column) {
         return this.renderedCells[column.getColId()];
     };
@@ -318,26 +371,45 @@ var RenderedRow = (function () {
     RenderedRow.prototype.isGroup = function () {
         return this.rowNode.group === true;
     };
-    RenderedRow.prototype.createGroupRow = function () {
-        var eGroupRow = this.createGroupSpanningEntireRowCell(false);
-        if (this.pinningLeft) {
-            this.ePinnedLeftRow.appendChild(eGroupRow);
-            var eGroupRowPadding = this.createGroupSpanningEntireRowCell(true);
-            this.eBodyRow.appendChild(eGroupRowPadding);
+    RenderedRow.prototype.refreshGroupRow = function () {
+        // where the components go changes with pinning, it's easiest ot just remove from all containers
+        // and start again if the pinning changes
+        utils_1.Utils.removeAllChildren(this.ePinnedLeftRow);
+        utils_1.Utils.removeAllChildren(this.ePinnedRightRow);
+        utils_1.Utils.removeAllChildren(this.eBodyRow);
+        // create main component if not already existing from previous refresh
+        if (!this.eGroupRow) {
+            this.eGroupRow = this.createGroupSpanningEntireRowCell(false);
+        }
+        var pinningLeft = this.columnController.isPinningLeft();
+        var pinningRight = this.columnController.isPinningRight();
+        // if pinning left, then main component goes into left and we pad centre, otherwise it goes into centre
+        if (pinningLeft) {
+            this.ePinnedLeftRow.appendChild(this.eGroupRow);
+            if (!this.eGroupRowPaddingCentre) {
+                this.eGroupRowPaddingCentre = this.createGroupSpanningEntireRowCell(true);
+            }
+            this.eBodyRow.appendChild(this.eGroupRowPaddingCentre);
         }
         else {
-            this.eBodyRow.appendChild(eGroupRow);
+            this.eBodyRow.appendChild(this.eGroupRow);
         }
-        if (this.pinningRight) {
-            var ePinnedRightPadding = this.createGroupSpanningEntireRowCell(true);
-            this.ePinnedRightRow.appendChild(ePinnedRightPadding);
+        // main component is never in right, but if pinning right, we put padding into the right
+        if (pinningRight) {
+            if (!this.eGroupRowPaddingRight) {
+                this.eGroupRowPaddingRight = this.createGroupSpanningEntireRowCell(true);
+            }
+            this.ePinnedRightRow.appendChild(this.eGroupRowPaddingRight);
         }
     };
     RenderedRow.prototype.createGroupSpanningEntireRowCell = function (padding) {
-        var eRow;
+        var eRow = document.createElement('span');
         // padding means we are on the right hand side of a pinned table, ie
         // in the main body.
+<<<<<<< HEAD
         eRow = document.createElement('span');
+=======
+>>>>>>> upstream/master
         if (!padding) {
             var cellRenderer = this.gridOptionsWrapper.getGroupRowRenderer();
             var cellRendererParams = this.gridOptionsWrapper.getGroupRowRendererParams();
@@ -365,6 +437,13 @@ var RenderedRow = (function () {
             };
             if (cellRendererParams) {
                 utils_1.Utils.assign(params, cellRendererParams);
+<<<<<<< HEAD
+=======
+            }
+            var cellComponent = this.cellRendererService.useCellRenderer(cellRenderer, eRow, params);
+            if (cellComponent && cellComponent.destroy) {
+                this.destroyFunctions.push(function () { return cellComponent.destroy(); });
+>>>>>>> upstream/master
             }
             this.cellRendererService.useCellRenderer(cellRenderer, eRow, params);
         }
@@ -380,6 +459,7 @@ var RenderedRow = (function () {
         if (this.gridOptionsWrapper.isAngularCompileRows()) {
             var newChildScope = this.parentScope.$new();
             newChildScope.data = data;
+            newChildScope.context = this.gridOptionsWrapper.getContext();
             return newChildScope;
         }
         else {
@@ -428,19 +508,20 @@ var RenderedRow = (function () {
     };
     RenderedRow.prototype.createRowContainer = function () {
         var _this = this;
-        var vRow = document.createElement('div');
-        vRow.addEventListener("click", this.onRowClicked.bind(this));
-        vRow.addEventListener("dblclick", function (event) {
+        var eRow = document.createElement('div');
+        eRow.addEventListener("click", this.onRowClicked.bind(this));
+        eRow.addEventListener("dblclick", function (event) {
             var agEvent = _this.createEvent(event, _this);
             _this.mainEventService.dispatchEvent(events_1.Events.EVENT_ROW_DOUBLE_CLICKED, agEvent);
         });
-        return vRow;
+        return eRow;
     };
     RenderedRow.prototype.onRowClicked = function (event) {
         var agEvent = this.createEvent(event, this);
         this.mainEventService.dispatchEvent(events_1.Events.EVENT_ROW_CLICKED, agEvent);
         // ctrlKey for windows, metaKey for Apple
         var multiSelectKeyPressed = event.ctrlKey || event.metaKey;
+        var shiftKeyPressed = event.shiftKey;
         // we do not allow selecting groups by clicking (as the click here expands the group)
         // so return if it's a group row
         if (this.rowNode.group) {
@@ -463,16 +544,16 @@ var RenderedRow = (function () {
         if (this.rowNode.isSelected()) {
             if (multiSelectKeyPressed) {
                 if (gridOptionsWrapper.isRowDeselection()) {
-                    this.rowNode.setSelected(false);
+                    this.rowNode.setSelectedParams({ newValue: false });
                 }
             }
             else {
                 // selected with no multi key, must make sure anything else is unselected
-                this.rowNode.setSelected(true, true);
+                this.rowNode.setSelectedParams({ newValue: true, clearSelection: true });
             }
         }
         else {
-            this.rowNode.setSelected(true, !multiSelectKeyPressed);
+            this.rowNode.setSelectedParams({ newValue: true, clearSelection: !multiSelectKeyPressed, rangeSelect: shiftKeyPressed });
         }
     };
     RenderedRow.prototype.getRowNode = function () {
@@ -485,7 +566,11 @@ var RenderedRow = (function () {
         if (!colIds) {
             return;
         }
+<<<<<<< HEAD
         var columnsToRefresh = this.columnController.getColumns(colIds);
+=======
+        var columnsToRefresh = this.columnController.getGridColumns(colIds);
+>>>>>>> upstream/master
         this.forEachRenderedCell(function (renderedCell) {
             var colForCel = renderedCell.getColumn();
             if (columnsToRefresh.indexOf(colForCel) >= 0) {

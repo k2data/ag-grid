@@ -4,11 +4,20 @@ export class Events {
     public static EVENT_COLUMN_EVERYTHING_CHANGED = 'columnEverythingChanged';
     public static EVENT_NEW_COLUMNS_LOADED = 'newColumnsLoaded';
 
+    /** The reduce flag was changed */
+    public static EVENT_COLUMN_PIVOT_MODE_CHANGED = 'columnPivotModeChanged';
+    
     /** A row group column was added, removed or order changed. */
-    public static EVENT_COLUMN_ROW_GROUP_CHANGE = 'columnRowGroupChanged';
+    public static EVENT_COLUMN_ROW_GROUP_CHANGED = 'columnRowGroupChanged';
+
+    /** A pivot column was added, removed or order changed. */
+    public static EVENT_COLUMN_PIVOT_CHANGED = 'columnPivotChanged';
+
+    /** The list of grid columns has changed. */
+    public static EVENT_GRID_COLUMNS_CHANGED = 'gridColumnsChanged';
 
     /** A value column was added, removed or agg function was changed. */
-    public static EVENT_COLUMN_VALUE_CHANGE = 'columnValueChanged';
+    public static EVENT_COLUMN_VALUE_CHANGED = 'columnValueChanged';
 
     /** A column was moved */
     public static EVENT_COLUMN_MOVED = 'columnMoved';
@@ -25,6 +34,12 @@ export class Events {
     /** One or more columns was resized. If just one, the column in the event is set. */
     public static EVENT_COLUMN_RESIZED = 'columnResized';
 
+    /** The list of displayed columns has changed, can result from columns open / close, column move, pivot, group, etc */
+    public static EVENT_DISPLAYED_COLUMNS_CHANGED = 'displayedColumnsChanged';
+
+    /** The list of virtual columns has changed, results from viewport changing */
+    public static EVENT_VIRTUAL_COLUMNS_CHANGED = 'virtualColumnsChanged';
+
     /** A row group was opened / closed */
     public static EVENT_ROW_GROUP_OPENED = 'rowGroupOpened';
 
@@ -33,6 +48,17 @@ export class Events {
     public static EVENT_FLOATING_ROW_DATA_CHANGED = 'floatingRowDataChanged';
 
     public static EVENT_RANGE_SELECTION_CHANGED = 'rangeSelectionChanged';
+
+    public static EVENT_COLUMN_ROW_GROUP_ADD_REQUEST = 'columnRowGroupAddRequest';
+    public static EVENT_COLUMN_ROW_GROUP_REMOVE_REQUEST = 'columnRowGroupRemoveRequest';
+
+    public static EVENT_COLUMN_PIVOT_ADD_REQUEST = 'columnPivotAddRequest';
+    public static EVENT_COLUMN_PIVOT_REMOVE_REQUEST = 'columnPivotRemoveRequest';
+
+    public static EVENT_COLUMN_VALUE_ADD_REQUEST = 'columnValueAddRequest';
+    public static EVENT_COLUMN_VALUE_REMOVE_REQUEST = 'columnValueRemoveRequest';
+
+    public static EVENT_COLUMN_AGG_FUNC_CHANGE_REQUEST = 'columnAggFuncChangeRequest';
 
     public static EVENT_FLASH_CELLS = 'clipboardPaste';
     public static EVENT_HEADER_HEIGHT_CHANGED = 'headerHeightChanged';
@@ -57,4 +83,6 @@ export class Events {
     public static EVENT_GRID_READY = 'gridReady';
     public static EVENT_GRID_SIZE_CHANGED = 'gridSizeChanged';
     public static EVENT_VIEWPORT_CHANGED = 'viewportChanged';
+    public static EVENT_DRAG_STARTED = 'dragStarted';
+    public static EVENT_DRAG_STOPPED = 'dragStopped';
 }

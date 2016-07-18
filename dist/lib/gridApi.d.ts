@@ -1,18 +1,25 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { CsvExportParams } from "./csvCreator";
 import { MasterSlaveService } from "./masterSlaveService";
+<<<<<<< HEAD
 import { ColDef } from "./entities/colDef";
+=======
+import { ColDef, IAggFunc } from "./entities/colDef";
+>>>>>>> upstream/master
 import { RowNode } from "./entities/rowNode";
 import { Column } from "./entities/column";
 import { IRowModel } from "./interfaces/iRowModel";
 import { RangeSelection, AddRangeSelectionParams } from "./interfaces/iRangeController";
 import { GridCell } from "./entities/gridCell";
 import { IViewportDatasource } from "./interfaces/iViewportDatasource";
+<<<<<<< HEAD
 import { ICellRendererFunc, ICellRenderer } from "./rendering/cellRenderers/iCellRenderer";
 import { ICellEditor } from "./rendering/cellEditors/iCellEditor";
+=======
+>>>>>>> upstream/master
 export declare class GridApi {
     private csvCreator;
     private gridCore;
@@ -34,6 +41,10 @@ export declare class GridApi {
     private focusedCellController;
     private rangeController;
     private clipboardService;
+<<<<<<< HEAD
+=======
+    private aggFuncService;
+>>>>>>> upstream/master
     private menuFactory;
     private cellRendererFactory;
     private cellEditorFactory;
@@ -55,6 +66,7 @@ export declare class GridApi {
     refreshCells(rowNodes: RowNode[], colIds: string[], animate?: boolean): void;
     rowDataChanged(rows: any): void;
     refreshView(): void;
+    setFunctionsReadOnly(readOnly: boolean): void;
     softRefreshView(): void;
     refreshGroupRows(): void;
     refreshHeader(): void;
@@ -63,6 +75,10 @@ export declare class GridApi {
     isQuickFilterPresent(): boolean;
     getModel(): IRowModel;
     onGroupExpandedOrCollapsed(refreshFromIndex?: any): void;
+<<<<<<< HEAD
+=======
+    refreshInMemoryRowModel(): any;
+>>>>>>> upstream/master
     expandAll(): void;
     collapseAll(): void;
     addVirtualRowListener(eventName: string, rowIndex: number, callback: Function): void;
@@ -71,7 +87,7 @@ export declare class GridApi {
     selectIndex(index: any, tryMulti: any, suppressEvents: any): void;
     deselectIndex(index: number, suppressEvents?: boolean): void;
     selectNode(node: RowNode, tryMulti?: boolean, suppressEvents?: boolean): void;
-    deselectNode(node: any, suppressEvents?: boolean): void;
+    deselectNode(node: RowNode, suppressEvents?: boolean): void;
     selectAll(): void;
     deselectAll(): void;
     recomputeAggregates(): void;
@@ -91,6 +107,7 @@ export declare class GridApi {
     ensureColumnVisible(key: string | Column | ColDef): void;
     ensureIndexVisible(index: any): void;
     ensureNodeVisible(comparator: any): void;
+    forEachLeafNode(callback: (rowNode: RowNode) => void): void;
     forEachNode(callback: (rowNode: RowNode) => void): void;
     forEachNodeAfterFilter(callback: (rowNode: RowNode) => void): void;
     forEachNodeAfterFilterAndSort(callback: (rowNode: RowNode) => void): void;
@@ -128,10 +145,19 @@ export declare class GridApi {
     copySelectedRangeDown(): void;
     showColumnMenuAfterButtonClick(colKey: string | Column | ColDef, buttonElement: HTMLElement): void;
     showColumnMenuAfterMouseClick(colKey: string | Column | ColDef, mouseEvent: MouseEvent): void;
+<<<<<<< HEAD
     addCellRenderer(key: string, cellRenderer: {
         new (): ICellRenderer;
     } | ICellRendererFunc): void;
     addCellEditor(key: string, cellEditor: {
         new (): ICellEditor;
     }): void;
+=======
+    stopEditing(cancel?: boolean): void;
+    addAggFunc(key: string, aggFunc: IAggFunc): void;
+    addAggFuncs(aggFuncs: {
+        [key: string]: IAggFunc;
+    }): void;
+    clearAggFuncs(): void;
+>>>>>>> upstream/master
 }

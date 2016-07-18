@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -62,9 +62,8 @@ var ComponentUtil = (function () {
         }
     };
     // change this method, the caller should know if it's initialised or not, plus 'initialised'
-    // is not relevant for all component types.
-    // maybe pass in the api and columnApi instead???
-    ComponentUtil.processOnChange = function (changes, gridOptions, api) {
+    // is not relevant for all component types. maybe pass in the api and columnApi instead???
+    ComponentUtil.processOnChange = function (changes, gridOptions, api, columnApi) {
         //if (!component._initialised || !changes) { return; }
         if (!changes) {
             return;
@@ -97,7 +96,7 @@ var ComponentUtil = (function () {
             }
         });
         if (changes.showToolPanel) {
-            api.showToolPanel(changes.showToolPanel.currentValue);
+            api.showToolPanel(ComponentUtil.toBoolean(changes.showToolPanel.currentValue));
         }
         if (changes.quickFilterText) {
             api.setQuickFilter(changes.quickFilterText.currentValue);
@@ -118,7 +117,10 @@ var ComponentUtil = (function () {
             api.setDatasource(changes.datasource.currentValue);
         }
         if (changes.headerHeight) {
-            api.setHeaderHeight(changes.headerHeight.currentValue);
+            api.setHeaderHeight(ComponentUtil.toNumber(changes.headerHeight.currentValue));
+        }
+        if (changes.pivotMode) {
+            columnApi.setPivotMode(ComponentUtil.toBoolean(changes.pivotMode.currentValue));
         }
     };
     ComponentUtil.toBoolean = function (value) {
@@ -152,17 +154,26 @@ var ComponentUtil = (function () {
         'overlayNoRowsTemplate', 'headerCellTemplate', 'quickFilterText', 'rowModelType'];
     ComponentUtil.OBJECT_PROPERTIES = [
         'rowStyle', 'context', 'groupColumnDef', 'localeText', 'icons', 'datasource', 'viewportDatasource',
+<<<<<<< HEAD
         'groupRowRendererParams', 'cellRenderers', 'cellEditors'
+=======
+        'groupRowRendererParams', 'aggFuncs'
+>>>>>>> upstream/master
     ];
     ComponentUtil.ARRAY_PROPERTIES = [
         'slaveGrids', 'rowData', 'floatingTopRowData', 'floatingBottomRowData', 'columnDefs'
     ];
     ComponentUtil.NUMBER_PROPERTIES = [
         'rowHeight', 'rowBuffer', 'colWidth', 'headerHeight', 'groupDefaultExpanded',
+<<<<<<< HEAD
         'minColWidth', 'maxColWidth', 'viewportRowModelPageSize', 'viewportRowModelBufferSize'
+=======
+        'minColWidth', 'maxColWidth', 'viewportRowModelPageSize', 'viewportRowModelBufferSize',
+        'layoutInterval'
+>>>>>>> upstream/master
     ];
     ComponentUtil.BOOLEAN_PROPERTIES = [
-        'toolPanelSuppressGroups', 'toolPanelSuppressValues',
+        'toolPanelSuppressRowGroups', 'toolPanelSuppressValues', 'toolPanelSuppressPivots', 'toolPanelSuppressPivotMode',
         'suppressRowClickSelection', 'suppressCellSelection', 'suppressHorizontalScroll', 'debug',
         'enableColResize', 'enableCellExpressions', 'enableSorting', 'enableServerSideSorting',
         'enableFilter', 'enableServerSideFilter', 'angularCompileRows', 'angularCompileFilters',
@@ -172,14 +183,26 @@ var ComponentUtil = (function () {
         'singleClickEdit', 'suppressLoadingOverlay', 'suppressNoRowsOverlay', 'suppressAutoSize',
         'suppressParentsInRowNodes', 'showToolPanel', 'suppressColumnMoveAnimation', 'suppressMovableColumns',
         'suppressFieldDotNotation', 'enableRangeSelection', 'suppressEnterprise', 'rowGroupPanelShow',
+        'pivotPanelShow',
         'suppressContextMenu', 'suppressMenuFilterPanel', 'suppressMenuMainPanel', 'suppressMenuColumnPanel',
+<<<<<<< HEAD
         'enableStatusBar', 'rememberGroupStateWhenNewData', 'enableCellChangeFlash'
+=======
+        'enableStatusBar', 'rememberGroupStateWhenNewData', 'enableCellChangeFlash', 'suppressDragLeaveHidesColumns',
+        'suppressMiddleClickScrolls', 'suppressPreventDefaultOnMouseWheel', 'suppressUseColIdForGroups',
+        'suppressCopyRowsToClipboard', 'pivotMode', 'suppressAggFuncInHeader', 'suppressColumnVirtualisation',
+        'suppressFocusAfterRefresh', 'functionsPassive', 'functionsReadOnly'
+>>>>>>> upstream/master
     ];
     ComponentUtil.FUNCTION_PROPERTIES = ['headerCellRenderer', 'localeTextFunc', 'groupRowInnerRenderer',
-        'groupRowRenderer', 'groupAggFunction', 'isScrollLag', 'isExternalFilterPresent', 'getRowHeight',
+        'groupRowRenderer', 'isScrollLag', 'isExternalFilterPresent', 'getRowHeight',
         'doesExternalFilterPass', 'getRowClass', 'getRowStyle', 'getHeaderCellTemplate', 'traverseNode',
         'getContextMenuItems', 'getMainMenuItems', 'processRowPostCreate', 'processCellForClipboard',
+<<<<<<< HEAD
         'getNodeChildDetails'];
+=======
+        'getNodeChildDetails', 'groupRowAggNodes'];
+>>>>>>> upstream/master
     ComponentUtil.ALL_PROPERTIES = ComponentUtil.ARRAY_PROPERTIES
         .concat(ComponentUtil.OBJECT_PROPERTIES)
         .concat(ComponentUtil.STRING_PROPERTIES)

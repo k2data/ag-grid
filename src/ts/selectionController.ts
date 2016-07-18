@@ -23,6 +23,11 @@ export class SelectionController {
     private selectedNodes: {[key: string]: RowNode};
     private logger: Logger;
 
+    // used for shift selection, so we know where to start the range selection from
+    private lastSelectedNode: RowNode;
+
+    private groupSelectsChildren: boolean;
+
     private setBeans(@Qualifier('loggerFactory') loggerFactory: LoggerFactory) {
         this.logger = loggerFactory.create('SelectionController');
         this.reset();
@@ -37,7 +42,16 @@ export class SelectionController {
 
     @PostConstruct
     public init(): void {
+        this.groupSelectsChildren = this.gridOptionsWrapper.isGroupSelectsChildren();
         this.eventService.addEventListener(Events.EVENT_ROW_SELECTED, this.onRowSelected.bind(this));
+    }
+
+    public setLastSelectedNode(rowNode: RowNode): void {
+        this.lastSelectedNode = rowNode;
+    }
+
+    public getLastSelectedNode(): RowNode {
+        return this.lastSelectedNode;
     }
 
     public getSelectedNodes() {
@@ -88,15 +102,26 @@ export class SelectionController {
     }
 
     public clearOtherNodes(rowNodeToKeepSelected: RowNode): void {
+        var groupsToRefresh: any = {};
         _.iterateObject(this.selectedNodes, (key: string, otherRowNode: RowNode)=> {
             if (otherRowNode && otherRowNode.id !== rowNodeToKeepSelected.id) {
-                this.selectedNodes[otherRowNode.id].setSelected(false, false, true);
+                this.selectedNodes[otherRowNode.id].setSelectedParams({newValue: false, clearSelection: false, tailingNodeInSequence: true});
+                if (this.groupSelectsChildren && otherRowNode.parent) {
+                    groupsToRefresh[otherRowNode.parent.id] = otherRowNode.parent;
+                }
             }
+        });
+        _.iterateObject(groupsToRefresh, (key: string, group: RowNode) => {
+            group.calculateSelectedFromChildren();
         });
     }
 
     private onRowSelected(event: any): void {
         var rowNode = event.node;
+
+        // we do not store the group rows when the groups select children
+        if (this.groupSelectsChildren && rowNode.group) { return; }
+
         if (rowNode.isSelected()) {
             this.selectedNodes[rowNode.id] = rowNode;
         } else {
@@ -114,6 +139,7 @@ export class SelectionController {
     public reset(): void {
         this.logger.log('reset');
         this.selectedNodes = {};
+        this.lastSelectedNode = null;
     }
 
     // returns a list of all nodes at 'best cost' - a feature to be used
@@ -183,38 +209,39 @@ export class SelectionController {
         // that we pick up, however it's good to clean it down, as we are still
         // left with entries pointing to 'undefined'
         this.selectedNodes = {};
+        this.eventService.dispatchEvent(Events.EVENT_SELECTION_CHANGED);
     }
 
     public selectAllRowNodes() {
         if (this.rowModel.getType()!==Constants.ROW_MODEL_TYPE_NORMAL) {
-            throw 'selectAll only available with norma row model, ie not virtual pagination';
+            throw 'selectAll only available with normal row model, ie not virtual pagination';
         }
         this.rowModel.forEachNode( (rowNode: RowNode) => {
-            rowNode.setSelected(true, false, true);
+            rowNode.selectThisNode(true);
         });
-        this.eventService.dispatchEvent(Events.EVENT_SELECTION_CHANGED)
+        this.eventService.dispatchEvent(Events.EVENT_SELECTION_CHANGED);
     }
 
     // Deprecated method
-    public selectNode(rowNode: RowNode, tryMulti: boolean, suppressEvents?: boolean) {
-        rowNode.setSelected(true, !tryMulti, suppressEvents);
+    public selectNode(rowNode: RowNode, tryMulti: boolean) {
+        rowNode.setSelectedParams({newValue: true, clearSelection: !tryMulti});
     }
 
     // Deprecated method
-    public deselectIndex(rowIndex: number, suppressEvents: boolean = false) {
+    public deselectIndex(rowIndex: number) {
         var node = this.rowModel.getRow(rowIndex);
-        this.deselectNode(node, suppressEvents);
+        this.deselectNode(node);
     }
 
     // Deprecated method
-    public deselectNode(rowNode: RowNode, suppressEvents: boolean = false) {
-        rowNode.setSelected(false, false, suppressEvents);
+    public deselectNode(rowNode: RowNode) {
+        rowNode.setSelectedParams({newValue: false, clearSelection: false});
     }
 
     // Deprecated method
-    public selectIndex(index: any, tryMulti: boolean, suppressEvents: boolean = false) {
+    public selectIndex(index: any, tryMulti: boolean) {
         var node = this.rowModel.getRow(index);
-        this.selectNode(node, tryMulti, suppressEvents);
+        this.selectNode(node, tryMulti);
     }
 
 }

@@ -6,7 +6,7 @@ import {RowRenderer} from "../rendering/rowRenderer";
 import {FloatingRowModel} from "../rowControllers/floatingRowModel";
 import {BorderLayout} from "../layout/borderLayout";
 import {Logger, LoggerFactory} from "../logger";
-import {Bean, Qualifier, Autowired, PostConstruct, Optional} from "../context/context";
+import {Bean, Qualifier, Autowired, PostConstruct, Optional, PreDestroy} from "../context/context";
 import {EventService} from "../eventService";
 import {Events} from "../events";
 import {ColumnChangeEvent} from "../columnChangeEvent";
@@ -104,13 +104,17 @@ export class GridPanel {
     @Autowired('csvCreator') private csvCreator: CsvCreator;
     @Autowired('mouseEventService') private mouseEventService: MouseEventService;
     @Autowired('focusedCellController') private focusedCellController: FocusedCellController;
+    @Autowired('$scope') private $scope: any;
 
     private layout: BorderLayout;
     private logger: Logger;
 
     private forPrint: boolean;
     private scrollWidth: number;
+
+    private requestAnimationFrameExists = typeof requestAnimationFrame === 'function';
     private scrollLagCounter = 0;
+    private scrollLagTicking = false;
 
     private eBodyViewport: HTMLElement;
     private eRoot: HTMLElement;
@@ -147,12 +151,21 @@ export class GridPanel {
 
     private animationThreadCount = 0;
 
+    private destroyFunctions: Function[] = [];
+
+    private useScrollLag: boolean;
+
     public agWire(@Qualifier('loggerFactory') loggerFactory: LoggerFactory) {
         // makes code below more readable if we pull 'forPrint' out
         this.forPrint = this.gridOptionsWrapper.isForPrint();
         this.scrollWidth = _.getScrollbarWidth();
         this.logger = loggerFactory.create('GridPanel');
         this.findElements();
+    }
+
+    @PreDestroy
+    private destroy() {
+        this.destroyFunctions.forEach(func => func());
     }
 
     private onRowDataChanged(): void {
@@ -172,6 +185,7 @@ export class GridPanel {
 
         this.addEventListeners();
         this.addDragListeners();
+        this.useScrollLag = this.isUseScrollLag();
 
         this.layout = new BorderLayout({
             overlays: {
@@ -186,6 +200,7 @@ export class GridPanel {
         this.layout.addSizeChangeListener(this.sizeHeaderAndBody.bind(this));
 
         this.addScrollListener();
+        this.setLeftAndRightBounds();
 
         if (this.gridOptionsWrapper.isSuppressHorizontalScroll()) {
             this.eBodyViewport.style.overflowX = 'hidden';
@@ -201,6 +216,35 @@ export class GridPanel {
         this.disableBrowserDragging();
         this.addShortcutKeyListeners();
         this.addCellListeners();
+
+        if (this.$scope) {
+            this.addAngularApplyCheck();
+        }
+    }
+
+    private addAngularApplyCheck(): void {
+        // this makes sure if we queue up requests, we only execute oe
+        var applyTriggered = false;
+
+        var listener = ()=> {
+            // only need to do one apply at a time
+            if (applyTriggered) { return; }
+            applyTriggered = true; // mark 'need apply' to true
+            setTimeout( ()=> {
+                applyTriggered = false;
+                this.$scope.$apply();
+            }, 0);
+        };
+
+        // these are the events we need to do an apply after - these are the ones that can end up
+        // with columns added or removed
+        this.eventService.addEventListener(Events.EVENT_DISPLAYED_COLUMNS_CHANGED, listener);
+        this.eventService.addEventListener(Events.EVENT_VIRTUAL_COLUMNS_CHANGED, listener);
+
+        this.destroyFunctions.push( ()=> {
+            this.eventService.removeEventListener(Events.EVENT_DISPLAYED_COLUMNS_CHANGED, listener);
+            this.eventService.removeEventListener(Events.EVENT_VIRTUAL_COLUMNS_CHANGED, listener);
+        });
     }
 
     // if we do not do this, then the user can select a pic in the grid (eg an image in a custom cell renderer)
@@ -215,14 +259,8 @@ export class GridPanel {
     }
 
     private addEventListeners(): void {
-        this.eventService.addEventListener(Events.EVENT_COLUMN_EVERYTHING_CHANGED, this.onColumnsChanged.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_GROUP_OPENED, this.onColumnsChanged.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_MOVED, this.onColumnsChanged.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_ROW_GROUP_CHANGE, this.onColumnsChanged.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_RESIZED, this.onColumnsChanged.bind(this));
-        //this.eventService.addEventListener(Events.EVENT_COLUMN_VALUE_CHANGE, this.onColumnsChanged.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_VISIBLE, this.onColumnsChanged.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_PINNED, this.onColumnsChanged.bind(this));
+        this.eventService.addEventListener(Events.EVENT_DISPLAYED_COLUMNS_CHANGED, this.onDisplayedColumnsChanged.bind(this));
+        this.eventService.addEventListener(Events.EVENT_COLUMN_RESIZED, this.onColumnResized.bind(this));
 
         this.eventService.addEventListener(Events.EVENT_FLOATING_ROW_DATA_CHANGED, this.sizeHeaderAndBody.bind(this));
         this.eventService.addEventListener(Events.EVENT_HEADER_HEIGHT_CHANGED, this.sizeHeaderAndBody.bind(this));
@@ -266,10 +304,20 @@ export class GridPanel {
 
     private processMouseEvent(eventName: string, mouseEvent: MouseEvent, eventSource: HTMLElement): void {
         var cell = this.mouseEventService.getCellForMouseEvent(mouseEvent);
+
         if (_.exists(cell)) {
             //console.log(`row = ${cell.rowIndex}, floating = ${floating}`);
             this.rowRenderer.onMouseEvent(eventName, mouseEvent, eventSource, cell);
         }
+
+        // if we don't do this, then middle click will never result in a 'click' event, as 'mousedown'
+        // will be consumed by the browser to mean 'scroll' (as you can scroll with the middle mouse
+        // button in the browser). so this property allows the user to receive middle button clicks if
+        // they want.
+        if (this.gridOptionsWrapper.isSuppressMiddleClickScrolls() && mouseEvent.which === 2) {
+            mouseEvent.preventDefault();
+        }
+
     }
 
     private addShortcutKeyListeners(): void {
@@ -489,7 +537,10 @@ export class GridPanel {
     }
 
     public ensureColumnVisible(key: any) {
-        var column = this.columnController.getColumn(key);
+        var column = this.columnController.getGridColumn(key);
+
+        if (!column) { return; }
+
         if (column.isPinned()) {
             console.warn('calling ensureIndexVisible on a '+column.getPinned()+' pinned column doesn\'t make sense for column ' + column.getColId());
             return;
@@ -737,24 +788,25 @@ export class GridPanel {
             targetPanel.scrollTop = newTopPosition;
         }
 
-        // if we don't prevent default, then the whole browser will scroll also as well as the grid
-        event.preventDefault();
+        // allow the option to pass mouse wheel events ot the browser
+        // https://github.com/ceolter/ag-grid/issues/800
+        // in the future, this should be tied in with 'forPrint' option, or have an option 'no vertical scrolls'
+        if (!this.gridOptionsWrapper.isSuppressPreventDefaultOnMouseWheel()) {
+            // if we don't prevent default, then the whole browser will scroll also as well as the grid
+            event.preventDefault();
+        }
+
         return false;
     }
 
-    public onColumnsChanged(event: ColumnChangeEvent) {
+    public onColumnResized(): void {
+        this.setWidthsOfContainers();
+    }
 
-        if (event.isContainerWidthImpacted()) {
-            this.setWidthsOfContainers();
-        }
-
-        if (event.isPinnedPanelVisibilityImpacted()) {
-            this.showPinnedColContainersIfNeeded();
-        }
-
-        if (event.getType()===Events.EVENT_COLUMN_EVERYTHING_CHANGED) {
-            this.sizeHeaderAndBody();
-        }
+    public onDisplayedColumnsChanged(): void {
+        this.setWidthsOfContainers();
+        this.showPinnedColContainersIfNeeded();
+        this.sizeHeaderAndBody();
     }
 
     private setWidthsOfContainers(): void {
@@ -784,7 +836,6 @@ export class GridPanel {
         this.ePinnedRightFloatingTop.style.width = pinnedRightWidth;
         this.eBodyViewportWrapper.style.marginRight = pinnedRightWidth;
     }
-
 
     private showPinnedColContainersIfNeeded() {
         // no need to do this if not using scrolls
@@ -819,6 +870,8 @@ export class GridPanel {
             // out naturally by the browser. it whatever size that's needed to fit.
             return;
         }
+
+        this.setLeftAndRightBounds();
 
         var heightOfContainer = this.layout.getCentreHeight();
         if (!heightOfContainer) {
@@ -891,37 +944,46 @@ export class GridPanel {
             return;
         }
 
-        this.eBodyViewport.addEventListener('scroll', () => {
-
+        var that = this;
+        function onBodyViewportScroll() {
             // we are always interested in horizontal scrolls of the body
-            var newLeftPosition = this.eBodyViewport.scrollLeft;
-            if (newLeftPosition !== this.lastLeftPosition) {
-                this.lastLeftPosition = newLeftPosition;
-                this.horizontallyScrollHeaderCenterAndFloatingCenter();
-                this.masterSlaveService.fireHorizontalScrollEvent(newLeftPosition);
+            var newLeftPosition = that.eBodyViewport.scrollLeft;
+            if (newLeftPosition !== that.lastLeftPosition) {
+                that.lastLeftPosition = newLeftPosition;
+                that.horizontallyScrollHeaderCenterAndFloatingCenter();
+                that.masterSlaveService.fireHorizontalScrollEvent(newLeftPosition);
+                that.setLeftAndRightBounds();
             }
 
             // if we are pinning to the right, then it's the right pinned container
             // that has the scroll.
-            if (!this.columnController.isPinningRight()) {
-                var newTopPosition = this.eBodyViewport.scrollTop;
-                if (newTopPosition !== this.lastTopPosition) {
-                    this.lastTopPosition = newTopPosition;
-                    this.verticallyScrollLeftPinned(newTopPosition);
-                    this.requestDrawVirtualRows();
+            if (!that.columnController.isPinningRight()) {
+                var newTopPosition = that.eBodyViewport.scrollTop;
+                if (newTopPosition !== that.lastTopPosition) {
+                    that.lastTopPosition = newTopPosition;
+                    that.verticallyScrollLeftPinned(newTopPosition);
+                    that.rowRenderer.drawVirtualRows();
                 }
             }
-        });
+        }
 
-        this.ePinnedRightColsViewport.addEventListener('scroll', () => {
-            var newTopPosition = this.ePinnedRightColsViewport.scrollTop;
-            if (newTopPosition !== this.lastTopPosition) {
-                this.lastTopPosition = newTopPosition;
-                this.verticallyScrollLeftPinned(newTopPosition);
-                this.verticallyScrollBody(newTopPosition);
-                this.requestDrawVirtualRows();
+        function onPinnedRightScroll() {
+            var newTopPosition = that.ePinnedRightColsViewport.scrollTop;
+            if (newTopPosition !== that.lastTopPosition) {
+                that.lastTopPosition = newTopPosition;
+                that.verticallyScrollLeftPinned(newTopPosition);
+                that.verticallyScrollBody(newTopPosition);
+                that.rowRenderer.drawVirtualRows();
             }
-        });
+        }
+
+        if (this.useScrollLag) {
+            this.eBodyViewport.addEventListener('scroll', this.debounce.bind(this,onBodyViewportScroll) );
+            this.ePinnedRightColsViewport.addEventListener('scroll', this.debounce.bind(this,onPinnedRightScroll) );
+        } else {
+            this.eBodyViewport.addEventListener('scroll', onBodyViewportScroll);
+            this.ePinnedRightColsViewport.addEventListener('scroll', onPinnedRightScroll);
+        }
 
         // this means the pinned panel was moved, which can only
         // happen when the user is navigating in the pinned container
@@ -932,32 +994,46 @@ export class GridPanel {
         });
     }
 
-    private requestDrawVirtualRows() {
+    private setLeftAndRightBounds(): void {
+        if (this.gridOptionsWrapper.isForPrint()) { return; }
+        var scrollPosition = this.eBodyViewport.scrollLeft;
+        var totalWidth = this.eBody.offsetWidth;
+        this.columnController.setWidthAndScrollPosition(totalWidth, scrollPosition);
+    }
+
+    private isUseScrollLag(): boolean {
         // if we are in IE or Safari, then we only redraw if there was no scroll event
         // in the 50ms following this scroll event. without this, these browsers have
         // a bad scrolling feel, where the redraws clog the scroll experience
         // (makes the scroll clunky and sticky). this method is like throttling
         // the scroll events.
-        var useScrollLag: boolean;
         // let the user override scroll lag option
         if (this.gridOptionsWrapper.isSuppressScrollLag()) {
-            useScrollLag = false;
+            return false;
         } else if (this.gridOptionsWrapper.getIsScrollLag()) {
-            useScrollLag = this.gridOptionsWrapper.getIsScrollLag()();
+            return this.gridOptionsWrapper.getIsScrollLag()();
         } else {
-            useScrollLag = _.isBrowserIE() || _.isBrowserSafari();
+            return _.isBrowserIE() || _.isBrowserSafari();
         }
-        if (useScrollLag) {
+    }
+
+    private debounce(callback: Function): void {
+        if (this.requestAnimationFrameExists && _.isBrowserSafari()) {
+            if (!this.scrollLagTicking) {
+                this.scrollLagTicking = true;
+                requestAnimationFrame( ()=> {
+                    callback();
+                    this.scrollLagTicking = false;
+                });
+            }
+        } else {
             this.scrollLagCounter++;
             var scrollLagCounterCopy = this.scrollLagCounter;
             setTimeout( ()=> {
                 if (this.scrollLagCounter === scrollLagCounterCopy) {
-                    this.rowRenderer.drawVirtualRows();
+                    callback();
                 }
             }, 50);
-        // all other browsers, afaik, are fine, so just do the redraw
-        } else {
-            this.rowRenderer.drawVirtualRows();
         }
     }
 

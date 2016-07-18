@@ -1,24 +1,13 @@
-import {Utils as _} from '../utils';
+import {Utils as _} from "../utils";
 import {SvgFactory} from "../svgFactory";
 import {GridOptionsWrapper} from "../gridOptionsWrapper";
 import {Column} from "../entities/column";
-import {Bean} from "../context/context";
-import {Qualifier} from "../context/context";
-import {Autowired} from "../context/context";
+import {Bean, Autowired} from "../context/context";
 
 var svgFactory = SvgFactory.getInstance();
 
 @Bean('headerTemplateLoader')
 export class HeaderTemplateLoader {
-
-    // used when cell is dragged
-    public static HEADER_CELL_DND_TEMPLATE =
-        '<div class="ag-header-cell ag-header-cell-ghost">' +
-        '  <span id="eGhostIcon" class="ag-header-cell-ghost-icon ag-shake-left-to-right"></span>' +
-        '  <div id="agHeaderCellLabel" class="ag-header-cell-label">' +
-        '    <span id="agText" class="ag-header-cell-text"></span>' +
-        '  </div>' +
-        '</div>';
 
     private static HEADER_CELL_TEMPLATE =
         '<div class="ag-header-cell">' +
@@ -46,7 +35,7 @@ export class HeaderTemplateLoader {
 
         // option 1 - see if user provided a template in colDef
         var userProvidedTemplate = column.getColDef().headerCellTemplate;
-        if (typeof userProvidedTemplate === 'function') { // and if they did, and it's a funciton, execute it
+        if (typeof userProvidedTemplate === 'function') { // and if they did, and it's a function, execute it
             var colDefFunc = (<(params: any) => string> userProvidedTemplate);
             userProvidedTemplate = colDefFunc(params);
         }
@@ -90,7 +79,7 @@ export class HeaderTemplateLoader {
         return eTemplate;
     }
 
-    private addInIcon(eTemplate: HTMLElement, iconName: string, cssSelector: string, column: Column, defaultIconFactory: () => Node): void {
+    private addInIcon(eTemplate: HTMLElement, iconName: string, cssSelector: string, column: Column, defaultIconFactory: () => HTMLElement): void {
         var eIcon = _.createIconNoSpan(iconName, this.gridOptionsWrapper, column, defaultIconFactory);
         eTemplate.querySelector(cssSelector).appendChild(eIcon);
     }

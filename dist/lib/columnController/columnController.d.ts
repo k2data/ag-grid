@@ -1,13 +1,16 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { ColumnGroup } from "../entities/columnGroup";
 import { Column } from "../entities/column";
-import { ColDef } from "../entities/colDef";
+import { ColDef, AbstractColDef, ColGroupDef } from "../entities/colDef";
 import { ColumnGroupChild } from "../entities/columnGroupChild";
 import { OriginalColumnGroupChild } from "../entities/originalColumnGroupChild";
+<<<<<<< HEAD
 import { AbstractColDef } from "../entities/colDef";
+=======
+>>>>>>> upstream/master
 export declare class ColumnApi {
     private _columnController;
     sizeColumnsToFit(gridWidth: any): void;
@@ -16,7 +19,7 @@ export declare class ColumnApi {
     getDisplayNameForCol(column: any): string;
     getColumn(key: any): Column;
     setColumnState(columnState: any): boolean;
-    getColumnState(): [any];
+    getColumnState(): any[];
     resetColumnState(): void;
     isPinning(): boolean;
     isPinningLeft(): boolean;
@@ -28,64 +31,115 @@ export declare class ColumnApi {
     setColumnPinned(key: Column | ColDef | String, pinned: string): void;
     setColumnsPinned(keys: (Column | ColDef | String)[], pinned: string): void;
     getAllColumns(): Column[];
+    getAllGridColumns(): Column[];
     getDisplayedLeftColumns(): Column[];
     getDisplayedCenterColumns(): Column[];
     getDisplayedRightColumns(): Column[];
     getAllDisplayedColumns(): Column[];
-    getRowGroupColumns(): Column[];
-    getValueColumns(): Column[];
     moveColumn(fromIndex: number, toIndex: number): void;
     moveRowGroupColumn(fromIndex: number, toIndex: number): void;
-    setColumnAggFunction(column: Column, aggFunc: string): void;
+    setColumnAggFunct(column: Column, aggFunc: string): void;
     setColumnWidth(key: Column | string | ColDef, newWidth: number, finished?: boolean): void;
+<<<<<<< HEAD
     removeValueColumn(column: Column): void;
     addValueColumn(column: Column): void;
+=======
+    setPivotMode(pivotMode: boolean): void;
+    isPivotMode(): boolean;
+    getSecondaryPivotColumn(pivotKeys: string[], valueColKey: Column | ColDef | String): Column;
+    getAggregationColumns(): Column[];
+    removeAggregationColumn(colKey: (Column | ColDef | String)): void;
+    removeAggregationColumns(colKeys: (Column | ColDef | String)[]): void;
+    addAggregationColumn(colKey: (Column | ColDef | String)): void;
+    addAggregationColumns(colKeys: (Column | ColDef | String)[]): void;
+>>>>>>> upstream/master
     setRowGroupColumns(colKeys: (Column | ColDef | String)[]): void;
     removeRowGroupColumn(colKey: Column | ColDef | String): void;
     removeRowGroupColumns(colKeys: (Column | ColDef | String)[]): void;
     addRowGroupColumn(colKey: Column | ColDef | String): void;
     addRowGroupColumns(colKeys: (Column | ColDef | String)[]): void;
+<<<<<<< HEAD
+=======
+    getRowGroupColumns(): Column[];
+    setPivotColumns(colKeys: (Column | ColDef | String)[]): void;
+    removePivotColumn(colKey: Column | ColDef | String): void;
+    removePivotColumns(colKeys: (Column | ColDef | String)[]): void;
+    addPivotColumn(colKey: Column | ColDef | String): void;
+    addPivotColumns(colKeys: (Column | ColDef | String)[]): void;
+    getPivotColumns(): Column[];
+>>>>>>> upstream/master
     getLeftDisplayedColumnGroups(): ColumnGroupChild[];
     getCenterDisplayedColumnGroups(): ColumnGroupChild[];
     getRightDisplayedColumnGroups(): ColumnGroupChild[];
     getAllDisplayedColumnGroups(): ColumnGroupChild[];
     autoSizeColumn(key: Column | ColDef | String): void;
     autoSizeColumns(keys: (Column | ColDef | String)[]): void;
+    setSecondaryColumns(colDefs: (ColDef | ColGroupDef)[]): void;
     columnGroupOpened(group: ColumnGroup | string, newValue: boolean): void;
     hideColumns(colIds: any, hide: any): void;
     hideColumn(colId: any, hide: any): void;
     setState(columnState: any): boolean;
-    getState(): [any];
+    getState(): any[];
     resetState(): void;
+    getValueColumns(): Column[];
+    removeValueColumn(column: Column): void;
+    addValueColumn(column: Column): void;
+    setColumnAggFunction(column: Column, aggFunc: string): void;
 }
 export declare class ColumnController {
     private gridOptionsWrapper;
-    private selectionRendererFactory;
     private expressionService;
     private balancedColumnTreeBuilder;
     private displayedGroupCreator;
     private autoWidthCalculator;
-    private valueColumns;
     private eventService;
     private columnUtils;
     private gridPanel;
     private context;
-    private originalBalancedTree;
-    private allColumns;
+    private aggFuncService;
+    private primaryBalancedTree;
+    private primaryHeaderRowCount;
+    private primaryColumns;
+    private secondaryBalancedTree;
+    private secondaryColumns;
+    private secondaryHeaderRowCount;
+    private secondaryColumnsPresent;
+    private gridBalancedTree;
+    private gridColumns;
+    private gridHeaderRowCount;
     private displayedLeftColumnTree;
     private displayedRightColumnTree;
     private displayedCentreColumnTree;
+    private displayedLeftHeaderRows;
+    private displayedRightHeaderRows;
+    private displayedCentreHeaderRows;
     private displayedLeftColumns;
     private displayedRightColumns;
     private displayedCenterColumns;
-    private headerRowCount;
+    private allDisplayedColumns;
+    private allDisplayedVirtualColumns;
     private rowGroupColumns;
+    private valueColumns;
+    private pivotColumns;
     private groupAutoColumn;
     private groupAutoColumnActive;
-    private valueService;
     private ready;
     private logger;
+    private pivotMode;
+    private totalWidth;
+    private scrollPosition;
+    private viewportLeft;
+    private viewportRight;
     init(): void;
+<<<<<<< HEAD
+=======
+    private setViewportLeftAndRight();
+    private checkDisplayedCenterColumns();
+    setWidthAndScrollPosition(totalWidth: number, scrollPosition: number): void;
+    isPivotMode(): boolean;
+    setPivotMode(pivotMode: boolean): void;
+    getSecondaryPivotColumn(pivotKeys: string[], valueColKey: Column | ColDef | String): Column;
+>>>>>>> upstream/master
     private setBeans(loggerFactory);
     private setFirstRightAndLastLeftPinned();
     autoSizeColumns(keys: (Column | ColDef | String)[]): void;
@@ -93,7 +147,7 @@ export declare class ColumnController {
     autoSizeAllColumns(): void;
     private getColumnsFromTree(rootColumns);
     getAllDisplayedColumnGroups(): ColumnGroupChild[];
-    getOriginalColumnTree(): OriginalColumnGroupChild[];
+    getPrimaryColumnTree(): OriginalColumnGroupChild[];
     getHeaderRowCount(): number;
     getLeftDisplayedColumnGroups(): ColumnGroupChild[];
     getRightDisplayedColumnGroups(): ColumnGroupChild[];
@@ -101,69 +155,112 @@ export declare class ColumnController {
     getDisplayedColumnGroups(type: string): ColumnGroupChild[];
     isColumnDisplayed(column: Column): boolean;
     getAllDisplayedColumns(): Column[];
+    getAllDisplayedVirtualColumns(): Column[];
     getPinnedLeftContainerWidth(): number;
     getPinnedRightContainerWidth(): number;
+<<<<<<< HEAD
     addRowGroupColumns(keys: (Column | ColDef | String)[]): void;
+=======
+    addRowGroupColumns(keys: (Column | ColDef | String)[], columnsToIncludeInEvent?: Column[]): void;
+>>>>>>> upstream/master
     setRowGroupColumns(keys: (Column | ColDef | String)[]): void;
     addRowGroupColumn(key: Column | ColDef | String): void;
     removeRowGroupColumns(keys: (Column | ColDef | String)[]): void;
     removeRowGroupColumn(key: Column | ColDef | String): void;
+<<<<<<< HEAD
     addValueColumn(column: Column): void;
     removeValueColumn(column: Column): void;
+=======
+    addPivotColumns(keys: (Column | ColDef | String)[], columnsToIncludeInEvent?: Column[]): void;
+    setPivotColumns(keys: (Column | ColDef | String)[]): void;
+    addPivotColumn(key: Column | ColDef | String): void;
+    removePivotColumns(keys: (Column | ColDef | String)[]): void;
+    removePivotColumn(key: Column | ColDef | String): void;
+    addValueColumns(keys: (Column | ColDef | String)[]): void;
+    addValueColumn(colKey: (Column | ColDef | String)): void;
+    removeValueColumn(colKey: (Column | ColDef | String)): void;
+    removeValueColumns(keys: (Column | ColDef | String)[]): void;
+>>>>>>> upstream/master
     private normaliseColumnWidth(column, newWidth);
+    private getPrimaryOrGridColumn(key);
     setColumnWidth(key: Column | string | ColDef, newWidth: number, finished: boolean): void;
-    setColumnAggFunction(column: Column, aggFunc: string): void;
+    setColumnAggFunc(column: Column, aggFunc: string): void;
     moveRowGroupColumn(fromIndex: number, toIndex: number): void;
-    getPathForColumn(column: Column): ColumnGroup[];
-    moveColumns(keys: (Column | ColDef | String)[], toIndex: number): void;
+    moveColumns(columnsToMoveKeys: (Column | ColDef | String)[], toIndex: number): void;
+    private doesMovePassRules(columnsToMove, toIndex);
     moveColumn(key: string | Column | ColDef, toIndex: number): void;
     moveColumnByIndex(fromIndex: number, toIndex: number): void;
     getBodyContainerWidth(): number;
-    getValueColumns(): Column[];
+    getAggregationColumns(): Column[];
+    getPivotColumns(): Column[];
+    isPivotActive(): boolean;
     getRowGroupColumns(): Column[];
-    isColumnRowGrouped(column: Column): boolean;
     getDisplayedCenterColumns(): Column[];
     getDisplayedLeftColumns(): Column[];
     getDisplayedRightColumns(): Column[];
     getDisplayedColumns(type: string): Column[];
-    getAllColumns(): Column[];
+    getAllPrimaryColumns(): Column[];
+    getAllGridColumns(): Column[];
     isEmpty(): boolean;
     isRowGroupEmpty(): boolean;
     setColumnVisible(key: Column | ColDef | String, visible: boolean): void;
     setColumnsVisible(keys: (Column | ColDef | String)[], visible: boolean): void;
     setColumnPinned(key: Column | ColDef | String, pinned: string | boolean): void;
     setColumnsPinned(keys: (Column | ColDef | String)[], pinned: string | boolean): void;
-    private actionOnColumns(keys, action, createEvent);
+    private actionOnGridColumns(keys, action, createEvent, columnsToIncludeInEvent?);
+    private actionOnPrimaryColumns(keys, action, createEvent, columnsToIncludeInEvent?);
+    private actionOnColumns(keys, columnLookup, action, createEvent, columnsToIncludeInEvent);
     getDisplayedColBefore(col: any): Column;
     getDisplayedColAfter(col: Column): Column;
     isPinningLeft(): boolean;
     isPinningRight(): boolean;
-    getAllColumnsIncludingAuto(): Column[];
-    getColumnState(): [any];
+    getPrimaryAndSecondaryAndAutoColumns(): Column[];
+    private createStateItemFromColumn(column);
+    getColumnState(): any[];
+    private orderColumnStateList(columnStateList);
     resetColumnState(): void;
     setColumnState(columnState: any[]): boolean;
-    getColumns(keys: any[]): Column[];
+    private sortColumnListUsingIndexes(indexes, colA, colB);
+    private syncColumnWithNoState(column);
+    private syncColumnWithStateItem(column, stateItem, rowGroupIndexes, pivotIndexes);
+    getGridColumns(keys: any[]): Column[];
+    getColumns(keys: any[], columnLookupCallback: (key: string | ColDef | Column) => Column): Column[];
     getColumnWithValidation(key: string | ColDef | Column): Column;
-    getColumn(key: string | ColDef | Column): Column;
-    getDisplayNameForCol(column: any): string;
+    getPrimaryColumn(key: string | ColDef | Column): Column;
+    getGridColumn(key: string | ColDef | Column): Column;
+    private getColumn(key, columnList);
+    getDisplayNameForCol(column: any, includeAggFunc?: boolean): string;
+    private getHeaderName(column);
+    private wrapHeaderNameWithAggFunc(column, headerName);
     getColumnGroup(colId: string | ColumnGroup, instanceId?: number): ColumnGroup;
-    getColumnDept(): number;
     setColumnDefs(columnDefs: AbstractColDef[]): void;
     isReady(): boolean;
     private extractRowGroupColumns();
+    private extractPivotColumns();
     setColumnGroupOpened(passedGroup: ColumnGroup | string, newValue: boolean, instanceId?: number): void;
     private getColumnGroupState();
     private setColumnGroupState(groupState);
-    private updateModel();
+    private calculateColumnsForDisplay();
+    private updateDisplayedColumns();
+    isSecondaryColumnsPresent(): boolean;
+    setSecondaryColumns(colDefs: (ColDef | ColGroupDef)[]): void;
+    private copyDownGridColumns();
+    private clearDisplayedColumns();
     private updateGroupsAndDisplayedColumns();
-    private updateDisplayedColumnsFromGroups();
+    private updateDisplayedColumnsFromTrees();
     private setLeftValues();
+    private setLeftValuesOfColumns();
+    private setLeftValuesOfGroups();
     private addToDisplayedColumns(displayedColumnTree, displayedColumns);
+    private updateDisplayedCenterVirtualColumns();
+    getVirtualHeaderGroupRow(type: string, dept: number): ColumnGroupChild[];
+    private updateDisplayedVirtualGroups(virtualColIds);
+    private updateVirtualSets();
+    private filterOutColumnsWithinViewport(columns);
     sizeColumnsToFit(gridWidth: any): void;
-    private buildAllGroups(visibleColumns);
+    private buildDisplayedTrees(visibleColumns);
     private updateGroups();
     private createGroupAutoColumn();
-    private updateVisibleColumns();
     private createValueColumns();
-    private getWithOfColsInList(columnList);
+    private getWidthOfColsInList(columnList);
 }

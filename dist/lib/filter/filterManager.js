@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -35,6 +35,7 @@ var FilterManager = (function () {
     FilterManager.prototype.init = function () {
         this.eventService.addEventListener(events_1.Events.EVENT_ROW_DATA_CHANGED, this.onNewRowsLoaded.bind(this));
         this.eventService.addEventListener(events_1.Events.EVENT_NEW_COLUMNS_LOADED, this.onNewColumnsLoaded.bind(this));
+        this.quickFilter = this.parseQuickFilter(this.gridOptionsWrapper.getQuickFilterText());
     };
     FilterManager.prototype.registerFilter = function (key, Filter) {
         this.availableFilters[key] = Filter;
@@ -51,7 +52,7 @@ var FilterManager = (function () {
             });
             // at this point, processedFields contains data for which we don't have a filter working yet
             utils_1.Utils.iterateArray(modelKeys, function (colId) {
-                var column = _this.columnController.getColumn(colId);
+                var column = _this.columnController.getPrimaryColumn(colId);
                 if (!column) {
                     console.warn('Warning ag-grid setFilterModel - no column found for colId ' + colId);
                     return;
@@ -152,24 +153,21 @@ var FilterManager = (function () {
         // all filters passed
         return true;
     };
+    FilterManager.prototype.parseQuickFilter = function (newFilter) {
+        if (utils_1.Utils.missing(newFilter) || newFilter === "") {
+            return null;
+        }
+        if (this.gridOptionsWrapper.isRowModelVirtual()) {
+            console.warn('ag-grid: cannot do quick filtering when doing virtual paging');
+            return null;
+        }
+        return newFilter.toUpperCase();
+    };
     // returns true if it has changed (not just same value again)
     FilterManager.prototype.setQuickFilter = function (newFilter) {
-        if (newFilter === undefined || newFilter === "") {
-            newFilter = null;
-        }
-        if (this.quickFilter !== newFilter) {
-            if (this.gridOptionsWrapper.isRowModelVirtual()) {
-                console.warn('ag-grid: cannot do quick filtering when doing virtual paging');
-                return;
-            }
-            //want 'null' to mean to filter, so remove undefined and empty string
-            if (newFilter === undefined || newFilter === "") {
-                newFilter = null;
-            }
-            if (newFilter !== null) {
-                newFilter = newFilter.toUpperCase();
-            }
-            this.quickFilter = newFilter;
+        var parsedFilter = this.parseQuickFilter(newFilter);
+        if (this.quickFilter !== parsedFilter) {
+            this.quickFilter = parsedFilter;
             this.onFilterChanged();
         }
     };
@@ -220,7 +218,7 @@ var FilterManager = (function () {
     FilterManager.prototype.aggregateRowForQuickFilter = function (node) {
         var aggregatedText = '';
         var that = this;
-        this.columnController.getAllColumns().forEach(function (column) {
+        this.columnController.getAllPrimaryColumns().forEach(function (column) {
             var value = that.valueService.getValue(column, node);
             if (value && value !== '') {
                 aggregatedText = aggregatedText + value.toString().toUpperCase() + "_";
@@ -285,6 +283,7 @@ var FilterManager = (function () {
             // first up, create child scope if needed
             if (this.gridOptionsWrapper.isAngularCompileFilters()) {
                 filterWrapper.scope = this.$scope.$new();
+                filterWrapper.scope.context = this.gridOptionsWrapper.getContext();
             }
             // now create filter (had to cast to any to get 'new' working)
             this.assertMethodHasNoParameters(colDef.filter);

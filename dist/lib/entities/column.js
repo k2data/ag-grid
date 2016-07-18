@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -14,10 +14,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var eventService_1 = require("../eventService");
-var utils_1 = require('../utils');
+var utils_1 = require("../utils");
 var context_1 = require("../context/context");
 var gridOptionsWrapper_1 = require("../gridOptionsWrapper");
-var context_2 = require("../context/context");
 var columnUtils_1 = require("../columnController/columnUtils");
 // Wrapper around a user provide column definition. The grid treats the column definition as ready only.
 // This class contains all the runtime information about a column, plus some logic (the definition has no logic).
@@ -26,15 +25,19 @@ var columnUtils_1 = require("../columnController/columnUtils");
 // for each type only implements one, as each group can only appear in it's associated tree (eg OriginalColumnGroup
 // can only appear in OriginalColumn tree).
 var Column = (function () {
-    function Column(colDef, colId) {
+    function Column(colDef, colId, primary) {
         this.moving = false;
         this.filterActive = false;
         this.eventService = new eventService_1.EventService();
+        this.rowGroupActive = false;
+        this.pivotActive = false;
+        this.aggregationActive = false;
         this.colDef = colDef;
         this.visible = !colDef.hide;
         this.sort = colDef.sort;
         this.sortedAt = colDef.sortedAt;
         this.colId = colId;
+        this.primary = primary;
     }
     // this is done after constructor as it uses gridOptionsWrapper
     Column.prototype.initialise = function () {
@@ -54,7 +57,21 @@ var Column = (function () {
             this.maxWidth = maxColWidth;
         }
         this.actualWidth = this.columnUtils.calculateColInitialWidth(this.colDef);
+        var suppressDotNotation = this.gridOptionsWrapper.isSuppressFieldDotNotation();
+        this.fieldContainsDots = utils_1.Utils.exists(this.colDef.field) && this.colDef.field.indexOf('.') >= 0 && !suppressDotNotation;
         this.validate();
+    };
+    Column.prototype.getUniqueId = function () {
+        return this.getId();
+    };
+    Column.prototype.isPrimary = function () {
+        return this.primary;
+    };
+    Column.prototype.isFilterAllowed = function () {
+        return this.primary && !this.colDef.suppressFilter;
+    };
+    Column.prototype.isFieldContainsDots = function () {
+        return this.fieldContainsDots;
     };
     Column.prototype.validate = function () {
         if (!this.gridOptionsWrapper.isEnterprise()) {
@@ -64,6 +81,9 @@ var Column = (function () {
             if (utils_1.Utils.exists(this.colDef.rowGroupIndex)) {
                 console.warn('ag-Grid: rowGroupIndex is only valid in ag-Grid-Enterprise');
             }
+        }
+        if (utils_1.Utils.exists(this.colDef.width) && typeof this.colDef.width !== 'number') {
+            console.warn('ag-Grid: colDef.width should be a number, not ' + typeof this.colDef.width);
         }
     };
     Column.prototype.addEventListener = function (eventType, listener) {
@@ -164,6 +184,7 @@ var Column = (function () {
         else {
             this.pinned = null;
         }
+        // console.log(`setColumnsPinned ${this.getColId()} ${this.pinned}`);
     };
     Column.prototype.setFirstRightPinned = function (firstRightPinned) {
         if (this.firstRightPinned !== firstRightPinned) {
@@ -246,6 +267,48 @@ var Column = (function () {
     Column.prototype.setMinimum = function () {
         this.setActualWidth(this.minWidth);
     };
+    Column.prototype.setRowGroupActive = function (rowGroup) {
+        if (this.rowGroupActive !== rowGroup) {
+            this.rowGroupActive = rowGroup;
+            this.eventService.dispatchEvent(Column.EVENT_ROW_GROUP_CHANGED, this);
+        }
+    };
+    Column.prototype.isRowGroupActive = function () {
+        return this.rowGroupActive;
+    };
+    Column.prototype.setPivotActive = function (pivot) {
+        if (this.pivotActive !== pivot) {
+            this.pivotActive = pivot;
+            this.eventService.dispatchEvent(Column.EVENT_PIVOT_CHANGED, this);
+        }
+    };
+    Column.prototype.isPivotActive = function () {
+        return this.pivotActive;
+    };
+    Column.prototype.isAnyFunctionActive = function () {
+        return this.isPivotActive() || this.isRowGroupActive() || this.isValueActive();
+    };
+    Column.prototype.isAnyFunctionAllowed = function () {
+        return this.isAllowPivot() || this.isAllowRowGroup() || this.isAllowValue();
+    };
+    Column.prototype.setValueActive = function (value) {
+        if (this.aggregationActive !== value) {
+            this.aggregationActive = value;
+            this.eventService.dispatchEvent(Column.EVENT_VALUE_CHANGED, this);
+        }
+    };
+    Column.prototype.isValueActive = function () {
+        return this.aggregationActive;
+    };
+    Column.prototype.isAllowPivot = function () {
+        return this.colDef.enablePivot === true;
+    };
+    Column.prototype.isAllowValue = function () {
+        return this.colDef.enableValue === true;
+    };
+    Column.prototype.isAllowRowGroup = function () {
+        return this.colDef.enableRowGroup === true;
+    };
     // + renderedHeaderCell - for making header cell transparent when moving
     Column.EVENT_MOVING_CHANGED = 'movingChanged';
     // + renderedCell - changing left position
@@ -261,13 +324,14 @@ var Column = (function () {
     Column.EVENT_FILTER_ACTIVE_CHANGED = 'filterChanged';
     // + renderedHeaderCell - marks the header with sort icon
     Column.EVENT_SORT_CHANGED = 'filterChanged';
+    // + toolpanel, for gui updates
+    Column.EVENT_ROW_GROUP_CHANGED = 'columnRowGroupChanged';
+    // + toolpanel, for gui updates
+    Column.EVENT_PIVOT_CHANGED = 'columnPivotChanged';
+    // + toolpanel, for gui updates
+    Column.EVENT_VALUE_CHANGED = 'columnValueChanged';
     Column.PINNED_RIGHT = 'right';
     Column.PINNED_LEFT = 'left';
-    Column.AGG_SUM = 'sum';
-    Column.AGG_MIN = 'min';
-    Column.AGG_MAX = 'max';
-    Column.AGG_FIRST = 'first';
-    Column.AGG_LAST = 'last';
     Column.SORT_ASC = 'asc';
     Column.SORT_DESC = 'desc';
     __decorate([
@@ -279,7 +343,7 @@ var Column = (function () {
         __metadata('design:type', columnUtils_1.ColumnUtils)
     ], Column.prototype, "columnUtils", void 0);
     __decorate([
-        context_2.PostConstruct, 
+        context_1.PostConstruct, 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', []), 
         __metadata('design:returntype', void 0)

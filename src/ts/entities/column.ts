@@ -1,17 +1,13 @@
-import {Constants as constants} from '../constants';
 import {ColumnGroupChild} from "./columnGroupChild";
 import {OriginalColumnGroupChild} from "./originalColumnGroupChild";
-import {ColDef} from "./colDef";
-import {AbstractColDef} from "./colDef";
+import {ColDef, AbstractColDef, IAggFunc} from "./colDef";
 import {EventService} from "../eventService";
-import {ColumnGroup} from "./columnGroup";
-import {ColumnController} from "../columnController/columnController";
-import {Utils as _} from '../utils';
-import {Autowired} from "../context/context";
+import {Utils as _} from "../utils";
+import {Autowired, PostConstruct} from "../context/context";
 import {GridOptionsWrapper} from "../gridOptionsWrapper";
-import {PostConstruct} from "../context/context";
 import {ColumnUtils} from "../columnController/columnUtils";
 import {RowNode} from "./rowNode";
+import {IEventEmitter} from "../interfaces/iEventEmitter";
 
 // Wrapper around a user provide column definition. The grid treats the column definition as ready only.
 // This class contains all the runtime information about a column, plus some logic (the definition has no logic).
@@ -37,14 +33,15 @@ export class Column implements ColumnGroupChild, OriginalColumnGroupChild {
     // + renderedHeaderCell - marks the header with sort icon
     public static EVENT_SORT_CHANGED = 'filterChanged';
 
+    // + toolpanel, for gui updates
+    public static EVENT_ROW_GROUP_CHANGED = 'columnRowGroupChanged';
+    // + toolpanel, for gui updates
+    public static EVENT_PIVOT_CHANGED = 'columnPivotChanged';
+    // + toolpanel, for gui updates
+    public static EVENT_VALUE_CHANGED = 'columnValueChanged';
+    
     public static PINNED_RIGHT = 'right';
     public static PINNED_LEFT = 'left';
-
-    public static AGG_SUM = 'sum';
-    public static AGG_MIN = 'min';
-    public static AGG_MAX = 'max';
-    public static AGG_FIRST = 'first';
-    public static AGG_LAST = 'last';
 
     public static SORT_ASC = 'asc';
     public static SORT_DESC = 'desc';
@@ -60,7 +57,7 @@ export class Column implements ColumnGroupChild, OriginalColumnGroupChild {
     private visible: any;
     private pinned: string;
     private left: number;
-    private aggFunc: string;
+    private aggFunc: string | IAggFunc;
     private sort: string;
     private sortedAt: number;
     private moving = false;
@@ -75,12 +72,21 @@ export class Column implements ColumnGroupChild, OriginalColumnGroupChild {
 
     private eventService: EventService = new EventService();
 
-    constructor(colDef: ColDef, colId: String) {
+    private fieldContainsDots: boolean;
+
+    private rowGroupActive = false;
+    private pivotActive = false;
+    private aggregationActive = false;
+
+    private primary: boolean;
+
+    constructor(colDef: ColDef, colId: String, primary: boolean) {
         this.colDef = colDef;
         this.visible = !colDef.hide;
         this.sort = colDef.sort;
         this.sortedAt = colDef.sortedAt;
         this.colId = colId;
+        this.primary = primary;
     }
 
     // this is done after constructor as it uses gridOptionsWrapper
@@ -105,7 +111,26 @@ export class Column implements ColumnGroupChild, OriginalColumnGroupChild {
 
         this.actualWidth = this.columnUtils.calculateColInitialWidth(this.colDef);
 
+        var suppressDotNotation = this.gridOptionsWrapper.isSuppressFieldDotNotation();
+        this.fieldContainsDots = _.exists(this.colDef.field) && this.colDef.field.indexOf('.')>=0 && !suppressDotNotation;
+
         this.validate();
+    }
+
+    public getUniqueId(): string {
+        return this.getId();
+    }
+
+    public isPrimary(): boolean {
+        return this.primary;
+    }
+
+    public isFilterAllowed(): boolean {
+        return this.primary && !this.colDef.suppressFilter;
+    }
+    
+    public isFieldContainsDots(): boolean {
+        return this.fieldContainsDots;
     }
 
     private validate(): void {
@@ -116,6 +141,9 @@ export class Column implements ColumnGroupChild, OriginalColumnGroupChild {
             if (_.exists(this.colDef.rowGroupIndex)) {
                 console.warn('ag-Grid: rowGroupIndex is only valid in ag-Grid-Enterprise');
             }
+        }
+        if (_.exists(this.colDef.width) && typeof this.colDef.width !== 'number') {
+            console.warn('ag-Grid: colDef.width should be a number, not ' + typeof this.colDef.width);
         }
     }
     
@@ -190,11 +218,11 @@ export class Column implements ColumnGroupChild, OriginalColumnGroupChild {
         this.sortedAt = sortedAt;
     }
 
-    public setAggFunc(aggFunc: string): void {
+    public setAggFunc(aggFunc: string | IAggFunc): void {
         this.aggFunc = aggFunc;
     }
 
-    public getAggFunc(): string {
+    public getAggFunc(): string | IAggFunc {
         return this.aggFunc;
     }
 
@@ -237,6 +265,9 @@ export class Column implements ColumnGroupChild, OriginalColumnGroupChild {
         } else {
             this.pinned = null;
         }
+
+        // console.log(`setColumnsPinned ${this.getColId()} ${this.pinned}`);
+
     }
 
     public setFirstRightPinned(firstRightPinned: boolean): void {
@@ -338,5 +369,58 @@ export class Column implements ColumnGroupChild, OriginalColumnGroupChild {
 
     public setMinimum(): void {
         this.setActualWidth(this.minWidth);
+    }
+    
+    public setRowGroupActive(rowGroup: boolean): void {
+        if (this.rowGroupActive !== rowGroup) {
+            this.rowGroupActive = rowGroup;
+            this.eventService.dispatchEvent(Column.EVENT_ROW_GROUP_CHANGED, this);
+        }
+    }
+    
+    public isRowGroupActive(): boolean {
+        return this.rowGroupActive;
+    }
+
+    public setPivotActive(pivot: boolean): void {
+        if (this.pivotActive !== pivot) {
+            this.pivotActive = pivot;
+            this.eventService.dispatchEvent(Column.EVENT_PIVOT_CHANGED, this);
+        }
+    }
+
+    public isPivotActive(): boolean {
+        return this.pivotActive;
+    }
+
+    public isAnyFunctionActive(): boolean {
+        return this.isPivotActive() || this.isRowGroupActive() || this.isValueActive();
+    }
+
+    public isAnyFunctionAllowed(): boolean {
+        return this.isAllowPivot() || this.isAllowRowGroup() || this.isAllowValue();
+    }
+
+    public setValueActive(value: boolean): void {
+        if (this.aggregationActive !== value) {
+            this.aggregationActive = value;
+            this.eventService.dispatchEvent(Column.EVENT_VALUE_CHANGED, this);
+        }
+    }
+
+    public isValueActive(): boolean {
+        return this.aggregationActive;
+    }
+
+    public isAllowPivot(): boolean {
+        return this.colDef.enablePivot === true;
+    }
+
+    public isAllowValue(): boolean {
+        return this.colDef.enableValue === true;
+    }
+
+    public isAllowRowGroup(): boolean {
+        return this.colDef.enableRowGroup === true;
     }
 }

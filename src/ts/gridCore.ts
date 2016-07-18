@@ -11,11 +11,13 @@ import {Logger, LoggerFactory} from "./logger";
 import {Constants} from "./constants";
 import {PopupService} from "./widgets/popupService";
 import {Events} from "./events";
+import {Utils as _} from "./utils";
 import {BorderLayout} from "./layout/borderLayout";
 import {PreDestroy, Bean, Qualifier, Autowired, PostConstruct, Optional} from "./context/context";
 import {IRowModel} from "./interfaces/iRowModel";
 import {FocusedCellController} from "./focusedCellController";
 import {Component} from "./widgets/component";
+import {ICompFactory} from "./interfaces/iCompFactory";
 
 @Bean('gridCore')
 export class GridCore {
@@ -37,9 +39,13 @@ export class GridCore {
     @Autowired('popupService') private popupService: PopupService;
     @Autowired('focusedCellController') private focusedCellController: FocusedCellController;
 
-    @Optional('rowGroupPanel') private rowGroupPanel: Component;
+    @Optional('rowGroupCompFactory') private rowGroupCompFactory: ICompFactory;
+    @Optional('pivotCompFactory') private pivotCompFactory: ICompFactory;
     @Optional('toolPanel') private toolPanel: Component;
     @Optional('statusBar') private statusBar: Component;
+
+    private rowGroupComp: Component;
+    private pivotComp: Component;
 
     private finished: boolean;
     private doingVirtualPaging: boolean;
@@ -49,6 +55,8 @@ export class GridCore {
 
     private windowResizeListener: EventListener;
     private logger: Logger;
+
+    private destroyFunctions: Function[] = [];
 
     constructor(@Qualifier('loggerFactory') loggerFactory: LoggerFactory) {
         this.logger = loggerFactory.create('GridCore');
@@ -66,15 +74,12 @@ export class GridCore {
             toolPanelGui = this.toolPanel.getGui();
         }
 
-        var rowGroupGui: HTMLElement;
-        if (this.rowGroupPanel) {
-            rowGroupGui = this.rowGroupPanel.getGui();
-        }
+        var createTopPanelGui = this.createNorthPanel();
 
         this.eRootPanel = new BorderLayout({
             center: this.gridPanel.getLayout(),
             east: toolPanelGui,
-            north: rowGroupGui,
+            north: createTopPanelGui,
             south: eSouthPanel,
             dontFill: this.gridOptionsWrapper.isForPrint(),
             name: 'eRootPanel'
@@ -99,12 +104,45 @@ export class GridCore {
         this.finished = false;
         this.periodicallyDoLayout();
 
-        this.eventService.addEventListener(Events.EVENT_COLUMN_ROW_GROUP_CHANGE, this.onRowGroupChanged.bind(this));
+        this.eventService.addEventListener(Events.EVENT_COLUMN_ROW_GROUP_CHANGED, this.onRowGroupChanged.bind(this));
         this.eventService.addEventListener(Events.EVENT_COLUMN_EVERYTHING_CHANGED, this.onRowGroupChanged.bind(this));
 
         this.onRowGroupChanged();
 
         this.logger.log('ready');
+    }
+
+    private createNorthPanel(): HTMLElement {
+
+        if (!this.gridOptionsWrapper.isEnterprise()) { return null; }
+
+        var topPanelGui = document.createElement('div');
+
+        var dropPanelVisibleListener = this.onDropPanelVisible.bind(this);
+
+        this.rowGroupComp = this.rowGroupCompFactory.create();
+        this.pivotComp = this.pivotCompFactory.create();
+
+        topPanelGui.appendChild(this.rowGroupComp.getGui());
+        topPanelGui.appendChild(this.pivotComp.getGui());
+
+        this.rowGroupComp.addEventListener(Component.EVENT_VISIBLE_CHANGED, dropPanelVisibleListener);
+        this.pivotComp.addEventListener(Component.EVENT_VISIBLE_CHANGED, dropPanelVisibleListener);
+
+        this.destroyFunctions.push( ()=> {
+            this.rowGroupComp.removeEventListener(Component.EVENT_VISIBLE_CHANGED, dropPanelVisibleListener);
+            this.pivotComp.removeEventListener(Component.EVENT_VISIBLE_CHANGED, dropPanelVisibleListener);
+        } );
+
+        this.onDropPanelVisible();
+
+        return topPanelGui;
+    }
+
+    private onDropPanelVisible(): void {
+        var bothVisible = this.rowGroupComp.isVisible() && this.pivotComp.isVisible();
+        this.rowGroupComp.addOrRemoveCssClass('ag-width-half', bothVisible);
+        this.pivotComp.addOrRemoveCssClass('ag-width-half', bothVisible);
     }
 
     public getRootGui(): HTMLElement {
@@ -137,18 +175,20 @@ export class GridCore {
     }
 
     private onRowGroupChanged(): void {
-        if (!this.rowGroupPanel) { return; }
+        if (!this.rowGroupComp) { return; }
 
         var rowGroupPanelShow = this.gridOptionsWrapper.getRowGroupPanelShow();
 
         if (rowGroupPanelShow===Constants.ALWAYS) {
-            this.eRootPanel.setNorthVisible(true);
+            this.rowGroupComp.setVisible(true);
         } else if (rowGroupPanelShow===Constants.ONLY_WHEN_GROUPING) {
             var grouping = !this.columnController.isRowGroupEmpty();
-            this.eRootPanel.setNorthVisible(grouping);
+            this.rowGroupComp.setVisible(grouping);
         } else {
-            this.eRootPanel.setNorthVisible(false);
+            this.rowGroupComp.setVisible(false);
         }
+
+        this.eRootPanel.doLayout();
     }
     
     private addWindowResizeListener(): void {
@@ -165,12 +205,21 @@ export class GridCore {
 
     private periodicallyDoLayout() {
         if (!this.finished) {
-            var that = this;
-            setTimeout(function () {
-                that.doLayout();
-                that.gridPanel.periodicallyCheck();
-                that.periodicallyDoLayout();
-            }, 500);
+            var intervalMillis = this.gridOptionsWrapper.getLayoutInterval();
+            // if interval is negative, this stops the layout from happening
+            if (intervalMillis>0){
+                setTimeout( () => {
+                    this.doLayout();
+                    this.gridPanel.periodicallyCheck();
+                    this.periodicallyDoLayout();
+                }, intervalMillis);
+            } else {
+                // if user provided negative number, we still do the check every 5 seconds,
+                // in case the user turns the number positive again
+                setTimeout( () => {
+                    this.periodicallyDoLayout();
+                }, 5000);
+            }
         }
     }
 
@@ -182,7 +231,10 @@ export class GridCore {
         }
 
         this.toolPanelShowing = show;
-        this.eRootPanel.setEastVisible(show);
+        if (this.toolPanel) {
+            this.toolPanel.setVisible(show);
+            this.eRootPanel.doLayout();
+        }
     }
 
     public isToolPanelShowing() {
@@ -199,6 +251,8 @@ export class GridCore {
 
         this.eGridDiv.removeChild(this.eRootPanel.getGui());
         this.logger.log('Grid DOM removed');
+
+        this.destroyFunctions.forEach(func => func());
     }
 
     public ensureNodeVisible(comparator: any) {

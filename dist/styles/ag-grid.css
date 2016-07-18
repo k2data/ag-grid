@@ -1,6 +1,15 @@
 ag-grid-ng2 {
   display: inline-block;
 }
+.ag-select-agg-func-popup {
+  position: absolute;
+}
+.ag-body-no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 .ag-root {
 /* set to relative, so absolute popups appear relative to this */
   position: relative;
@@ -12,7 +21,6 @@ ag-grid-ng2 {
 }
 .ag-font-style {
   cursor: default;
-  font-size: 14px;
 /* disable user mouse selection */
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -69,6 +77,9 @@ ag-grid-ng2 {
   overflow: hidden;
   height: 100%;
 }
+.ag-scrolls .ag-header-row {
+  position: absolute;
+}
 .ag-scrolls .ag-header-container {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -92,8 +103,9 @@ ag-grid-ng2 {
   text-align: center;
   display: inline-block;
   height: 100%;
+  position: absolute;
 }
-.ag-header-cell-ghost {
+.ag-dnd-ghost {
   font-size: 14px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   position: absolute;
@@ -113,14 +125,14 @@ ag-grid-ng2 {
   padding: 3px;
   line-height: 1.4;
 }
-.ag-header-cell-ghost img {
-  vertical-align: middle;
-  border: 0px;
-}
-.ag-header-cell-ghost-icon {
+.ag-dnd-ghost-icon {
+  display: inline-block;
   float: left;
   padding-left: 2px;
   padding-right: 2px;
+}
+.ag-dnd-ghost-label {
+  display: inline-block;
 }
 .ag-header-group-cell {
   height: 100%;
@@ -131,6 +143,7 @@ ag-grid-ng2 {
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   overflow: hidden;
+  position: absolute;
 }
 .ag-header-group-cell-label {
   -o-text-overflow: ellipsis;
@@ -295,11 +308,24 @@ ag-grid-ng2 {
 .agile-gird-row:hover {
   background-color: #f0f8ff;
 }
-.ag-row-group-panel {
+.ag-column-drop {
   width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
+}
+.ag-column-drop-vertical .ag-column-drop-cell {
+  display: block;
+}
+.ag-column-drop-vertical .ag-column-drop-empty-message {
+  display: block;
+}
+.ag-column-drop-vertical .ag-column-drop-cell-button {
+  float: right;
+  line-height: 16px;
+}
+.ag-column-drop-horizontal {
+  white-space: nowrap;
 }
 .ag-cell {
   display: inline-block;
@@ -383,6 +409,7 @@ ag-grid-ng2 {
 .ag-menu-column-select-wrapper {
   width: 200px;
   height: 300px;
+  overflow: auto;
 }
 .ag-menu-list {
   display: table;
@@ -477,6 +504,7 @@ ag-grid-ng2 {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
+  overflow: auto;
 }
 .ag-column-select-indent {
   display: inline-block;
@@ -488,10 +516,6 @@ ag-grid-ng2 {
 .ag-column-select-column-group {
   white-space: nowrap;
 }
-.ag-column-select-panel {
-  height: 100%;
-  overflow: auto;
-}
 .ag-hidden {
   display: none;
 }
@@ -499,6 +523,10 @@ ag-grid-ng2 {
   opacity: 0.3;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
   filter: alpha(opacity=30);
+}
+.ag-width-half {
+  width: 50%;
+  display: inline-block;
 }
 .ag-shake-left-to-right {
   -webkit-animation-name: ag-shake-left-to-right;

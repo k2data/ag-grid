@@ -1,13 +1,18 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { GridOptionsWrapper } from "./gridOptionsWrapper";
 import { Column } from "./entities/column";
 import { RowNode } from "./entities/rowNode";
+export declare class Timer {
+    private timestamp;
+    print(msg: string): void;
+}
 export declare class Utils {
     private static isSafari;
     private static isIE;
+    static getNameOfClass(TheClass: any): string;
     static iterateObject(object: any, callback: (key: string, value: any) => void): void;
     static cloneObject(object: any): any;
     static map<TItem, TResult>(array: TItem[], callback: (item: TItem) => TResult): TResult[];
@@ -45,16 +50,20 @@ export declare class Utils {
     static offsetHeight(element: HTMLElement): number;
     static offsetWidth(element: HTMLElement): number;
     static removeCssClass(element: HTMLElement, className: string): void;
+    static removeRepeatsFromArray<T>(array: T[], object: T): void;
     static removeFromArray<T>(array: T[], object: T): void;
+    static insertIntoArray<T>(array: T[], object: T, toIndex: number): void;
+    static moveInArray<T>(array: T[], objectsToMove: T[], toIndex: number): void;
     static defaultComparator(valueA: any, valueB: any): number;
+    static compareArrays(array1: any[], array2: any[]): boolean;
     static formatWidth(width: number | string): string;
     static formatNumberTwoDecimalPlacesAndCommas(value: number): string;
     /**
      * If icon provided, use this (either a string, or a function callback).
      * if not, then use the second parameter, which is the svgFactory function
      */
-    static createIcon(iconName: string, gridOptionsWrapper: GridOptionsWrapper, column: Column, svgFactoryFunc: () => Node): HTMLSpanElement;
-    static createIconNoSpan(iconName: string, gridOptionsWrapper: GridOptionsWrapper, colDefWrapper: Column, svgFactoryFunc: () => Node): any;
+    static createIcon(iconName: string, gridOptionsWrapper: GridOptionsWrapper, column: Column, svgFactoryFunc: () => HTMLElement): HTMLElement;
+    static createIconNoSpan(iconName: string, gridOptionsWrapper: GridOptionsWrapper, colDefWrapper: Column, svgFactoryFunc: () => HTMLElement): HTMLElement;
     static addStylesToElement(eElement: any, styles: any): void;
     static getScrollbarWidth(): number;
     static isKeyPressed(event: KeyboardEvent, keyToCheck: number): boolean;
@@ -166,4 +175,8 @@ export declare class Utils {
      *
      */
     static normalizeWheel(event: any): any;
+}
+export declare class NumberSequence {
+    private nextValue;
+    next(): number;
 }

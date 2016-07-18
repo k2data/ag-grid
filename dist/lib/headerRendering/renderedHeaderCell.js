@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -25,25 +25,32 @@ var context_1 = require("../context/context");
 var cssClassApplier_1 = require("./cssClassApplier");
 var dragAndDropService_1 = require("../dragAndDrop/dragAndDropService");
 var sortController_1 = require("../sortController");
+<<<<<<< HEAD
+=======
+var setLeftFeature_1 = require("../rendering/features/setLeftFeature");
+>>>>>>> upstream/master
 var RenderedHeaderCell = (function () {
-    function RenderedHeaderCell(column, parentScope, eRoot, dragSourceDropTarget) {
+    function RenderedHeaderCell(column, eRoot, dragSourceDropTarget) {
         // for better structured code, anything we need to do when this column gets destroyed,
         // we put a function in here. otherwise we would have a big destroy function with lots
         // of 'if / else' mapping to things that got created.
         this.destroyFunctions = [];
         this.column = column;
-        this.parentScope = parentScope;
         this.eRoot = eRoot;
         this.dragSourceDropTarget = dragSourceDropTarget;
     }
+    RenderedHeaderCell.prototype.getColumn = function () {
+        return this.column;
+    };
     RenderedHeaderCell.prototype.init = function () {
         this.eHeaderCell = this.headerTemplateLoader.createHeaderElement(this.column);
         utils_1.Utils.addCssClass(this.eHeaderCell, 'ag-header-cell');
-        this.createScope(this.parentScope);
+        this.createScope();
         this.addAttributes();
         cssClassApplier_1.CssClassApplier.addHeaderClassesFromCollDef(this.column.getColDef(), this.eHeaderCell, this.gridOptionsWrapper);
         // label div
         var eHeaderCellLabel = this.eHeaderCell.querySelector('#agHeaderCellLabel');
+        this.displayName = this.columnController.getDisplayNameForCol(this.column, true);
         this.setupMovingCss();
         this.setupTooltip();
         this.setupResize();
@@ -53,6 +60,8 @@ var RenderedHeaderCell = (function () {
         this.setupFilterIcon();
         this.setupText();
         this.setupWidth();
+        var setLeftFeature = new setLeftFeature_1.SetLeftFeature(this.column, this.eHeaderCell);
+        this.destroyFunctions.push(setLeftFeature.destroy.bind(setLeftFeature));
     };
     RenderedHeaderCell.prototype.setupTooltip = function () {
         var colDef = this.column.getColDef();
@@ -71,16 +80,15 @@ var RenderedHeaderCell = (function () {
         else if (this.gridOptionsWrapper.getHeaderCellRenderer()) {
             headerCellRenderer = this.gridOptionsWrapper.getHeaderCellRenderer();
         }
-        var headerNameValue = this.columnController.getDisplayNameForCol(this.column);
         var eText = this.eHeaderCell.querySelector('#agText');
         if (eText) {
             if (headerCellRenderer) {
-                this.useRenderer(headerNameValue, headerCellRenderer, eText);
+                this.useRenderer(this.displayName, headerCellRenderer, eText);
             }
             else {
                 // no renderer, default text render
                 eText.className = 'ag-header-cell-text';
-                eText.innerHTML = headerNameValue;
+                eText.innerHTML = this.displayName;
             }
         }
     };
@@ -120,12 +128,13 @@ var RenderedHeaderCell = (function () {
             func();
         });
     };
-    RenderedHeaderCell.prototype.createScope = function (parentScope) {
+    RenderedHeaderCell.prototype.createScope = function () {
         var _this = this;
         if (this.gridOptionsWrapper.isAngularCompileHeaders()) {
-            this.childScope = parentScope.$new();
+            this.childScope = this.$scope.$new();
             this.childScope.colDef = this.column.getColDef();
             this.childScope.colDefWrapper = this.column;
+            this.childScope.context = this.gridOptionsWrapper.getContext();
             this.destroyFunctions.push(function () {
                 _this.childScope.$destroy();
             });
@@ -141,8 +150,8 @@ var RenderedHeaderCell = (function () {
         if (!eMenu) {
             return;
         }
-        var weWantMenu = this.menuFactory.isMenuEnabled(this.column) && !this.column.getColDef().suppressMenu;
-        if (!weWantMenu) {
+        var skipMenu = !this.menuFactory.isMenuEnabled(this.column) || this.column.getColDef().suppressMenu;
+        if (skipMenu) {
             utils_1.Utils.removeFromParent(eMenu);
             return;
         }
@@ -184,17 +193,18 @@ var RenderedHeaderCell = (function () {
         });
     };
     RenderedHeaderCell.prototype.setupMove = function (eHeaderCellLabel) {
-        if (this.gridOptionsWrapper.isSuppressMovableColumns() || this.column.getColDef().suppressMovable) {
-            return;
-        }
-        if (this.gridOptionsWrapper.isForPrint()) {
-            // don't allow moving of headers when forPrint, as the header overlay doesn't exist
+        var suppressMove = this.gridOptionsWrapper.isSuppressMovableColumns()
+            || this.column.getColDef().suppressMovable
+            || this.gridOptionsWrapper.isForPrint()
+            || this.columnController.isPivotMode();
+        if (suppressMove) {
             return;
         }
         if (eHeaderCellLabel) {
             var dragSource = {
                 eElement: eHeaderCellLabel,
-                dragItem: this.column,
+                dragItem: [this.column],
+                dragItemName: this.displayName,
                 dragSourceDropTarget: this.dragSourceDropTarget
             };
             this.dragAndDropService.addDragSource(dragSource);
@@ -268,6 +278,8 @@ var RenderedHeaderCell = (function () {
             utils_1.Utils.removeFromParent(this.eHeaderCell.querySelector('#agNoSort'));
             return;
         }
+        // add sortable class for styling
+        utils_1.Utils.addCssClass(this.eHeaderCell, 'ag-header-cell-sortable');
         // add the event on the header, so when clicked, we do sorting
         if (eHeaderCellLabel) {
             eHeaderCellLabel.addEventListener("click", function (event) {
@@ -358,6 +370,13 @@ var RenderedHeaderCell = (function () {
         __metadata('design:type', sortController_1.SortController)
     ], RenderedHeaderCell.prototype, "sortController", void 0);
     __decorate([
+<<<<<<< HEAD
+=======
+        context_1.Autowired('$scope'), 
+        __metadata('design:type', Object)
+    ], RenderedHeaderCell.prototype, "$scope", void 0);
+    __decorate([
+>>>>>>> upstream/master
         context_1.PostConstruct, 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', []), 

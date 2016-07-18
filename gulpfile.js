@@ -16,6 +16,8 @@ var pkg = require('./package.json');
 var tsd = require('gulp-tsd');
 var webpack = require('webpack');
 var webpackStream = require('webpack-stream');
+var replace = require('gulp-replace');
+var gulpIf = require('gulp-if');
 
 var jasmine = require('gulp-jasmine');
 
@@ -146,18 +148,19 @@ function webpackTask(minify, styles) {
 }
 
 function stylusTask() {
-
     // Uncompressed
-    gulp.src('./src/styles/*.styl')
+    gulp.src(['src/styles/*.styl', '!src/styles/theme-common.styl'])
         .pipe(foreach(function(stream, file) {
+            var currentTheme = path.basename(file.path, '.styl');
+            var themeName = currentTheme.replace('theme-','');
             return stream
                 .pipe(stylus({
                     use: nib(),
                     compress: false
                 }))
-                .pipe(gulp.dest('./dist/styles/'));
+                .pipe(gulpIf(currentTheme !== 'ag-grid', replace('ag-common','ag-' + themeName)))
+                .pipe(gulp.dest('dist/styles/'));
         }));
-
 }
 
 function watchTask() {

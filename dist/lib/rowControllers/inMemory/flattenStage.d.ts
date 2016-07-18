@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -9,8 +9,14 @@ export declare class FlattenStage implements IRowNodeStage {
     private selectionController;
     private eventService;
     private context;
+<<<<<<< HEAD
     execute(rowsToFlatten: RowNode[]): RowNode[];
     private recursivelyAddToRowsToDisplay(rowsToFlatten, result, nextRowTop);
+=======
+    private columnController;
+    execute(rootNode: RowNode): RowNode[];
+    private recursivelyAddToRowsToDisplay(rowsToFlatten, result, nextRowTop, reduce);
+>>>>>>> upstream/master
     private addRowNodeToRowsToDisplay(rowNode, result, nextRowTop);
     private createFooterNode(groupNode);
 }

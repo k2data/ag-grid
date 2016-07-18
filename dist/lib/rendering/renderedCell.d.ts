@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -11,7 +11,6 @@ export declare class RenderedCell extends Component {
     private gridApi;
     private gridOptionsWrapper;
     private expressionService;
-    private selectionRendererFactory;
     private rowRenderer;
     private $compile;
     private templateService;
@@ -41,7 +40,10 @@ export declare class RenderedCell extends Component {
     private cellEditorInPopup;
     private hideEditorPopup;
     private scope;
+<<<<<<< HEAD
     private eCheckbox;
+=======
+>>>>>>> upstream/master
     private cellEditor;
     private cellRenderer;
     private value;
@@ -58,7 +60,6 @@ export declare class RenderedCell extends Component {
     getColumn(): Column;
     private getValue();
     private getDataForRow();
-    private setLeftOnCell();
     private addRangeSelectedListener();
     private addHighlightListener();
     private addChangeListener();
@@ -74,7 +75,11 @@ export declare class RenderedCell extends Component {
     private onPopupEditorClosed();
     private onTabKeyDown(event);
     private onBackspaceOrDeleteKeyPressed(key);
+<<<<<<< HEAD
     private onSpaceKeyPressed();
+=======
+    private onSpaceKeyPressed(event);
+>>>>>>> upstream/master
     private onNavigationKeyPressed(event, key);
     private addKeyPressListener();
     private onKeyDown(event);
@@ -85,7 +90,11 @@ export declare class RenderedCell extends Component {
     private addInCellEditor();
     private addPopupCellEditor();
     focusCell(forceBrowserFocus: boolean): void;
+<<<<<<< HEAD
     private stopEditing(reset?);
+=======
+    stopEditing(cancel?: boolean): void;
+>>>>>>> upstream/master
     private createParams();
     private createEvent(event, eventSource?);
     isCellEditable(): boolean;
@@ -104,7 +113,11 @@ export declare class RenderedCell extends Component {
     refreshCell(animate?: boolean, newData?: boolean): void;
     private putDataIntoCell();
     private formatValue(value);
+<<<<<<< HEAD
     private createRendererAndRefreshParams(valueFormatted);
+=======
+    private createRendererAndRefreshParams(valueFormatted, cellRendererParams);
+>>>>>>> upstream/master
     private useCellRenderer(cellRendererKey, cellRendererParams, valueFormatted);
     private addClasses();
 }

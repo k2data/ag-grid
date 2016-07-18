@@ -15,6 +15,7 @@ export interface CsvExportParams {
     skipHeader?: boolean;
     skipFooters?: boolean;
     skipGroups?: boolean;
+    suppressQuotes?: boolean;
     fileName?: string;
     customHeader?: string;
     customFooter?: string;
@@ -64,6 +65,7 @@ export class CsvCreator {
         }
         var inMemoryRowModel = <IInMemoryRowModel> this.rowModel;
 
+        var that = this;
         var result = '';
 
         var skipGroups = params && params.skipGroups;
@@ -74,11 +76,17 @@ export class CsvCreator {
         var allColumns = params && params.allColumns;
         var onlySelected = params && params.onlySelected;
         var columnSeparator = (params && params.columnSeparator) || ',';
-        var processCellCallback = params.processCellCallback;
+        var suppressQuotes = params && params.suppressQuotes;
+        var processCellCallback = params && params.processCellCallback;
+        var processHeaderCallback = params && params.processHeaderCallback;
+
+        // when in pivot mode, we always render cols on screen, never 'all columns'
+        var isPivotMode = this.columnController.isPivotMode();
+        var isRowGrouping = this.columnController.getRowGroupColumns().length > 0;
 
         var columnsToExport: Column[];
-        if (allColumns) {
-            columnsToExport = this.columnController.getAllColumns();
+        if (allColumns && !isPivotMode) {
+            columnsToExport = this.columnController.getAllPrimaryColumns();
         } else {
             columnsToExport = this.columnController.getAllDisplayedColumns();
         }
@@ -93,49 +101,61 @@ export class CsvCreator {
 
         // first pass, put in the header names of the cols
         if (!skipHeader) {
-            columnsToExport.forEach( (column: Column, index: number)=> {
-
-                var nameForCol = this.getHeaderName(params.processHeaderCallback, column);
-                if (nameForCol === null || nameForCol === undefined) {
-                    nameForCol = '';
-                }
-                if (index != 0) {
-                    result += columnSeparator;
-                }
-                result += '"' + this.escape(nameForCol) + '"';
-            });
+            columnsToExport.forEach(processHeaderColumn);
             result += LINE_SEPARATOR;
         }
 
-        inMemoryRowModel.forEachNodeAfterFilterAndSort( (node: RowNode) => {
+        if (isPivotMode) {
+            inMemoryRowModel.forEachPivotNode(processRow);
+        } else {
+            inMemoryRowModel.forEachNodeAfterFilterAndSort(processRow);
+        }
+
+        if (includeCustomFooter) {
+            result += params.customFooter;
+        }
+
+        function processRow(node: RowNode): void {
             if (skipGroups && node.group) { return; }
 
             if (skipFooters && node.footer) { return; }
 
             if (onlySelected && !node.isSelected()) { return; }
 
+            // if we are in pivotMode, then the grid will show the root node only
+            // if it's not a leaf group
+            var nodeIsRootNode = node.level===-1;
+            if (nodeIsRootNode && !node.leafGroup) { return; }
+
             columnsToExport.forEach( (column: Column, index: number)=> {
                 var valueForCell: any;
-                if (node.group && index === 0) {
-                    valueForCell =  this.createValueForGroupNode(node);
+                if (node.group && isRowGrouping && index === 0) {
+                    valueForCell =  that.createValueForGroupNode(node);
                 } else {
-                    valueForCell =  this.valueService.getValue(column, node);
+                    valueForCell =  that.valueService.getValue(column, node);
                 }
-                valueForCell = this.processCell(node, column, valueForCell, processCellCallback);
+                valueForCell = that.processCell(node, column, valueForCell, processCellCallback);
                 if (valueForCell === null || valueForCell === undefined) {
                     valueForCell = '';
                 }
                 if (index != 0) {
                     result += columnSeparator;
                 }
-                result += '"' + this.escape(valueForCell) + '"';
+                result += that.putInQuotes(valueForCell, suppressQuotes);
             });
 
             result += LINE_SEPARATOR;
-        });
+        }
 
-        if (includeCustomFooter) {
-            result += params.customFooter;
+        function processHeaderColumn(column: Column, index: number): void {
+            var nameForCol = that.getHeaderName(processHeaderCallback, column);
+            if (nameForCol === null || nameForCol === undefined) {
+                nameForCol = '';
+            }
+            if (index != 0) {
+                result += columnSeparator;
+            }
+            result += that.putInQuotes(nameForCol, suppressQuotes);
         }
 
         return result;
@@ -150,7 +170,7 @@ export class CsvCreator {
                 context: this.gridOptionsWrapper.getContext()
             });
         } else {
-            return this.columnController.getDisplayNameForCol(column);
+            return this.columnController.getDisplayNameForCol(column, true);
         }
     }
 
@@ -178,10 +198,11 @@ export class CsvCreator {
         return keys.reverse().join(' -> ');
     }
 
-    // replace each " with "" (ie two sets of double quotes is how to do double quotes in csv)
-    private escape(value: any): string {
+    private putInQuotes(value: any, suppressQuotes: boolean): string {
+        if (suppressQuotes) { return value; }
+
         if (value === null || value === undefined) {
-            return '';
+            return '""';
         }
 
         var stringValue: string;
@@ -190,11 +211,14 @@ export class CsvCreator {
         } else if (typeof value.toString === 'function') {
             stringValue = value.toString();
         } else {
-            console.warn('known value type during csv conversion');
+            console.warn('unknown value type during csv conversion');
             stringValue = '';
         }
 
-        return stringValue.replace(/"/g, "\"\"");
+        // replace each " with "" (ie two sets of double quotes is how to do double quotes in csv)
+        var valueEscaped = stringValue.replace(/"/g, "\"\"");
+
+        return '"' + valueEscaped + '"';
     }
 
 }

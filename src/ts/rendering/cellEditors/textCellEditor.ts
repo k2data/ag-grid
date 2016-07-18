@@ -1,11 +1,7 @@
 import {Constants} from "../../constants";
 import {Component} from "../../widgets/component";
 import {ICellEditor} from "./iCellEditor";
-
-enum StartState {
-    HighlightAll,
-    CursorAtEnd
-}
+import {Utils as _} from '../../utils';
 
 export class TextCellEditor extends Component implements ICellEditor {
 
@@ -40,7 +36,16 @@ export class TextCellEditor extends Component implements ICellEditor {
             }
         }
 
-        eInput.value = startValue;
+        if (_.exists(startValue)) {
+            eInput.value = startValue;
+        }
+
+        this.addDestroyableEventListener(eInput, 'keydown', (event: KeyboardEvent)=> {
+            var isNavigationKey = event.keyCode===Constants.KEY_LEFT || event.keyCode===Constants.KEY_RIGHT;
+            if (isNavigationKey) {
+                event.stopPropagation();
+            }
+        });
     }
 
     public afterGuiAttached(): void {

@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -47,7 +47,7 @@ var verticalStack_1 = require("./layout/verticalStack");
 var autoWidthCalculator_1 = require("./rendering/autoWidthCalculator");
 var renderedRow_1 = require("./rendering/renderedRow");
 var rowRenderer_1 = require("./rendering/rowRenderer");
-var fillterStage_1 = require("./rowControllers/inMemory/fillterStage");
+var filterStage_1 = require("./rowControllers/inMemory/filterStage");
 var flattenStage_1 = require("./rowControllers/inMemory/flattenStage");
 var sortStage_1 = require("./rowControllers/inMemory/sortStage");
 var floatingRowModel_1 = require("./rowControllers/floatingRowModel");
@@ -64,7 +64,6 @@ var gridCore_1 = require("./gridCore");
 var logger_1 = require("./logger");
 var masterSlaveService_1 = require("./masterSlaveService");
 var selectionController_1 = require("./selectionController");
-var selectionRendererFactory_1 = require("./selectionRendererFactory");
 var sortController_1 = require("./sortController");
 var svgFactory_1 = require("./svgFactory");
 var templateService_1 = require("./templateService");
@@ -82,6 +81,7 @@ var popupSelectCellEditor_1 = require("./rendering/cellEditors/popupSelectCellEd
 var popupTextCellEditor_1 = require("./rendering/cellEditors/popupTextCellEditor");
 var selectCellEditor_1 = require("./rendering/cellEditors/selectCellEditor");
 var textCellEditor_1 = require("./rendering/cellEditors/textCellEditor");
+<<<<<<< HEAD
 var cellRendererFactory_1 = require("./rendering/cellRendererFactory");
 var virtualList_1 = require("./widgets/virtualList");
 var richSelectCellEditor_1 = require("./rendering/cellEditors/richSelect/richSelectCellEditor");
@@ -89,6 +89,23 @@ var groupCellRenderer_1 = require("./rendering/cellRenderers/groupCellRenderer")
 var cellRendererService_1 = require("./rendering/cellRendererService");
 var valueFormatterService_1 = require("./rendering/valueFormatterService");
 var dateCellEditor_1 = require("./rendering/cellEditors/dateCellEditor");
+=======
+var largeTextCellEditor_1 = require("./rendering/cellEditors/largeTextCellEditor");
+var cellRendererFactory_1 = require("./rendering/cellRendererFactory");
+var groupCellRenderer_1 = require("./rendering/cellRenderers/groupCellRenderer");
+var cellRendererService_1 = require("./rendering/cellRendererService");
+var valueFormatterService_1 = require("./rendering/valueFormatterService");
+var checkboxSelectionComponent_1 = require("./rendering/checkboxSelectionComponent");
+var componentAnnotations_1 = require("./widgets/componentAnnotations");
+var agCheckbox_1 = require("./widgets/agCheckbox");
+var bodyDropPivotTarget_1 = require("./headerRendering/bodyDropPivotTarget");
+var bodyDropTarget_1 = require("./headerRendering/bodyDropTarget");
+var focusService_1 = require("./misc/focusService");
+var setLeftFeature_1 = require("./rendering/features/setLeftFeature");
+var renderedCell_1 = require("./rendering/renderedCell");
+var headerRowComp_1 = require("./headerRendering/headerRowComp");
+var animateShowChangeCellRenderer_1 = require("./rendering/cellRenderers/animateShowChangeCellRenderer");
+>>>>>>> upstream/master
 function populateClientExports(exports) {
     // columnController
     exports.BalancedColumnTreeBuilder = balancedColumnTreeBuilder_1.BalancedColumnTreeBuilder;
@@ -105,9 +122,18 @@ function populateClientExports(exports) {
     exports.Context = context_1.Context;
     exports.Autowired = context_1.Autowired;
     exports.PostConstruct = context_1.PostConstruct;
+<<<<<<< HEAD
     exports.Optional = context_1.Optional;
     exports.Bean = context_1.Bean;
     exports.Qualifier = context_1.Qualifier;
+=======
+    exports.PreDestroy = context_1.PreDestroy;
+    exports.Optional = context_1.Optional;
+    exports.Bean = context_1.Bean;
+    exports.Qualifier = context_1.Qualifier;
+    exports.Listener = componentAnnotations_1.Listener;
+    exports.QuerySelector = componentAnnotations_1.QuerySelector;
+>>>>>>> upstream/master
     // dragAndDrop
     exports.DragAndDropService = dragAndDropService_1.DragAndDropService;
     exports.DragService = dragService_1.DragService;
@@ -126,9 +152,12 @@ function populateClientExports(exports) {
     exports.GridPanel = gridPanel_1.GridPanel;
     exports.MouseEventService = mouseEventService_1.MouseEventService;
     // headerRendering
+    exports.BodyDropPivotTarget = bodyDropPivotTarget_1.BodyDropPivotTarget;
+    exports.BodyDropTarget = bodyDropTarget_1.BodyDropTarget;
     exports.CssClassApplier = cssClassApplier_1.CssClassApplier;
     exports.HeaderContainer = headerContainer_1.HeaderContainer;
     exports.HeaderRenderer = headerRenderer_1.HeaderRenderer;
+    exports.HeaderRowComp = headerRowComp_1.HeaderRowComp;
     exports.HeaderTemplateLoader = headerTemplateLoader_1.HeaderTemplateLoader;
     exports.HorizontalDragService = horizontalDragService_1.HorizontalDragService;
     exports.MoveColumnController = moveColumnController_1.MoveColumnController;
@@ -139,28 +168,49 @@ function populateClientExports(exports) {
     exports.BorderLayout = borderLayout_1.BorderLayout;
     exports.TabbedLayout = tabbedLayout_1.TabbedLayout;
     exports.VerticalStack = verticalStack_1.VerticalStack;
+<<<<<<< HEAD
     // rendering / cellEditors
     exports.DateCellEditor = dateCellEditor_1.DateCellEditor;
+=======
+    // misc
+    exports.FocusService = focusService_1.FocusService;
+    // rendering / cellEditors
+    exports.LargeTextCellEditor = largeTextCellEditor_1.LargeTextCellEditor;
+>>>>>>> upstream/master
     exports.PopupEditorWrapper = popupEditorWrapper_1.PopupEditorWrapper;
     exports.PopupSelectCellEditor = popupSelectCellEditor_1.PopupSelectCellEditor;
     exports.PopupTextCellEditor = popupTextCellEditor_1.PopupTextCellEditor;
     exports.SelectCellEditor = selectCellEditor_1.SelectCellEditor;
     exports.TextCellEditor = textCellEditor_1.TextCellEditor;
+<<<<<<< HEAD
     exports.RichSelectCellEditor = richSelectCellEditor_1.RichSelectCellEditor;
     // rendering / cellRenderers
     exports.AnimateSlideCellRenderer = animateSlideCellRenderer_1.AnimateSlideCellRenderer;
     exports.GroupCellRenderer = groupCellRenderer_1.GroupCellRenderer;
+=======
+    // rendering / cellRenderers
+    exports.AnimateShowChangeCellRenderer = animateShowChangeCellRenderer_1.AnimateShowChangeCellRenderer;
+    exports.AnimateSlideCellRenderer = animateSlideCellRenderer_1.AnimateSlideCellRenderer;
+    exports.GroupCellRenderer = groupCellRenderer_1.GroupCellRenderer;
+    // features
+    exports.SetLeftFeature = setLeftFeature_1.SetLeftFeature;
+>>>>>>> upstream/master
     // rendering
     exports.AutoWidthCalculator = autoWidthCalculator_1.AutoWidthCalculator;
     exports.CellEditorFactory = cellEditorFactory_1.CellEditorFactory;
     exports.RenderedHeaderCell = renderedHeaderCell_1.RenderedHeaderCell;
     exports.CellRendererFactory = cellRendererFactory_1.CellRendererFactory;
     exports.CellRendererService = cellRendererService_1.CellRendererService;
+<<<<<<< HEAD
+=======
+    exports.CheckboxSelectionComponent = checkboxSelectionComponent_1.CheckboxSelectionComponent;
+    exports.RenderedCell = renderedCell_1.RenderedCell;
+>>>>>>> upstream/master
     exports.RenderedRow = renderedRow_1.RenderedRow;
     exports.RowRenderer = rowRenderer_1.RowRenderer;
     exports.ValueFormatterService = valueFormatterService_1.ValueFormatterService;
     // rowControllers/inMemory
-    exports.FilterStage = fillterStage_1.FilterStage;
+    exports.FilterStage = filterStage_1.FilterStage;
     exports.FlattenStage = flattenStage_1.FlattenStage;
     exports.InMemoryRowModel = inMemoryRowModel_1.InMemoryRowModel;
     exports.SortStage = sortStage_1.SortStage;
@@ -169,11 +219,22 @@ function populateClientExports(exports) {
     exports.PaginationController = paginationController_1.PaginationController;
     exports.VirtualPageRowModel = virtualPageRowModel_1.VirtualPageRowModel;
     // widgets
+<<<<<<< HEAD
     exports.PopupService = popupService_1.PopupService;
     exports.MenuItemComponent = menuItemComponent_1.MenuItemComponent;
+=======
+    exports.AgCheckbox = agCheckbox_1.AgCheckbox;
+>>>>>>> upstream/master
     exports.Component = component_1.Component;
+    exports.PopupService = popupService_1.PopupService;
+    exports.MenuItemComponent = menuItemComponent_1.MenuItemComponent;
     exports.MenuList = menuList_1.MenuList;
+<<<<<<< HEAD
     exports.VirtualList = virtualList_1.VirtualList;
+=======
+    exports.Listener = componentAnnotations_1.Listener;
+    exports.QuerySelector = componentAnnotations_1.QuerySelector;
+>>>>>>> upstream/master
     // root
     exports.CellNavigationService = cellNavigationService_1.CellNavigationService;
     exports.ColumnChangeEvent = columnChangeEvent_1.ColumnChangeEvent;
@@ -191,11 +252,12 @@ function populateClientExports(exports) {
     exports.Logger = logger_1.Logger;
     exports.MasterSlaveService = masterSlaveService_1.MasterSlaveService;
     exports.SelectionController = selectionController_1.SelectionController;
-    exports.SelectionRendererFactory = selectionRendererFactory_1.SelectionRendererFactory;
+    exports.CheckboxSelectionComponent = checkboxSelectionComponent_1.CheckboxSelectionComponent;
     exports.SortController = sortController_1.SortController;
     exports.SvgFactory = svgFactory_1.SvgFactory;
     exports.TemplateService = templateService_1.TemplateService;
     exports.Utils = utils_1.Utils;
+    exports.NumberSequence = utils_1.NumberSequence;
     exports.ValueService = valueService_1.ValueService;
 }
 exports.populateClientExports = populateClientExports;

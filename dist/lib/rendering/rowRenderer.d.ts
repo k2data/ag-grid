@@ -1,9 +1,10 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { Column } from "../entities/column";
 import { RowNode } from "../entities/rowNode";
+import { RenderedCell } from "./renderedCell";
 import { LoggerFactory } from "../logger";
 import { ColumnChangeEvent } from "../columnChangeEvent";
 import { GridCell } from "../entities/gridCell";
@@ -11,7 +12,6 @@ export declare class RowRenderer {
     private columnController;
     private gridOptionsWrapper;
     private gridCore;
-    private selectionRendererFactory;
     private gridPanel;
     private $compile;
     private $scope;
@@ -45,6 +45,7 @@ export declare class RowRenderer {
     private eFloatingBottomPinnedLeftContainer;
     private eFloatingBottomPinnedRightContainer;
     private logger;
+    private destroyFunctions;
     agWire(loggerFactory: LoggerFactory): void;
     init(): void;
     onColumnEvent(event: ColumnChangeEvent): void;
@@ -57,6 +58,9 @@ export declare class RowRenderer {
     refreshView(refreshEvent?: any): void;
     private restoreFocusedCell(gridCell);
     softRefreshView(): void;
+    stopEditing(cancel?: boolean): void;
+    forEachRenderedCell(callback: (renderedCell: RenderedCell) => void): void;
+    private forEachRenderedRow(callback);
     addRenderedRowListener(eventName: string, rowIndex: number, callback: Function): void;
     refreshRows(rowNodes: RowNode[]): void;
     refreshCells(rowNodes: RowNode[], colIds: string[], animate?: boolean): void;
@@ -76,5 +80,9 @@ export declare class RowRenderer {
     getRenderedNodes(): any[];
     navigateToNextCell(key: any, rowIndex: number, column: Column, floating: string): void;
     private getComponentForCell(gridCell);
+<<<<<<< HEAD
     moveFocusToNextCell(rowIndex: any, column: any, floating: string, shiftKey: boolean, startEditing: boolean): void;
+=======
+    moveFocusToNextCell(rowIndex: any, column: any, floating: string, shiftKey: boolean, startEditing: boolean): boolean;
+>>>>>>> upstream/master
 }

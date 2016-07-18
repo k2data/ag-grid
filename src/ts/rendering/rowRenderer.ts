@@ -1,6 +1,5 @@
 import {Utils as _} from "../utils";
 import {GridOptionsWrapper} from "../gridOptionsWrapper";
-import {SelectionRendererFactory} from "../selectionRendererFactory";
 import {GridPanel} from "../gridPanel/gridPanel";
 import {ExpressionService} from "../expressionService";
 import {TemplateService} from "../templateService";
@@ -30,7 +29,6 @@ export class RowRenderer {
     @Autowired('columnController') private columnController: ColumnController;
     @Autowired('gridOptionsWrapper') private gridOptionsWrapper: GridOptionsWrapper;
     @Autowired('gridCore') private gridCore: GridCore;
-    @Autowired('selectionRendererFactory') private selectionRendererFactory: SelectionRendererFactory;
     @Autowired('gridPanel') private gridPanel: GridPanel;
     @Autowired('$compile') private $compile: any;
     @Autowired('$scope') private $scope: any;
@@ -72,6 +70,8 @@ export class RowRenderer {
 
     private logger: Logger;
 
+    private destroyFunctions: Function[] = [];
+
     public agWire(@Qualifier('loggerFactory') loggerFactory: LoggerFactory) {
         this.logger = this.loggerFactory.create('RowRenderer');
         this.logger = loggerFactory.create('BalancedColumnTreeBuilder');
@@ -80,27 +80,29 @@ export class RowRenderer {
     @PostConstruct
     public init(): void {
         this.getContainersFromGridPanel();
+        
+        var columnListener = this.onColumnEvent.bind(this);
+        var refreshViewListener = this.refreshView.bind(this);
 
-        this.eventService.addEventListener(Events.EVENT_COLUMN_GROUP_OPENED, this.onColumnEvent.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_VISIBLE, this.onColumnEvent.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_RESIZED, this.onColumnEvent.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_PINNED, this.onColumnEvent.bind(this));
-        this.eventService.addEventListener(Events.EVENT_COLUMN_ROW_GROUP_CHANGE, this.onColumnEvent.bind(this));
+        this.eventService.addEventListener(Events.EVENT_DISPLAYED_COLUMNS_CHANGED, columnListener);
+        this.eventService.addEventListener(Events.EVENT_COLUMN_RESIZED, columnListener);
+        
+        this.eventService.addEventListener(Events.EVENT_MODEL_UPDATED, refreshViewListener);
+        this.eventService.addEventListener(Events.EVENT_FLOATING_ROW_DATA_CHANGED, refreshViewListener);
 
-        this.eventService.addEventListener(Events.EVENT_MODEL_UPDATED, this.refreshView.bind(this));
-        this.eventService.addEventListener(Events.EVENT_FLOATING_ROW_DATA_CHANGED, this.refreshView.bind(this, null));
+        this.destroyFunctions.push( () => {
+            this.eventService.removeEventListener(Events.EVENT_DISPLAYED_COLUMNS_CHANGED, columnListener);
+            this.eventService.removeEventListener(Events.EVENT_COLUMN_RESIZED, columnListener);
 
-        //this.eventService.addEventListener(Events.EVENT_COLUMN_VALUE_CHANGE, this.refreshView.bind(this, null));
-        //this.eventService.addEventListener(Events.EVENT_COLUMN_EVERYTHING_CHANGED, this.refreshView.bind(this, null));
-        //this.eventService.addEventListener(Events.EVENT_COLUMN_ROW_GROUP_CHANGE, this.refreshView.bind(this, null));
+            this.eventService.removeEventListener(Events.EVENT_MODEL_UPDATED, refreshViewListener);
+            this.eventService.removeEventListener(Events.EVENT_FLOATING_ROW_DATA_CHANGED, refreshViewListener);
+        });
 
         this.refreshView();
     }
 
     public onColumnEvent(event: ColumnChangeEvent): void {
-        if (event.isContainerWidthImpacted()) {
-            this.setMainRowWidths();
-        }
+        this.setMainRowWidths();
     }
 
     public getContainersFromGridPanel(): void {
@@ -188,9 +190,7 @@ export class RowRenderer {
 
         // if no cols, don't draw row - can we get rid of this???
         var columns = this.columnController.getAllDisplayedColumns();
-        if (!columns || columns.length == 0) {
-            return;
-        }
+        if (_.missingOrEmpty(columns)) { return; }
 
         if (rowNodes) {
             rowNodes.forEach( (node: RowNode, rowIndex: number) => {
@@ -209,9 +209,7 @@ export class RowRenderer {
     public refreshView(refreshEvent?: any) {
         this.logger.log('refreshView');
 
-        var focusedCell = this.focusedCellController.getFocusCellIfBrowserFocused();
-
-        this.focusedCellController.getFocusedCell();
+        var focusedCell = this.focusedCellController.getFocusCellToUseAfterRefresh();
 
         var refreshFromIndex: number = refreshEvent ? refreshEvent.fromIndex : null;
 
@@ -239,13 +237,33 @@ export class RowRenderer {
     }
 
     public softRefreshView() {
-        var focusedCell = this.focusedCellController.getFocusCellIfBrowserFocused();
+        var focusedCell = this.focusedCellController.getFocusCellToUseAfterRefresh();
 
-        _.iterateObject(this.renderedRows, (key: any, renderedRow: RenderedRow)=> {
-            renderedRow.softRefresh();
+        this.forEachRenderedCell( renderedCell => {
+            if (renderedCell.isVolatile()) {
+                renderedCell.refreshCell();
+            }
         });
 
         this.restoreFocusedCell(focusedCell);
+    }
+
+    public stopEditing(cancel: boolean = false) {
+        this.forEachRenderedCell( renderedCell => {
+            renderedCell.stopEditing(cancel);
+        });
+    }
+    
+    public forEachRenderedCell(callback: (renderedCell: RenderedCell)=>void): void {
+        _.iterateObject(this.renderedRows, (key: any, renderedRow: RenderedRow)=> {
+            renderedRow.forEachRenderedCell(callback);
+        });
+    }
+
+    private forEachRenderedRow(callback: (key: string, renderedCell: RenderedRow)=>void): void {
+        _.iterateObject(this.renderedRows, callback);
+        _.iterateObject(this.renderedTopFloatingRows, callback);
+        _.iterateObject(this.renderedBottomFloatingRows, callback);
     }
 
     public addRenderedRowListener(eventName: string, rowIndex: number, callback: Function): void {
@@ -258,7 +276,7 @@ export class RowRenderer {
             return;
         }
 
-        var focusedCell = this.focusedCellController.getFocusCellIfBrowserFocused();
+        var focusedCell = this.focusedCellController.getFocusCellToUseAfterRefresh();
 
         // we only need to be worried about rendered rows, as this method is
         // called to whats rendered. if the row isn't rendered, we don't care
@@ -311,6 +329,8 @@ export class RowRenderer {
 
     @PreDestroy
     private destroy() {
+        this.destroyFunctions.forEach(func => func());
+
         var rowsToRemove = Object.keys(this.renderedRows);
         this.removeVirtualRow(rowsToRemove);
     }
@@ -482,9 +502,7 @@ export class RowRenderer {
     private insertRow(node: any, rowIndex: any) {
         var columns = this.columnController.getAllDisplayedColumns();
         // if no cols, don't draw row
-        if (!columns || columns.length == 0) {
-            return;
-        }
+        if (_.missingOrEmpty(columns)) { return; }
 
         var renderedRow = new RenderedRow(this.$scope,
             this, this.eBodyContainer, this.ePinnedLeftColsContainer, this.ePinnedRightColsContainer,
@@ -572,21 +590,23 @@ export class RowRenderer {
         return cellComponent;
     }
 
-    // called by the cell, when tab is pressed while editing
-    public moveFocusToNextCell(rowIndex: any, column: any, floating: string, shiftKey: boolean, startEditing: boolean) {
+    // called by the cell, when tab is pressed while editing.
+    // @return: true when navigation successful, otherwise false
+    public moveFocusToNextCell(rowIndex: any, column: any, floating: string, shiftKey: boolean, startEditing: boolean): boolean {
 
         var nextCell = new GridCell(rowIndex, floating, column);
 
         while (true) {
 
             nextCell = this.cellNavigationService.getNextTabbedCell(nextCell, shiftKey);
-            var nextRenderedCell = this.getComponentForCell(nextCell);
 
             // if no 'next cell', means we have got to last cell of grid, so nothing to move to,
             // so bottom right cell going forwards, or top left going backwards
-            if (!nextRenderedCell) {
-                return;
+            if (!nextCell) {
+                return false;
             }
+
+            var nextRenderedCell = this.getComponentForCell(nextCell);
 
             // if editing, but cell not editable, skip cell
             if (startEditing && !nextRenderedCell.isCellEditable()) {
@@ -617,7 +637,8 @@ export class RowRenderer {
                 this.rangeController.setRangeToCell(new GridCell(nextCell.rowIndex, nextCell.floating, nextCell.column));
             }
 
-            return;
+            // we successfully tabbed onto a grid cell, so return true
+            return true;
         }
     }
 }

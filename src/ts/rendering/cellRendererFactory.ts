@@ -4,7 +4,6 @@ import {ICellRenderer, ICellRendererFunc} from "./cellRenderers/iCellRenderer";
 import {GridOptionsWrapper} from "../gridOptionsWrapper";
 import {EventService} from "../eventService";
 import {ExpressionService} from "../expressionService";
-import {SelectionRendererFactory} from "../selectionRendererFactory";
 import {AnimateSlideCellRenderer} from "./cellRenderers/animateSlideCellRenderer";
 import {AnimateShowChangeCellRenderer} from "./cellRenderers/animateShowChangeCellRenderer";
 import {GroupCellRenderer} from "./cellRenderers/groupCellRenderer";
@@ -17,7 +16,6 @@ export class CellRendererFactory {
     public static GROUP = 'group';
 
     @Autowired('gridOptionsWrapper') private gridOptionsWrapper: GridOptionsWrapper;
-    @Autowired('selectionRendererFactory') private selectionRendererFactory: SelectionRendererFactory;
     @Autowired('expressionService') private expressionService: ExpressionService;
     @Autowired('eventService') private eventService: EventService;
 
@@ -29,11 +27,15 @@ export class CellRendererFactory {
         this.cellRendererMap[CellRendererFactory.ANIMATE_SHOW_CHANGE] = AnimateShowChangeCellRenderer;
         this.cellRendererMap[CellRendererFactory.GROUP] = GroupCellRenderer;
 
+        // this.registerRenderersFromGridOptions();
     }
 
-    private registerRenderersFromGridOptions(): void {
-        
-    }
+    // private registerRenderersFromGridOptions(): void {
+    //     var userProvidedCellRenderers = this.gridOptionsWrapper.getCellRenderers();
+    //     _.iterateObject(userProvidedCellRenderers, (key: string, cellRenderer: {new(): ICellRenderer} | ICellRendererFunc)=> {
+    //         this.addCellRenderer(key, cellRenderer);
+    //     });
+    // }
 
     public addCellRenderer(key: string, cellRenderer: {new(): ICellRenderer} | ICellRendererFunc): void {
         this.cellRendererMap[key] = cellRenderer;

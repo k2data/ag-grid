@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -46,12 +46,19 @@ var CsvCreator = (function () {
         }
     };
     CsvCreator.prototype.getDataAsCsv = function (params) {
+<<<<<<< HEAD
         var _this = this;
+=======
+>>>>>>> upstream/master
         if (this.rowModel.getType() !== constants_1.Constants.ROW_MODEL_TYPE_NORMAL) {
             console.log('ag-Grid: getDataAsCsv is only available for standard row model');
             return '';
         }
         var inMemoryRowModel = this.rowModel;
+<<<<<<< HEAD
+=======
+        var that = this;
+>>>>>>> upstream/master
         var result = '';
         var skipGroups = params && params.skipGroups;
         var skipHeader = params && params.skipHeader;
@@ -61,10 +68,15 @@ var CsvCreator = (function () {
         var allColumns = params && params.allColumns;
         var onlySelected = params && params.onlySelected;
         var columnSeparator = (params && params.columnSeparator) || ',';
-        var processCellCallback = params.processCellCallback;
+        var suppressQuotes = params && params.suppressQuotes;
+        var processCellCallback = params && params.processCellCallback;
+        var processHeaderCallback = params && params.processHeaderCallback;
+        // when in pivot mode, we always render cols on screen, never 'all columns'
+        var isPivotMode = this.columnController.isPivotMode();
+        var isRowGrouping = this.columnController.getRowGroupColumns().length > 0;
         var columnsToExport;
-        if (allColumns) {
-            columnsToExport = this.columnController.getAllColumns();
+        if (allColumns && !isPivotMode) {
+            columnsToExport = this.columnController.getAllPrimaryColumns();
         }
         else {
             columnsToExport = this.columnController.getAllDisplayedColumns();
@@ -77,6 +89,7 @@ var CsvCreator = (function () {
         }
         // first pass, put in the header names of the cols
         if (!skipHeader) {
+<<<<<<< HEAD
             columnsToExport.forEach(function (column, index) {
                 var nameForCol = _this.getHeaderName(params.processHeaderCallback, column);
                 if (nameForCol === null || nameForCol === undefined) {
@@ -90,6 +103,21 @@ var CsvCreator = (function () {
             result += LINE_SEPARATOR;
         }
         inMemoryRowModel.forEachNodeAfterFilterAndSort(function (node) {
+=======
+            columnsToExport.forEach(processHeaderColumn);
+            result += LINE_SEPARATOR;
+        }
+        if (isPivotMode) {
+            inMemoryRowModel.forEachPivotNode(processRow);
+        }
+        else {
+            inMemoryRowModel.forEachNodeAfterFilterAndSort(processRow);
+        }
+        if (includeCustomFooter) {
+            result += params.customFooter;
+        }
+        function processRow(node) {
+>>>>>>> upstream/master
             if (skipGroups && node.group) {
                 return;
             }
@@ -99,27 +127,40 @@ var CsvCreator = (function () {
             if (onlySelected && !node.isSelected()) {
                 return;
             }
+            // if we are in pivotMode, then the grid will show the root node only
+            // if it's not a leaf group
+            var nodeIsRootNode = node.level === -1;
+            if (nodeIsRootNode && !node.leafGroup) {
+                return;
+            }
             columnsToExport.forEach(function (column, index) {
                 var valueForCell;
-                if (node.group && index === 0) {
-                    valueForCell = _this.createValueForGroupNode(node);
+                if (node.group && isRowGrouping && index === 0) {
+                    valueForCell = that.createValueForGroupNode(node);
                 }
                 else {
-                    valueForCell = _this.valueService.getValue(column, node);
+                    valueForCell = that.valueService.getValue(column, node);
                 }
-                valueForCell = _this.processCell(node, column, valueForCell, processCellCallback);
+                valueForCell = that.processCell(node, column, valueForCell, processCellCallback);
                 if (valueForCell === null || valueForCell === undefined) {
                     valueForCell = '';
                 }
                 if (index != 0) {
                     result += columnSeparator;
                 }
-                result += '"' + _this.escape(valueForCell) + '"';
+                result += that.putInQuotes(valueForCell, suppressQuotes);
             });
             result += LINE_SEPARATOR;
-        });
-        if (includeCustomFooter) {
-            result += params.customFooter;
+        }
+        function processHeaderColumn(column, index) {
+            var nameForCol = that.getHeaderName(processHeaderCallback, column);
+            if (nameForCol === null || nameForCol === undefined) {
+                nameForCol = '';
+            }
+            if (index != 0) {
+                result += columnSeparator;
+            }
+            result += that.putInQuotes(nameForCol, suppressQuotes);
         }
         return result;
     };
@@ -133,7 +174,11 @@ var CsvCreator = (function () {
             });
         }
         else {
+<<<<<<< HEAD
             return this.columnController.getDisplayNameForCol(column);
+=======
+            return this.columnController.getDisplayNameForCol(column, true);
+>>>>>>> upstream/master
         }
     };
     CsvCreator.prototype.processCell = function (rowNode, column, value, processCellCallback) {
@@ -159,10 +204,12 @@ var CsvCreator = (function () {
         }
         return keys.reverse().join(' -> ');
     };
-    // replace each " with "" (ie two sets of double quotes is how to do double quotes in csv)
-    CsvCreator.prototype.escape = function (value) {
+    CsvCreator.prototype.putInQuotes = function (value, suppressQuotes) {
+        if (suppressQuotes) {
+            return value;
+        }
         if (value === null || value === undefined) {
-            return '';
+            return '""';
         }
         var stringValue;
         if (typeof value === 'string') {
@@ -172,10 +219,12 @@ var CsvCreator = (function () {
             stringValue = value.toString();
         }
         else {
-            console.warn('known value type during csv conversion');
+            console.warn('unknown value type during csv conversion');
             stringValue = '';
         }
-        return stringValue.replace(/"/g, "\"\"");
+        // replace each " with "" (ie two sets of double quotes is how to do double quotes in csv)
+        var valueEscaped = stringValue.replace(/"/g, "\"\"");
+        return '"' + valueEscaped + '"';
     };
     __decorate([
         context_1.Autowired('rowModel'), 

@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -62,7 +62,9 @@ var MenuItemComponent = (function (_super) {
         if (params.disabled) {
             utils_1.Utils.addCssClass(this.getGui(), 'ag-menu-option-disabled');
         }
-        this.addGuiEventListener('click', this.onOptionSelected.bind(this));
+        else {
+            this.addGuiEventListener('click', this.onOptionSelected.bind(this));
+        }
     }
     MenuItemComponent.prototype.onOptionSelected = function () {
         this.dispatchEvent(MenuItemComponent.EVENT_ITEM_SELECTED, this.params);

@@ -95,26 +95,6 @@ export class ColumnChangeEvent {
         return this.columnGroup;
     }
 
-    public isPinnedPanelVisibilityImpacted(): boolean {
-        return this.type ===  Events.EVENT_COLUMN_EVERYTHING_CHANGED ||
-            this.type ===  Events.EVENT_COLUMN_GROUP_OPENED ||
-            this.type ===  Events.EVENT_COLUMN_VISIBLE ||
-            this.type ===  Events.EVENT_COLUMN_PINNED
-    }
-
-    public isContainerWidthImpacted(): boolean {
-        return this.type ===  Events.EVENT_COLUMN_EVERYTHING_CHANGED ||
-            this.type ===  Events.EVENT_COLUMN_GROUP_OPENED ||
-            this.type ===  Events.EVENT_COLUMN_VISIBLE ||
-            this.type ===  Events.EVENT_COLUMN_RESIZED ||
-            this.type ===  Events.EVENT_COLUMN_PINNED ||
-            this.type ===  Events.EVENT_COLUMN_ROW_GROUP_CHANGE;
-    }
-
-    public isIndividualColumnResized(): boolean {
-        return this.type === Events.EVENT_COLUMN_RESIZED && this.column !== undefined && this.column !== null;
-    }
-
     public isFinished(): boolean {
         return this.finished;
     }

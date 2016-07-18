@@ -144,7 +144,8 @@ export class VirtualPageRowModel implements IRowModel {
         this.overflowSize = this.datasource.overflowSize; // take a copy of page size, we don't want it changing
 
         this.doLoadOrQueue(0);
-        this.rowRenderer.refreshView();
+
+        this.eventService.dispatchEvent(Events.EVENT_MODEL_UPDATED);
     }
 
     private createNodesFromRows(pageNumber: any, rows: any) {
@@ -347,7 +348,8 @@ export class VirtualPageRowModel implements IRowModel {
             successCallback: successCallback,
             failCallback: failCallback,
             sortModel: sortModel,
-            filterModel: filterModel
+            filterModel: filterModel,
+            context: this.gridOptionsWrapper.getContext()
         };
 
         // check if old version of datasource used
@@ -357,7 +359,10 @@ export class VirtualPageRowModel implements IRowModel {
             console.warn('ag-grid: From ag-grid 1.9.0, now the getRows takes one parameter. See the documentation for details.');
         }
 
-        this.datasource.getRows(params);
+        // put in timeout, to force result to be async
+        setTimeout( ()=> {
+            this.datasource.getRows(params);
+        }, 0);
 
         function successCallback(rows: any, lastRowIndex: any) {
             if (that.requestIsDaemon(datasourceVersionCopy)) {

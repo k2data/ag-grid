@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -111,7 +111,7 @@ var VirtualPageRowModel = (function () {
         this.pageSize = this.datasource.pageSize; // take a copy of page size, we don't want it changing
         this.overflowSize = this.datasource.overflowSize; // take a copy of page size, we don't want it changing
         this.doLoadOrQueue(0);
-        this.rowRenderer.refreshView();
+        this.eventService.dispatchEvent(events_1.Events.EVENT_MODEL_UPDATED);
     };
     VirtualPageRowModel.prototype.createNodesFromRows = function (pageNumber, rows) {
         var nodes = [];
@@ -267,6 +267,10 @@ var VirtualPageRowModel = (function () {
         }
     };
     VirtualPageRowModel.prototype.loadPage = function (pageNumber) {
+<<<<<<< HEAD:dist/lib/rowControllers/virtualPageRowModel.js
+=======
+        var _this = this;
+>>>>>>> upstream/master:dist/lib/rowControllers/virtualPageRowModel.js
         this.pageLoadsInProgress.push(pageNumber);
         var startRow = pageNumber * this.pageSize;
         var endRow = (pageNumber + 1) * this.pageSize;
@@ -286,7 +290,8 @@ var VirtualPageRowModel = (function () {
             successCallback: successCallback,
             failCallback: failCallback,
             sortModel: sortModel,
-            filterModel: filterModel
+            filterModel: filterModel,
+            context: this.gridOptionsWrapper.getContext()
         };
         // check if old version of datasource used
         var getRowsParams = utils_1.Utils.getFunctionParameters(this.datasource.getRows);
@@ -294,7 +299,10 @@ var VirtualPageRowModel = (function () {
             console.warn('ag-grid: It looks like your paging datasource is of the old type, taking more than one parameter.');
             console.warn('ag-grid: From ag-grid 1.9.0, now the getRows takes one parameter. See the documentation for details.');
         }
-        this.datasource.getRows(params);
+        // put in timeout, to force result to be async
+        setTimeout(function () {
+            _this.datasource.getRows(params);
+        }, 0);
         function successCallback(rows, lastRowIndex) {
             if (that.requestIsDaemon(datasourceVersionCopy)) {
                 return;

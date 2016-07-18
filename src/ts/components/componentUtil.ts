@@ -2,6 +2,7 @@ import {GridOptions} from "../entities/gridOptions";
 import {GridApi} from "../gridApi";
 import {Events} from "../events";
 import {Utils as _} from "../utils";
+import {ColumnApi} from "../columnController/columnController";
 
 export class ComponentUtil {
 
@@ -17,7 +18,8 @@ export class ComponentUtil {
 
     public static OBJECT_PROPERTIES = [
         'rowStyle','context','groupColumnDef','localeText','icons','datasource','viewportDatasource',
-        'groupRowRendererParams','cellRenderers','cellEditors'
+        'groupRowRendererParams', 'aggFuncs'
+        //,'cellRenderers','cellEditors'
     ];
 
     public static ARRAY_PROPERTIES = [
@@ -26,11 +28,12 @@ export class ComponentUtil {
 
     public static NUMBER_PROPERTIES = [
         'rowHeight','rowBuffer','colWidth','headerHeight','groupDefaultExpanded',
-        'minColWidth','maxColWidth','viewportRowModelPageSize','viewportRowModelBufferSize'
+        'minColWidth','maxColWidth','viewportRowModelPageSize','viewportRowModelBufferSize',
+        'layoutInterval'
     ];
 
     public static BOOLEAN_PROPERTIES = [
-        'toolPanelSuppressGroups','toolPanelSuppressValues',
+        'toolPanelSuppressRowGroups','toolPanelSuppressValues','toolPanelSuppressPivots', 'toolPanelSuppressPivotMode',
         'suppressRowClickSelection','suppressCellSelection','suppressHorizontalScroll','debug',
         'enableColResize','enableCellExpressions','enableSorting','enableServerSideSorting',
         'enableFilter','enableServerSideFilter','angularCompileRows','angularCompileFilters',
@@ -40,15 +43,19 @@ export class ComponentUtil {
         'singleClickEdit','suppressLoadingOverlay','suppressNoRowsOverlay','suppressAutoSize',
         'suppressParentsInRowNodes','showToolPanel','suppressColumnMoveAnimation','suppressMovableColumns',
         'suppressFieldDotNotation','enableRangeSelection','suppressEnterprise','rowGroupPanelShow',
+        'pivotPanelShow',
         'suppressContextMenu','suppressMenuFilterPanel','suppressMenuMainPanel','suppressMenuColumnPanel',
-        'enableStatusBar','rememberGroupStateWhenNewData', 'enableCellChangeFlash'
+        'enableStatusBar','rememberGroupStateWhenNewData', 'enableCellChangeFlash', 'suppressDragLeaveHidesColumns',
+        'suppressMiddleClickScrolls','suppressPreventDefaultOnMouseWheel', 'suppressUseColIdForGroups',
+        'suppressCopyRowsToClipboard','pivotMode', 'suppressAggFuncInHeader', 'suppressColumnVirtualisation',
+        'suppressFocusAfterRefresh', 'functionsPassive', 'functionsReadOnly'
     ];
 
     public static FUNCTION_PROPERTIES = ['headerCellRenderer', 'localeTextFunc', 'groupRowInnerRenderer',
-        'groupRowRenderer', 'groupAggFunction', 'isScrollLag', 'isExternalFilterPresent', 'getRowHeight',
+        'groupRowRenderer', 'isScrollLag', 'isExternalFilterPresent', 'getRowHeight',
         'doesExternalFilterPass', 'getRowClass','getRowStyle', 'getHeaderCellTemplate', 'traverseNode',
         'getContextMenuItems', 'getMainMenuItems', 'processRowPostCreate', 'processCellForClipboard',
-        'getNodeChildDetails'];
+        'getNodeChildDetails', 'groupRowAggNodes'];
 
     public static ALL_PROPERTIES = ComponentUtil.ARRAY_PROPERTIES
         .concat(ComponentUtil.OBJECT_PROPERTIES)
@@ -113,9 +120,8 @@ export class ComponentUtil {
     }
 
     // change this method, the caller should know if it's initialised or not, plus 'initialised'
-    // is not relevant for all component types.
-    // maybe pass in the api and columnApi instead???
-    public static processOnChange(changes: any, gridOptions: GridOptions, api: GridApi): void {
+    // is not relevant for all component types. maybe pass in the api and columnApi instead???
+    public static processOnChange(changes: any, gridOptions: GridOptions, api: GridApi, columnApi: ColumnApi): void {
         //if (!component._initialised || !changes) { return; }
         if (!changes) { return; }
 
@@ -150,7 +156,7 @@ export class ComponentUtil {
         });
 
         if (changes.showToolPanel) {
-            api.showToolPanel(changes.showToolPanel.currentValue);
+            api.showToolPanel(ComponentUtil.toBoolean(changes.showToolPanel.currentValue));
         }
 
         if (changes.quickFilterText) {
@@ -178,7 +184,11 @@ export class ComponentUtil {
         }
 
         if (changes.headerHeight) {
-            api.setHeaderHeight(changes.headerHeight.currentValue);
+            api.setHeaderHeight(ComponentUtil.toNumber(changes.headerHeight.currentValue));
+        }
+        
+        if (changes.pivotMode) {
+            columnApi.setPivotMode(ComponentUtil.toBoolean(changes.pivotMode.currentValue));
         }
     }
 

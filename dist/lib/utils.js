@@ -1,14 +1,33 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
 var FUNCTION_STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var FUNCTION_ARGUMENT_NAMES = /([^\s,]+)/g;
+// util class, only used when debugging, for printing time to console
+var Timer = (function () {
+    function Timer() {
+        this.timestamp = new Date().getTime();
+    }
+    Timer.prototype.print = function (msg) {
+        var duration = (new Date().getTime()) - this.timestamp;
+        console.log(msg + " = " + duration);
+        this.timestamp = new Date().getTime();
+    };
+    return Timer;
+})();
+exports.Timer = Timer;
 var Utils = (function () {
     function Utils() {
     }
+    Utils.getNameOfClass = function (TheClass) {
+        var funcNameRegex = /function (.{1,})\(/;
+        var funcAsString = TheClass.toString();
+        var results = (funcNameRegex).exec(funcAsString);
+        return (results && results.length > 1) ? results[1] : "";
+    };
     Utils.iterateObject = function (object, callback) {
         if (this.missing(object)) {
             return;
@@ -288,10 +307,37 @@ var Utils = (function () {
             }
         }
     };
+    Utils.removeRepeatsFromArray = function (array, object) {
+        if (!array) {
+            return;
+        }
+        for (var index = array.length - 2; index >= 0; index--) {
+            var thisOneMatches = array[index] === object;
+            var nextOneMatches = array[index + 1] === object;
+            if (thisOneMatches && nextOneMatches) {
+                array.splice(index + 1, 1);
+            }
+        }
+    };
     Utils.removeFromArray = function (array, object) {
         if (array.indexOf(object) >= 0) {
             array.splice(array.indexOf(object), 1);
         }
+    };
+    Utils.insertIntoArray = function (array, object, toIndex) {
+        array.splice(toIndex, 0, object);
+    };
+    Utils.moveInArray = function (array, objectsToMove, toIndex) {
+        var _this = this;
+        // first take out it items from the array
+        objectsToMove.forEach(function (obj) {
+            _this.removeFromArray(array, obj);
+        });
+        // now add the objects, in same order as provided to us, that means we start at the end
+        // as the objects will be pushed to the right as they are inserted
+        objectsToMove.slice().reverse().forEach(function (obj) {
+            _this.insertIntoArray(array, obj, toIndex);
+        });
     };
     Utils.defaultComparator = function (valueA, valueB) {
         var valueAMissing = valueA === null || valueA === undefined;
@@ -305,6 +351,14 @@ var Utils = (function () {
         if (valueBMissing) {
             return 1;
         }
+        if (typeof valueA === "string") {
+            try {
+                // using local compare also allows chinese comparisons
+                return valueA.localeCompare(valueB);
+            }
+            catch (e) {
+            }
+        }
         if (valueA < valueB) {
             return -1;
         }
@@ -314,6 +368,23 @@ var Utils = (function () {
         else {
             return 0;
         }
+    };
+    Utils.compareArrays = function (array1, array2) {
+        if (this.missing(array1) && this.missing(array2)) {
+            return true;
+        }
+        if (this.missing(array1) || this.missing(array2)) {
+            return false;
+        }
+        if (array1.length !== array2.length) {
+            return false;
+        }
+        for (var i = 0; i < array1.length; i++) {
+            if (array1[i] !== array2[i]) {
+                return false;
+            }
+        }
+        return true;
     };
     Utils.formatWidth = function (width) {
         if (typeof width === "number") {
@@ -375,7 +446,12 @@ var Utils = (function () {
         }
         else {
             // otherwise we use the built in icon
-            return svgFactoryFunc();
+            if (svgFactoryFunc) {
+                return svgFactoryFunc();
+            }
+            else {
+                return null;
+            }
         }
     };
     Utils.addStylesToElement = function (eElement, styles) {
@@ -479,7 +555,7 @@ var Utils = (function () {
                     keyParts.push(node.key);
                     var key = keyParts.join('|');
                     callback(node, key);
-                    recursiveSearchNodes(node.children);
+                    recursiveSearchNodes(node.childrenAfterGroup);
                     keyParts.pop();
                 }
             });
@@ -647,3 +723,15 @@ var Utils = (function () {
     return Utils;
 })();
 exports.Utils = Utils;
+var NumberSequence = (function () {
+    function NumberSequence() {
+        this.nextValue = 0;
+    }
+    NumberSequence.prototype.next = function () {
+        var valToReturn = this.nextValue;
+        this.nextValue++;
+        return valToReturn;
+    };
+    return NumberSequence;
+})();
+exports.NumberSequence = NumberSequence;

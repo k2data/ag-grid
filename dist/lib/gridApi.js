@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -71,6 +71,12 @@ var GridApi = (function () {
     };
     GridApi.prototype.setViewportDatasource = function (viewportDatasource) {
         if (this.gridOptionsWrapper.isRowModelViewport()) {
+<<<<<<< HEAD
+=======
+            // this is bad coding, because it's using an interface that's exposed in the enterprise.
+            // really we should create an interface in the core for viewportDatasource and let
+            // the enterprise implement it, rather than casting to 'any' here
+>>>>>>> upstream/master
             this.rowModel.setViewportDatasource(viewportDatasource);
         }
         else {
@@ -78,10 +84,19 @@ var GridApi = (function () {
         }
     };
     GridApi.prototype.setRowData = function (rowData) {
+<<<<<<< HEAD
         if (utils_1.Utils.missing(this.inMemoryRowModel)) {
             console.log('cannot call setRowData unless using normal row model');
         }
         this.inMemoryRowModel.setRowData(rowData, true);
+=======
+        if (this.gridOptionsWrapper.isRowModelDefault()) {
+            this.inMemoryRowModel.setRowData(rowData, true);
+        }
+        else {
+            console.log('cannot call setRowData unless using normal row model');
+        }
+>>>>>>> upstream/master
     };
     GridApi.prototype.setFloatingTopRowData = function (rows) {
         this.floatingRowModel.setFloatingTopRowData(rows);
@@ -104,6 +119,9 @@ var GridApi = (function () {
     };
     GridApi.prototype.refreshView = function () {
         this.rowRenderer.refreshView();
+    };
+    GridApi.prototype.setFunctionsReadOnly = function (readOnly) {
+        this.gridOptionsWrapper.setProperty('functionsReadOnly', readOnly);
     };
     GridApi.prototype.softRefreshView = function () {
         this.rowRenderer.softRefreshView();
@@ -132,6 +150,15 @@ var GridApi = (function () {
             console.log('cannot call onGroupExpandedOrCollapsed unless using normal row model');
         }
         this.inMemoryRowModel.refreshModel(constants_1.Constants.STEP_MAP, refreshFromIndex);
+<<<<<<< HEAD
+=======
+    };
+    GridApi.prototype.refreshInMemoryRowModel = function () {
+        if (utils_1.Utils.missing(this.inMemoryRowModel)) {
+            console.log('cannot call refreshInMemoryRowModel unless using normal row model');
+        }
+        this.inMemoryRowModel.refreshModel(constants_1.Constants.STEP_EVERYTHING);
+>>>>>>> upstream/master
     };
     GridApi.prototype.expandAll = function () {
         if (utils_1.Utils.missing(this.inMemoryRowModel)) {
@@ -168,23 +195,35 @@ var GridApi = (function () {
     };
     GridApi.prototype.selectIndex = function (index, tryMulti, suppressEvents) {
         console.log('ag-Grid: do not use api for selection, call node.setSelected(value) instead');
-        this.selectionController.selectIndex(index, tryMulti, suppressEvents);
+        if (suppressEvents) {
+            console.log('ag-Grid: suppressEvents is no longer supported, stop listening for the event if you no longer want it');
+        }
+        this.selectionController.selectIndex(index, tryMulti);
     };
     GridApi.prototype.deselectIndex = function (index, suppressEvents) {
         if (suppressEvents === void 0) { suppressEvents = false; }
         console.log('ag-Grid: do not use api for selection, call node.setSelected(value) instead');
-        this.selectionController.deselectIndex(index, suppressEvents);
+        if (suppressEvents) {
+            console.log('ag-Grid: suppressEvents is no longer supported, stop listening for the event if you no longer want it');
+        }
+        this.selectionController.deselectIndex(index);
     };
     GridApi.prototype.selectNode = function (node, tryMulti, suppressEvents) {
         if (tryMulti === void 0) { tryMulti = false; }
         if (suppressEvents === void 0) { suppressEvents = false; }
         console.log('ag-Grid: API for selection is deprecated, call node.setSelected(value) instead');
-        node.setSelected(true, !tryMulti, suppressEvents);
+        if (suppressEvents) {
+            console.log('ag-Grid: suppressEvents is no longer supported, stop listening for the event if you no longer want it');
+        }
+        node.setSelectedParams({ newValue: true, clearSelection: !tryMulti });
     };
     GridApi.prototype.deselectNode = function (node, suppressEvents) {
         if (suppressEvents === void 0) { suppressEvents = false; }
         console.log('ag-Grid: API for selection is deprecated, call node.setSelected(value) instead');
-        node.setSelected(false, false, suppressEvents);
+        if (suppressEvents) {
+            console.log('ag-Grid: suppressEvents is no longer supported, stop listening for the event if you no longer want it');
+        }
+        node.setSelectedParams({ newValue: false });
     };
     GridApi.prototype.selectAll = function () {
         this.selectionController.selectAllRowNodes();
@@ -246,6 +285,12 @@ var GridApi = (function () {
     GridApi.prototype.ensureNodeVisible = function (comparator) {
         this.gridCore.ensureNodeVisible(comparator);
     };
+    GridApi.prototype.forEachLeafNode = function (callback) {
+        if (utils_1.Utils.missing(this.inMemoryRowModel)) {
+            console.log('cannot call forEachNodeAfterFilter unless using normal row model');
+        }
+        this.inMemoryRowModel.forEachLeafNode(callback);
+    };
     GridApi.prototype.forEachNode = function (callback) {
         this.rowModel.forEachNode(callback);
     };
@@ -266,19 +311,27 @@ var GridApi = (function () {
         return this.getFilterApi(colDef);
     };
     GridApi.prototype.getFilterApi = function (key) {
+<<<<<<< HEAD
         var column = this.columnController.getColumn(key);
+=======
+        var column = this.columnController.getPrimaryColumn(key);
+>>>>>>> upstream/master
         if (column) {
             return this.filterManager.getFilterApi(column);
         }
     };
     GridApi.prototype.destroyFilter = function (key) {
+<<<<<<< HEAD
         var column = this.columnController.getColumn(key);
+=======
+        var column = this.columnController.getPrimaryColumn(key);
+>>>>>>> upstream/master
         if (column) {
             return this.filterManager.destroyFilter(column);
         }
     };
     GridApi.prototype.getColumnDef = function (key) {
-        var column = this.columnController.getColumn(key);
+        var column = this.columnController.getPrimaryColumn(key);
         if (column) {
             return column.getColDef();
         }
@@ -320,7 +373,7 @@ var GridApi = (function () {
         this.gridCore.doLayout();
     };
     GridApi.prototype.getValue = function (colKey, rowNode) {
-        var column = this.columnController.getColumn(colKey);
+        var column = this.columnController.getPrimaryColumn(colKey);
         return this.valueService.getValue(column, rowNode);
     };
     GridApi.prototype.addEventListener = function (eventType, listener) {
@@ -384,6 +437,7 @@ var GridApi = (function () {
         this.clipboardService.copyRangeDown();
     };
     GridApi.prototype.showColumnMenuAfterButtonClick = function (colKey, buttonElement) {
+<<<<<<< HEAD
         var column = this.columnController.getColumn(colKey);
         this.menuFactory.showMenuAfterButtonClick(column, buttonElement);
     };
@@ -396,6 +450,33 @@ var GridApi = (function () {
     };
     GridApi.prototype.addCellEditor = function (key, cellEditor) {
         this.cellEditorFactory.addCellEditor(key, cellEditor);
+=======
+        var column = this.columnController.getPrimaryColumn(colKey);
+        this.menuFactory.showMenuAfterButtonClick(column, buttonElement);
+    };
+    GridApi.prototype.showColumnMenuAfterMouseClick = function (colKey, mouseEvent) {
+        var column = this.columnController.getPrimaryColumn(colKey);
+        this.menuFactory.showMenuAfterMouseEvent(column, mouseEvent);
+    };
+    GridApi.prototype.stopEditing = function (cancel) {
+        if (cancel === void 0) { cancel = false; }
+        this.rowRenderer.stopEditing(cancel);
+    };
+    GridApi.prototype.addAggFunc = function (key, aggFunc) {
+        if (this.aggFuncService) {
+            this.aggFuncService.addAggFunc(key, aggFunc);
+        }
+    };
+    GridApi.prototype.addAggFuncs = function (aggFuncs) {
+        if (this.aggFuncService) {
+            this.aggFuncService.addAggFuncs(aggFuncs);
+        }
+    };
+    GridApi.prototype.clearAggFuncs = function () {
+        if (this.aggFuncService) {
+            this.aggFuncService.clear();
+        }
+>>>>>>> upstream/master
     };
     __decorate([
         context_1.Autowired('csvCreator'), 
@@ -478,6 +559,13 @@ var GridApi = (function () {
         __metadata('design:type', Object)
     ], GridApi.prototype, "clipboardService", void 0);
     __decorate([
+<<<<<<< HEAD
+=======
+        context_1.Optional('aggFuncService'), 
+        __metadata('design:type', Object)
+    ], GridApi.prototype, "aggFuncService", void 0);
+    __decorate([
+>>>>>>> upstream/master
         context_1.Autowired('menuFactory'), 
         __metadata('design:type', Object)
     ], GridApi.prototype, "menuFactory", void 0);

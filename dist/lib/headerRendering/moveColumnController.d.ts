@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -8,6 +8,7 @@ export declare class MoveColumnController {
     private columnController;
     private gridPanel;
     private dragAndDropService;
+    private gridOptionsWrapper;
     private needToMoveLeft;
     private needToMoveRight;
     private movingIntervalId;
@@ -19,17 +20,17 @@ export declare class MoveColumnController {
     private failedMoveAttempts;
     constructor(pinned: string);
     init(): void;
+    getIconName(): string;
     onDragEnter(draggingEvent: DraggingEvent): void;
     onDragLeave(draggingEvent: DraggingEvent): void;
     onDragStop(): void;
     private adjustXForScroll(draggingEvent);
-    private workOutNewIndex(displayedColumns, allColumns, draggingEvent, xAdjustedForScroll);
+    private workOutNewIndex(displayedColumns, allColumns, dragColumn, direction, xAdjustedForScroll);
     private checkCenterForScrolling(xAdjustedForScroll);
-    onDragging(draggingEvent: DraggingEvent): void;
-    private checkColIndexAndMove(draggingEvent, xAdjustedForScroll);
-    private getNewIndexForColMovingLeft(displayedColumns, allColumns, dragItem, x);
-    private getNewIndexForColMovingRight(displayedColumns, allColumns, dragItem, x);
-    private getColumnsAndOrphans(column);
+    onDragging(draggingEvent: DraggingEvent, fromEnter?: boolean): void;
+    private attemptMoveColumns(allMovingColumns, dragDirection, xAdjustedForScroll, fromEnter);
+    private getNewIndexForColMovingLeft(displayedColumns, allColumns, dragColumn, x);
+    private getNewIndexForColMovingRight(displayedColumns, allColumns, dragColumnOrGroup, x);
     private ensureIntervalStarted();
     private ensureIntervalCleared();
     private moveInterval();

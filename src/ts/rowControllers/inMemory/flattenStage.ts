@@ -5,6 +5,7 @@ import {GridOptionsWrapper} from "../../gridOptionsWrapper";
 import {SelectionController} from "../../selectionController";
 import {EventService} from "../../eventService";
 import {IRowNodeStage} from "../../interfaces/iRowNodeStage";
+import {ColumnController} from "../../columnController/columnController";
 
 @Bean('flattenStage')
 export class FlattenStage implements IRowNodeStage {
@@ -13,31 +14,45 @@ export class FlattenStage implements IRowNodeStage {
     @Autowired('selectionController') private selectionController: SelectionController;
     @Autowired('eventService') private eventService: EventService;
     @Autowired('context') private context: Context;
+    @Autowired('columnController') private columnController: ColumnController;
 
-    public execute(rowsToFlatten: RowNode[]): RowNode[] {
+    public execute(rootNode: RowNode): RowNode[] {
         // even if not doing grouping, we do the mapping, as the client might
         // of passed in data that already has a grouping in it somewhere
         var result: RowNode[] = [];
 
         // putting value into a wrapper so it's passed by reference
         var nextRowTop: NumberWrapper = {value: 0};
-        this.recursivelyAddToRowsToDisplay(rowsToFlatten, result, nextRowTop);
+
+        var pivotMode = this.columnController.isPivotMode();
+
+        // if we are reducing, and not grouping, then we want to show the root node, as that
+        // is where the pivot values are
+        var showRootNode = pivotMode && rootNode.leafGroup;
+        var topList = showRootNode ? [rootNode] : rootNode.childrenAfterSort;
+
+        this.recursivelyAddToRowsToDisplay(topList, result, nextRowTop, pivotMode);
 
         return result;
     }
 
-    private recursivelyAddToRowsToDisplay(rowsToFlatten: RowNode[], result: RowNode[], nextRowTop: NumberWrapper) {
+    private recursivelyAddToRowsToDisplay(rowsToFlatten: RowNode[], result: RowNode[],
+                                          nextRowTop: NumberWrapper, reduce: boolean) {
         if (_.missingOrEmpty(rowsToFlatten)) { return; }
 
         var groupSuppressRow = this.gridOptionsWrapper.isGroupSuppressRow();
         for (var i = 0; i < rowsToFlatten.length; i++) {
             var rowNode = rowsToFlatten[i];
-            var skipGroupNode = groupSuppressRow && rowNode.group;
+
+            var skipBecauseSuppressRow = groupSuppressRow && rowNode.group;
+            var skipBecauseReduce = reduce && !rowNode.group;
+            var skipGroupNode = skipBecauseReduce || skipBecauseSuppressRow;
+
             if (!skipGroupNode) {
                 this.addRowNodeToRowsToDisplay(rowNode, result, nextRowTop);
             }
             if (rowNode.group && rowNode.expanded) {
-                this.recursivelyAddToRowsToDisplay(rowNode.childrenAfterSort, result, nextRowTop);
+                this.recursivelyAddToRowsToDisplay(rowNode.childrenAfterSort, result, nextRowTop, reduce);
 
                 // put a footer in if user is looking for it
                 if (this.gridOptionsWrapper.isGroupIncludeFooter()) {

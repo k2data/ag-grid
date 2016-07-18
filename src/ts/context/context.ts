@@ -1,5 +1,6 @@
 import {Utils as _} from "../utils";
 import {Logger} from "../logger";
+import {Component} from "../widgets/component";
 
 // steps in booting up:
 // 1. create all beans
@@ -13,8 +14,14 @@ import {Logger} from "../logger";
 export interface ContextParams {
     seed: any,
     beans: any[],
+    components: ComponentMeta[],
     overrideBeans: any[],
     debug: boolean
+}
+
+export interface ComponentMeta {
+    theClass: new()=>Object,
+    componentName: string
 }
 
 interface BeanEntry {
@@ -29,8 +36,10 @@ export class Context {
     private contextParams: ContextParams;
     private logger: Logger;
 
-    private destroyed = false;
+    private componentsMappedByName: {[key: string]: any} = {};
 
+    private destroyed = false;
+    
     public constructor(params: ContextParams) {
 
         if (!params || !params.beans) {
@@ -42,6 +51,8 @@ export class Context {
         this.logger = new Logger('Context', this.contextParams.debug);
         this.logger.log('>> creating ag-Application Context');
 
+        this.setupComponents();
+
         this.createBeans();
 
         var beans = _.mapObject(this.beans, (beanEntry: BeanEntry) => beanEntry.beanInstance);
@@ -49,6 +60,46 @@ export class Context {
         this.wireBeans(beans);
 
         this.logger.log('>> ag-Application Context ready - component is alive');
+    }
+
+    private setupComponents(): void {
+        if (this.contextParams.components) {
+            this.contextParams.components.forEach( componentMeta => this.addComponent(componentMeta) )
+        }
+    }
+
+    private addComponent(componentMeta: ComponentMeta): void {
+        // get name of the class as a string
+        // var className = _.getNameOfClass(ComponentClass);
+        // insert a dash after every capital letter
+        // var classEscaped = className.replace(/([A-Z])/g, "-$1").toLowerCase();
+        var classEscaped = componentMeta.componentName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        // put all to upper case
+        var classUpperCase = classEscaped.toUpperCase();
+        // finally store
+        this.componentsMappedByName[classUpperCase] = componentMeta.theClass;
+    }
+
+    public createComponent(element: Element): Component {
+        var key = element.nodeName;
+        if (this.componentsMappedByName && this.componentsMappedByName[key]) {
+            var newComponent = <Component> new this.componentsMappedByName[key];
+            this.copyAttributesFromNode(element, newComponent.getGui());
+            this.wireBean(newComponent);
+            return newComponent;
+        } else {
+            return null;
+        }
+    }
+
+    private copyAttributesFromNode(fromNode: Element, toNode: Element): void {
+        if (fromNode.attributes) {
+            var count = fromNode.attributes.length;
+            for (var i = 0; i<count; i++) {
+                var attr = fromNode.attributes[i];
+                toNode.setAttribute(attr.name, attr.value);
+            }
+        }
     }
 
     public wireBean(bean: any): void {

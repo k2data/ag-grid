@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -40,7 +40,14 @@ var SelectionController = (function () {
         }
     };
     SelectionController.prototype.init = function () {
+        this.groupSelectsChildren = this.gridOptionsWrapper.isGroupSelectsChildren();
         this.eventService.addEventListener(events_1.Events.EVENT_ROW_SELECTED, this.onRowSelected.bind(this));
+    };
+    SelectionController.prototype.setLastSelectedNode = function (rowNode) {
+        this.lastSelectedNode = rowNode;
+    };
+    SelectionController.prototype.getLastSelectedNode = function () {
+        return this.lastSelectedNode;
     };
     SelectionController.prototype.getSelectedNodes = function () {
         var selectedNodes = [];
@@ -87,14 +94,25 @@ var SelectionController = (function () {
     };
     SelectionController.prototype.clearOtherNodes = function (rowNodeToKeepSelected) {
         var _this = this;
+        var groupsToRefresh = {};
         utils_1.Utils.iterateObject(this.selectedNodes, function (key, otherRowNode) {
             if (otherRowNode && otherRowNode.id !== rowNodeToKeepSelected.id) {
-                _this.selectedNodes[otherRowNode.id].setSelected(false, false, true);
+                _this.selectedNodes[otherRowNode.id].setSelectedParams({ newValue: false, clearSelection: false, tailingNodeInSequence: true });
+                if (_this.groupSelectsChildren && otherRowNode.parent) {
+                    groupsToRefresh[otherRowNode.parent.id] = otherRowNode.parent;
+                }
             }
+        });
+        utils_1.Utils.iterateObject(groupsToRefresh, function (key, group) {
+            group.calculateSelectedFromChildren();
         });
     };
     SelectionController.prototype.onRowSelected = function (event) {
         var rowNode = event.node;
+        // we do not store the group rows when the groups select children
+        if (this.groupSelectsChildren && rowNode.group) {
+            return;
+        }
         if (rowNode.isSelected()) {
             this.selectedNodes[rowNode.id] = rowNode;
         }
@@ -111,6 +129,7 @@ var SelectionController = (function () {
     SelectionController.prototype.reset = function () {
         this.logger.log('reset');
         this.selectedNodes = {};
+        this.lastSelectedNode = null;
     };
     // returns a list of all nodes at 'best cost' - a feature to be used
     // with groups / trees. if a group has all it's children selected,
@@ -169,36 +188,38 @@ var SelectionController = (function () {
         // that we pick up, however it's good to clean it down, as we are still
         // left with entries pointing to 'undefined'
         this.selectedNodes = {};
+        this.eventService.dispatchEvent(events_1.Events.EVENT_SELECTION_CHANGED);
     };
     SelectionController.prototype.selectAllRowNodes = function () {
         if (this.rowModel.getType() !== constants_1.Constants.ROW_MODEL_TYPE_NORMAL) {
+<<<<<<< HEAD
             throw 'selectAll only available with norma row model, ie not virtual pagination';
+=======
+            throw 'selectAll only available with normal row model, ie not virtual pagination';
+>>>>>>> upstream/master
         }
         this.rowModel.forEachNode(function (rowNode) {
-            rowNode.setSelected(true, false, true);
+            rowNode.selectThisNode(true);
         });
         this.eventService.dispatchEvent(events_1.Events.EVENT_SELECTION_CHANGED);
     };
     // Deprecated method
-    SelectionController.prototype.selectNode = function (rowNode, tryMulti, suppressEvents) {
-        rowNode.setSelected(true, !tryMulti, suppressEvents);
+    SelectionController.prototype.selectNode = function (rowNode, tryMulti) {
+        rowNode.setSelectedParams({ newValue: true, clearSelection: !tryMulti });
     };
     // Deprecated method
-    SelectionController.prototype.deselectIndex = function (rowIndex, suppressEvents) {
-        if (suppressEvents === void 0) { suppressEvents = false; }
+    SelectionController.prototype.deselectIndex = function (rowIndex) {
         var node = this.rowModel.getRow(rowIndex);
-        this.deselectNode(node, suppressEvents);
+        this.deselectNode(node);
     };
     // Deprecated method
-    SelectionController.prototype.deselectNode = function (rowNode, suppressEvents) {
-        if (suppressEvents === void 0) { suppressEvents = false; }
-        rowNode.setSelected(false, false, suppressEvents);
+    SelectionController.prototype.deselectNode = function (rowNode) {
+        rowNode.setSelectedParams({ newValue: false, clearSelection: false });
     };
     // Deprecated method
-    SelectionController.prototype.selectIndex = function (index, tryMulti, suppressEvents) {
-        if (suppressEvents === void 0) { suppressEvents = false; }
+    SelectionController.prototype.selectIndex = function (index, tryMulti) {
         var node = this.rowModel.getRow(index);
-        this.selectNode(node, tryMulti, suppressEvents);
+        this.selectNode(node, tryMulti);
     };
     __decorate([
         context_3.Autowired('eventService'), 

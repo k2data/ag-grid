@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -9,10 +9,14 @@ export declare class BalancedColumnTreeBuilder {
     private context;
     private logger;
     private setBeans(loggerFactory);
+<<<<<<< HEAD
     createBalancedColumnGroups(abstractColDefs: AbstractColDef[]): any;
+=======
+    createBalancedColumnGroups(abstractColDefs: AbstractColDef[], primaryColumns: boolean): any;
+>>>>>>> upstream/master
     private balanceColumnTree(unbalancedTree, currentDept, columnDept, columnKeyCreator);
     private findMaxDept(treeChildren, dept);
-    private recursivelyCreateColumns(abstractColDefs, level, columnKeyCreator);
+    private recursivelyCreateColumns(abstractColDefs, level, columnKeyCreator, primaryColumns);
     private checkForDeprecatedItems(colDef);
     private isColumnGroup(abstractColDef);
 }

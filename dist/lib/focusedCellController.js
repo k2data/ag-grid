@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v4.0.5
+ * @version v5.0.3
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -25,13 +25,13 @@ var FocusedCellController = (function () {
     function FocusedCellController() {
     }
     FocusedCellController.prototype.init = function () {
+        this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_PIVOT_MODE_CHANGED, this.clearFocusedCell.bind(this));
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_EVERYTHING_CHANGED, this.clearFocusedCell.bind(this));
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_GROUP_OPENED, this.clearFocusedCell.bind(this));
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_MOVED, this.clearFocusedCell.bind(this));
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_PINNED, this.clearFocusedCell.bind(this));
-        this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_ROW_GROUP_CHANGE, this.clearFocusedCell.bind(this));
+        this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_ROW_GROUP_CHANGED, this.clearFocusedCell.bind(this));
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_VISIBLE, this.clearFocusedCell.bind(this));
-        //this.eventService.addEventListener(Events.EVENT_COLUMN_VISIBLE, this.clearFocusedCell.bind(this));
     };
     FocusedCellController.prototype.clearFocusedCell = function () {
         this.focusedCell = null;
@@ -47,7 +47,14 @@ var FocusedCellController = (function () {
     // first focus a cell, then second click outside the grid, as then the
     // grid cell will still be focused as far as the grid is conerned,
     // however the browser focus will have moved somewhere else.
+<<<<<<< HEAD
     FocusedCellController.prototype.getFocusCellIfBrowserFocused = function () {
+=======
+    FocusedCellController.prototype.getFocusCellToUseAfterRefresh = function () {
+        if (this.gridOptionsWrapper.isSuppressFocusAfterRefresh()) {
+            return null;
+        }
+>>>>>>> upstream/master
         if (!this.focusedCell) {
             return null;
         }
@@ -106,7 +113,11 @@ var FocusedCellController = (function () {
             // match the column by checking a) it has a valid colId and b) it has the 'ag-cell' class
             var colId = utils_1.Utils.getElementAttribute(eTarget, 'colid');
             if (utils_1.Utils.exists(colId) && utils_1.Utils.containsClass(eTarget, 'ag-cell')) {
+<<<<<<< HEAD
                 var foundColumn = that.columnController.getColumn(colId);
+=======
+                var foundColumn = that.columnController.getGridColumn(colId);
+>>>>>>> upstream/master
                 if (foundColumn) {
                     column = foundColumn;
                 }
@@ -118,7 +129,7 @@ var FocusedCellController = (function () {
         if (this.gridOptionsWrapper.isSuppressCellSelection()) {
             return;
         }
-        var column = utils_1.Utils.makeNull(this.columnController.getColumn(colKey));
+        var column = utils_1.Utils.makeNull(this.columnController.getGridColumn(colKey));
         this.focusedCell = new gridCell_1.GridCell(rowIndex, utils_1.Utils.makeNull(floating), column);
         this.onCellFocused(forceBrowserFocus);
     };

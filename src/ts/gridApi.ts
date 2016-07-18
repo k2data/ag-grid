@@ -10,7 +10,7 @@ import {ValueService} from "./valueService";
 import {MasterSlaveService} from "./masterSlaveService";
 import {EventService} from "./eventService";
 import {FloatingRowModel} from "./rowControllers/floatingRowModel";
-import {ColDef} from "./entities/colDef";
+import {ColDef, IAggFunc} from "./entities/colDef";
 import {RowNode} from "./entities/rowNode";
 import {Constants} from "./constants";
 import {Column} from "./entities/column";
@@ -28,11 +28,9 @@ import {Utils as _} from "./utils";
 import {IViewportDatasource} from "./interfaces/iViewportDatasource";
 import {IMenuFactory} from "./interfaces/iMenuFactory";
 import {VirtualPageRowModel} from "./rowControllers/virtualPageRowModel";
-import {ViewportRowModel} from "./rowControllers/viewportRowModel";
-import {ICellRendererFunc, ICellRenderer} from "./rendering/cellRenderers/iCellRenderer";
 import {CellRendererFactory} from "./rendering/cellRendererFactory";
 import {CellEditorFactory} from "./rendering/cellEditorFactory";
-import {ICellEditor} from "./rendering/cellEditors/iCellEditor";
+import {IAggFuncService} from "./interfaces/iAggFuncService";
 
 @Bean('gridApi')
 export class GridApi {
@@ -57,6 +55,7 @@ export class GridApi {
     @Autowired('focusedCellController') private focusedCellController: FocusedCellController;
     @Optional('rangeController') private rangeController: IRangeController;
     @Optional('clipboardService') private clipboardService: IClipboardService;
+    @Optional('aggFuncService') private aggFuncService: IAggFuncService;
     @Autowired('menuFactory') private menuFactory: IMenuFactory;
     @Autowired('cellRendererFactory') private cellRendererFactory: CellRendererFactory;
     @Autowired('cellEditorFactory') private cellEditorFactory: CellEditorFactory;
@@ -103,15 +102,21 @@ export class GridApi {
 
     public setViewportDatasource(viewportDatasource: IViewportDatasource) {
         if (this.gridOptionsWrapper.isRowModelViewport()) {
-            (<ViewportRowModel>this.rowModel).setViewportDatasource(viewportDatasource);
+            // this is bad coding, because it's using an interface that's exposed in the enterprise.
+            // really we should create an interface in the core for viewportDatasource and let
+            // the enterprise implement it, rather than casting to 'any' here
+            (<any>this.rowModel).setViewportDatasource(viewportDatasource);
         } else {
             console.warn(`ag-Grid: you can only use a datasource when gridOptions.rowModelType is '${Constants.ROW_MODEL_TYPE_VIEWPORT}'`)
         }
     }
     
     public setRowData(rowData: any[]) {
-        if (_.missing(this.inMemoryRowModel)) { console.log('cannot call setRowData unless using normal row model') }
-        this.inMemoryRowModel.setRowData(rowData, true);
+        if (this.gridOptionsWrapper.isRowModelDefault()) {
+            this.inMemoryRowModel.setRowData(rowData, true);
+        } else {
+            console.log('cannot call setRowData unless using normal row model');
+        }
     }
 
     public setFloatingTopRowData(rows: any[]): void {
@@ -140,6 +145,10 @@ export class GridApi {
 
     public refreshView() {
         this.rowRenderer.refreshView();
+    }
+
+    public setFunctionsReadOnly(readOnly: boolean) {
+        this.gridOptionsWrapper.setProperty('functionsReadOnly', readOnly);
     }
 
     public softRefreshView() {
@@ -176,6 +185,11 @@ export class GridApi {
         this.inMemoryRowModel.refreshModel(Constants.STEP_MAP, refreshFromIndex);
     }
 
+    public refreshInMemoryRowModel(): any {
+        if (_.missing(this.inMemoryRowModel)) { console.log('cannot call refreshInMemoryRowModel unless using normal row model') }
+        this.inMemoryRowModel.refreshModel(Constants.STEP_EVERYTHING);
+    }
+    
     public expandAll() {
         if (_.missing(this.inMemoryRowModel)) { console.log('cannot call expandAll unless using normal row model') }
         this.inMemoryRowModel.expandOrCollapseAll(true);
@@ -206,28 +220,40 @@ export class GridApi {
         this.rowRenderer.addRenderedRowListener(eventName, rowIndex, callback);
     }
 
-    public setQuickFilter(newFilter:any) {
+    public setQuickFilter(newFilter:any): void {
         this.filterManager.setQuickFilter(newFilter)
     }
 
     public selectIndex(index:any, tryMulti:any, suppressEvents:any) {
         console.log('ag-Grid: do not use api for selection, call node.setSelected(value) instead');
-        this.selectionController.selectIndex(index, tryMulti, suppressEvents);
+        if (suppressEvents) {
+            console.log('ag-Grid: suppressEvents is no longer supported, stop listening for the event if you no longer want it');
+        }
+        this.selectionController.selectIndex(index, tryMulti);
     }
 
     public deselectIndex(index: number, suppressEvents: boolean = false) {
         console.log('ag-Grid: do not use api for selection, call node.setSelected(value) instead');
-        this.selectionController.deselectIndex(index, suppressEvents);
+        if (suppressEvents) {
+            console.log('ag-Grid: suppressEvents is no longer supported, stop listening for the event if you no longer want it');
+        }
+        this.selectionController.deselectIndex(index);
     }
 
     public selectNode(node: RowNode, tryMulti: boolean = false, suppressEvents: boolean = false) {
         console.log('ag-Grid: API for selection is deprecated, call node.setSelected(value) instead');
-        node.setSelected(true, !tryMulti, suppressEvents);
+        if (suppressEvents) {
+            console.log('ag-Grid: suppressEvents is no longer supported, stop listening for the event if you no longer want it');
+        }
+        node.setSelectedParams({newValue: true, clearSelection: !tryMulti});
     }
 
-    public deselectNode(node:any, suppressEvents: boolean = false) {
+    public deselectNode(node: RowNode, suppressEvents: boolean = false) {
         console.log('ag-Grid: API for selection is deprecated, call node.setSelected(value) instead');
-        node.setSelected(false, false, suppressEvents);
+        if (suppressEvents) {
+            console.log('ag-Grid: suppressEvents is no longer supported, stop listening for the event if you no longer want it');
+        }
+        node.setSelectedParams({newValue: false});
     }
 
     public selectAll() {
@@ -305,6 +331,11 @@ export class GridApi {
         this.gridCore.ensureNodeVisible(comparator);
     }
 
+    public forEachLeafNode(callback: (rowNode: RowNode)=>void ) {
+        if (_.missing(this.inMemoryRowModel)) { console.log('cannot call forEachNodeAfterFilter unless using normal row model') }
+        this.inMemoryRowModel.forEachLeafNode(callback);
+    }
+
     public forEachNode(callback: (rowNode: RowNode)=>void ) {
         this.rowModel.forEachNode(callback);
     }
@@ -325,21 +356,21 @@ export class GridApi {
     }
 
     public getFilterApi(key: string|Column|ColDef) {
-        var column = this.columnController.getColumn(key);
+        var column = this.columnController.getPrimaryColumn(key);
         if (column) {
             return this.filterManager.getFilterApi(column);
         }
     }
 
     public destroyFilter(key: string|Column|ColDef) {
-        var column = this.columnController.getColumn(key);
+        var column = this.columnController.getPrimaryColumn(key);
         if (column) {
             return this.filterManager.destroyFilter(column);
         }
     }
     
     public getColumnDef(key: string|Column|ColDef) {
-        var column = this.columnController.getColumn(key);
+        var column = this.columnController.getPrimaryColumn(key);
         if (column) {
             return column.getColDef();
         } else {
@@ -392,7 +423,7 @@ export class GridApi {
     }
 
     public getValue(colKey: string|ColDef|Column, rowNode: RowNode): any {
-        var column = this.columnController.getColumn(colKey);
+        var column = this.columnController.getPrimaryColumn(colKey);
         return this.valueService.getValue(column, rowNode);
     }
 
@@ -459,38 +490,46 @@ export class GridApi {
     }
 
     public showColumnMenuAfterButtonClick(colKey: string|Column|ColDef, buttonElement: HTMLElement): void {
-        var column = this.columnController.getColumn(colKey);
+        var column = this.columnController.getPrimaryColumn(colKey);
         this.menuFactory.showMenuAfterButtonClick(column, buttonElement);
     }
 
     public showColumnMenuAfterMouseClick(colKey: string|Column|ColDef, mouseEvent: MouseEvent): void {
-        var column = this.columnController.getColumn(colKey);
+        var column = this.columnController.getPrimaryColumn(colKey);
         this.menuFactory.showMenuAfterMouseEvent(column, mouseEvent);
     }
 
+    public stopEditing(cancel: boolean = false): void {
+        this.rowRenderer.stopEditing(cancel);
+    }
+
+    public addAggFunc(key: string, aggFunc: IAggFunc): void {
+        if (this.aggFuncService) {
+            this.aggFuncService.addAggFunc(key, aggFunc);
+        }
+    }
+
+    public addAggFuncs(aggFuncs: {[key: string]: IAggFunc}): void {
+        if (this.aggFuncService) {
+            this.aggFuncService.addAggFuncs(aggFuncs);
+        }
+    }
+
+    public clearAggFuncs(): void {
+        if (this.aggFuncService) {
+            this.aggFuncService.clear();
+        }
+    }
+
+    /*
+    Taking these out, as we want to reconsider how we register components
+    
     public addCellRenderer(key: string, cellRenderer: {new(): ICellRenderer} | ICellRendererFunc): void {
         this.cellRendererFactory.addCellRenderer(key, cellRenderer);
     }
     
     public addCellEditor(key: string, cellEditor: {new(): ICellEditor}): void {
         this.cellEditorFactory.addCellEditor(key, cellEditor);
-    }
-    
-    /*
-        public setViewportRowData(rowData: {[key: number]: RowNode}): void {
-            if (this.gridOptionsWrapper.isRowModelViewport()) {
-                (<ViewportRowController>this.rowModel).setViewportRowData(rowData);
-            } else {
-                console.warn(`ag-Grid: you can only set viewport data when gridOptions.rowModelType is '${Constants.ROW_MODEL_TYPE_VIEWPORT}'`)
-            }
-        }
+    }*/
 
-        public setViewportTotalRowCount(rowCount: number): void {
-            if (this.gridOptionsWrapper.isRowModelViewport()) {
-                (<ViewportRowController>this.rowModel).setRowCount(rowCount);
-            } else {
-                console.warn(`ag-Grid: you can only set viewport data when gridOptions.rowModelType is '${Constants.ROW_MODEL_TYPE_VIEWPORT}'`)
-            }
-        }
-    */
 }

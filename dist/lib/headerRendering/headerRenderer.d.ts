@@ -1,8 +1,8 @@
-// Type definitions for ag-grid v4.0.5
+// Type definitions for ag-grid v5.0.3
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
-import { Column } from "../entities/column";
+import { IRenderedHeaderElement } from "./iRenderedHeaderElement";
 export declare class HeaderRenderer {
     private gridOptionsWrapper;
     private columnController;
@@ -12,11 +12,15 @@ export declare class HeaderRenderer {
     private pinnedLeftContainer;
     private pinnedRightContainer;
     private centerContainer;
+    private childContainers;
     private eHeaderViewport;
     private eRoot;
     private eHeaderOverlay;
     private init();
+    forEachHeaderElement(callback: (renderedHeaderElement: IRenderedHeaderElement) => void): void;
+    private destroy();
+    private onGridColumnsChanged();
     refreshHeader(): void;
+    private setHeight();
     setPinnedColContainerWidth(): void;
-    onIndividualColumnResized(column: Column): void;
 }

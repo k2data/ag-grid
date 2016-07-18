@@ -1,19 +1,20 @@
 
 import {SvgFactory} from "../../svgFactory";
 import {GridOptionsWrapper} from "../../gridOptionsWrapper";
-import {SelectionRendererFactory} from "../../selectionRendererFactory";
 import {ExpressionService} from "../../expressionService";
 import {EventService} from "../../eventService";
 import {Constants} from "../../constants";
-import {Utils as _} from '../../utils';
+import {Utils as _} from "../../utils";
 import {Events} from "../../events";
-import {Autowired} from "../../context/context";
+import {Autowired, Context} from "../../context/context";
 import {Component} from "../../widgets/component";
 import {ICellRenderer} from "./iCellRenderer";
 import {RowNode} from "../../entities/rowNode";
 import {GridApi} from "../../gridApi";
 import {CellRendererService} from "../cellRendererService";
 import {ValueFormatterService} from "../valueFormatterService";
+import {CheckboxSelectionComponent} from "../checkboxSelectionComponent";
+import {ColumnController} from "../../columnController/columnController";
 
 var svgFactory = SvgFactory.getInstance();
 
@@ -29,11 +30,12 @@ export class GroupCellRenderer extends Component implements ICellRenderer {
         '</span>';
 
     @Autowired('gridOptionsWrapper') private gridOptionsWrapper: GridOptionsWrapper;
-    @Autowired('selectionRendererFactory') private selectionRendererFactory: SelectionRendererFactory;
     @Autowired('expressionService') private expressionService: ExpressionService;
     @Autowired('eventService') private eventService: EventService;
     @Autowired('cellRendererService') private cellRendererService: CellRendererService;
     @Autowired('valueFormatterService') private valueFormatterService: ValueFormatterService;
+    @Autowired('context') private context: Context;
+    @Autowired('columnController') private columnController: ColumnController;
 
     private eExpanded: HTMLElement;
     private eContracted: HTMLElement;
@@ -79,10 +81,11 @@ export class GroupCellRenderer extends Component implements ICellRenderer {
                 paddingFactor = 10;
             }
             var paddingPx = node.level * paddingFactor;
+            var reducedLeafNode = this.columnController.isPivotMode() && this.rowNode.leafGroup;
             if (node.footer) {
+                paddingPx += 15;
+            } else if (!node.group || reducedLeafNode) {
                 paddingPx += 10;
-            } else if (!node.group) {
-                paddingPx += 5;
             }
             this.getGui().style.paddingLeft = paddingPx + 'px';
         }
@@ -130,7 +133,14 @@ export class GroupCellRenderer extends Component implements ICellRenderer {
     private createGroupCell(params: any): void {
         // pull out the column that the grouping is on
         var rowGroupColumns = params.columnApi.getRowGroupColumns();
+
+        // if we are using in memory grid grouping, then we try to look up the column that
+        // we did the grouping on. however if it is not possible (happens when user provides
+        // the data already grouped) then we just the current col, ie use cellrenderer of current col
         var columnOfGroupedCol = rowGroupColumns[params.node.level];
+        if (_.missing(columnOfGroupedCol)) {
+            columnOfGroupedCol = params.column;
+        }
         var colDefOfGroupedCol = columnOfGroupedCol.getColDef();
 
         var groupName = this.getGroupName(params);
@@ -187,14 +197,17 @@ export class GroupCellRenderer extends Component implements ICellRenderer {
     private addCheckboxIfNeeded(params: any): void {
         var checkboxNeeded = params.checkbox && !this.rowNode.footer &&!this.rowNode.floating;
         if (checkboxNeeded) {
-            var eCheckbox = this.selectionRendererFactory.createSelectionCheckbox(this.rowNode, params.addRenderedRowListener);
-            this.eCheckbox.appendChild(eCheckbox);
+            var cbSelectionComponent = new CheckboxSelectionComponent();
+            this.context.wireBean(cbSelectionComponent);
+            cbSelectionComponent.init({rowNode: this.rowNode});
+            this.eCheckbox.appendChild(cbSelectionComponent.getGui());
+            this.addDestroyFunc( ()=> cbSelectionComponent.destroy() );
         }
     }
 
     private addExpandAndContract(eGroupCell: HTMLElement): void {
-        var eExpandedIcon = _.createIconNoSpan('groupExpanded', this.gridOptionsWrapper, null, svgFactory.createArrowDownSvg);
-        var eContractedIcon = _.createIconNoSpan('groupContracted', this.gridOptionsWrapper, null, svgFactory.createArrowRightSvg);
+        var eExpandedIcon = _.createIconNoSpan('groupExpanded', this.gridOptionsWrapper, null, svgFactory.createGroupContractedIcon);
+        var eContractedIcon = _.createIconNoSpan('groupContracted', this.gridOptionsWrapper, null, svgFactory.createGroupExpandedIcon);
         this.eExpanded.appendChild(eExpandedIcon);
         this.eContracted.appendChild(eContractedIcon);
 
@@ -228,7 +241,10 @@ export class GroupCellRenderer extends Component implements ICellRenderer {
     }
 
     private showExpandAndContractIcons(): void {
-        var expandable = this.rowNode.group && !this.rowNode.footer;
+
+        var reducedLeafNode = this.columnController.isPivotMode() && this.rowNode.leafGroup;
+
+        var expandable = this.rowNode.group && !this.rowNode.footer && !reducedLeafNode;
         if (expandable) {
             // if expandable, show one based on expand state
             _.setVisible(this.eExpanded, this.rowNode.expanded);

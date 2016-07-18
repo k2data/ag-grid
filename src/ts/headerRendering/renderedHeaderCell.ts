@@ -12,6 +12,7 @@ import {CssClassApplier} from "./cssClassApplier";
 import {IRenderedHeaderElement} from "./iRenderedHeaderElement";
 import {DragAndDropService, DropTarget, DragSource} from "../dragAndDrop/dragAndDropService";
 import {SortController} from "../sortController";
+import {SetLeftFeature} from "../rendering/features/setLeftFeature";
 
 export class RenderedHeaderCell implements IRenderedHeaderElement {
 
@@ -26,6 +27,7 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
     @Autowired('gridOptionsWrapper') private gridOptionsWrapper: GridOptionsWrapper;
     @Autowired('dragAndDropService') private dragAndDropService: DragAndDropService;
     @Autowired('sortController') private sortController: SortController;
+    @Autowired('$scope') private $scope: any;
 
     private eHeaderCell: HTMLElement;
     private eRoot: HTMLElement;
@@ -34,32 +36,38 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
     private childScope: any;
 
     private startWidth: number;
-    private parentScope: any;
     private dragSourceDropTarget: DropTarget;
+
+    private displayName: string;
 
     // for better structured code, anything we need to do when this column gets destroyed,
     // we put a function in here. otherwise we would have a big destroy function with lots
     // of 'if / else' mapping to things that got created.
     private destroyFunctions: (()=>void)[] = [];
 
-    constructor(column: Column, parentScope: any, eRoot: HTMLElement, dragSourceDropTarget: DropTarget) {
+    constructor(column: Column, eRoot: HTMLElement, dragSourceDropTarget: DropTarget) {
         this.column = column;
-        this.parentScope = parentScope;
         this.eRoot = eRoot;
         this.dragSourceDropTarget = dragSourceDropTarget;
     }
 
+    public getColumn(): Column {
+        return this.column;
+    }
+    
     @PostConstruct
     public init(): void {
         this.eHeaderCell = this.headerTemplateLoader.createHeaderElement(this.column);
         _.addCssClass(this.eHeaderCell, 'ag-header-cell');
 
-        this.createScope(this.parentScope);
+        this.createScope();
         this.addAttributes();
         CssClassApplier.addHeaderClassesFromCollDef(this.column.getColDef(), this.eHeaderCell, this.gridOptionsWrapper);
 
         // label div
         var eHeaderCellLabel = <HTMLElement> this.eHeaderCell.querySelector('#agHeaderCellLabel');
+
+        this.displayName = this.columnController.getDisplayNameForCol(this.column, true);
 
         this.setupMovingCss();
         this.setupTooltip();
@@ -70,6 +78,9 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
         this.setupFilterIcon();
         this.setupText();
         this.setupWidth();
+
+        var setLeftFeature = new SetLeftFeature(this.column, this.eHeaderCell);
+        this.destroyFunctions.push(setLeftFeature.destroy.bind(setLeftFeature));
     }
 
     private setupTooltip(): void {
@@ -91,16 +102,14 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
             headerCellRenderer = this.gridOptionsWrapper.getHeaderCellRenderer();
         }
 
-        var headerNameValue = this.columnController.getDisplayNameForCol(this.column);
-
         var eText = <HTMLElement> this.eHeaderCell.querySelector('#agText');
         if (eText) {
             if (headerCellRenderer) {
-                this.useRenderer(headerNameValue, headerCellRenderer, eText);
+                this.useRenderer(this.displayName, headerCellRenderer, eText);
             } else {
                 // no renderer, default text render
                 eText.className = 'ag-header-cell-text';
-                eText.innerHTML = headerNameValue;
+                eText.innerHTML = this.displayName;
             }
         }
     }
@@ -149,11 +158,12 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
         });
     }
 
-    private createScope(parentScope: any): void {
+    private createScope(): void {
         if (this.gridOptionsWrapper.isAngularCompileHeaders()) {
-            this.childScope = parentScope.$new();
+            this.childScope = this.$scope.$new();
             this.childScope.colDef = this.column.getColDef();
             this.childScope.colDefWrapper = this.column;
+            this.childScope.context = this.gridOptionsWrapper.getContext();
 
             this.destroyFunctions.push( ()=> {
                 this.childScope.$destroy();
@@ -173,9 +183,9 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
             return;
         }
 
-        var weWantMenu = this.menuFactory.isMenuEnabled(this.column) && !this.column.getColDef().suppressMenu;
+        var skipMenu = !this.menuFactory.isMenuEnabled(this.column) || this.column.getColDef().suppressMenu;
 
-        if (!weWantMenu) {
+        if (skipMenu) {
             _.removeFromParent(eMenu);
             return;
         }
@@ -220,18 +230,18 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
     }
 
     private setupMove(eHeaderCellLabel: HTMLElement): void {
-        if (this.gridOptionsWrapper.isSuppressMovableColumns() || this.column.getColDef().suppressMovable) {
-            return;
-        }
-        if (this.gridOptionsWrapper.isForPrint()) {
-            // don't allow moving of headers when forPrint, as the header overlay doesn't exist
-            return;
-        }
+        var suppressMove = this.gridOptionsWrapper.isSuppressMovableColumns()
+                            || this.column.getColDef().suppressMovable
+                            || this.gridOptionsWrapper.isForPrint()
+                            || this.columnController.isPivotMode();
+
+        if (suppressMove) { return; }
 
         if (eHeaderCellLabel) {
             var dragSource: DragSource = {
                 eElement: eHeaderCellLabel,
-                dragItem: this.column,
+                dragItem: [this.column],
+                dragItemName: this.displayName,
                 dragSourceDropTarget: this.dragSourceDropTarget
             };
             this.dragAndDropService.addDragSource(dragSource);
@@ -308,6 +318,9 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
             _.removeFromParent(this.eHeaderCell.querySelector('#agNoSort'));
             return;
         }
+
+        // add sortable class for styling
+        _.addCssClass(this.eHeaderCell, 'ag-header-cell-sortable');
 
         // add the event on the header, so when clicked, we do sorting
         if (eHeaderCellLabel) {

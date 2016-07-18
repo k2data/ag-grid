@@ -1,6 +1,10 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
+<<<<<<< HEAD
  * @version v4.0.5
+=======
+ * @version v5.0.3
+>>>>>>> upstream/master
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -17,7 +21,15 @@ var PopupEditorWrapper = (function (_super) {
         this.getGuiCalledOnChild = false;
         this.cellEditor = cellEditor;
         this.addDestroyFunc(function () { return cellEditor.destroy(); });
+<<<<<<< HEAD
         this.addDestroyableEventListener(this.getGui(), 'keydown', this.onKeyDown.bind(this));
+=======
+        this.addDestroyableEventListener(
+        // this needs to be 'super' and not 'this' as if we call 'this',
+        // it ends up called 'getGui()' on the child before 'init' was called,
+        // which is not good
+        _super.prototype.getGui.call(this), 'keydown', this.onKeyDown.bind(this));
+>>>>>>> upstream/master
     }
     PopupEditorWrapper.prototype.onKeyDown = function (event) {
         this.params.onKeyDown(event);
@@ -48,6 +60,19 @@ var PopupEditorWrapper = (function (_super) {
     PopupEditorWrapper.prototype.isPopup = function () {
         return true;
     };
+<<<<<<< HEAD
+=======
+    PopupEditorWrapper.prototype.isCancelBeforeStart = function () {
+        if (this.cellEditor.isCancelBeforeStart) {
+            return this.cellEditor.isCancelBeforeStart();
+        }
+    };
+    PopupEditorWrapper.prototype.isCancelAfterEnd = function () {
+        if (this.cellEditor.isCancelAfterEnd) {
+            return this.cellEditor.isCancelAfterEnd();
+        }
+    };
+>>>>>>> upstream/master
     return PopupEditorWrapper;
 })(component_1.Component);
 exports.PopupEditorWrapper = PopupEditorWrapper;

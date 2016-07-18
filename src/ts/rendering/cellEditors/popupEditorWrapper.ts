@@ -1,5 +1,5 @@
 import {Component} from "../../widgets/component";
-import {ICellEditor} from "./iCellEditor";
+import {ICellEditor, ICellEditorParams} from "./iCellEditor";
 
 export class PopupEditorWrapper extends Component implements ICellEditor {
 
@@ -15,7 +15,10 @@ export class PopupEditorWrapper extends Component implements ICellEditor {
         this.addDestroyFunc( ()=> cellEditor.destroy() );
 
         this.addDestroyableEventListener(
-            this.getGui(),
+            // this needs to be 'super' and not 'this' as if we call 'this',
+            // it ends up called 'getGui()' on the child before 'init' was called,
+            // which is not good
+            super.getGui(),
             'keydown',
             this.onKeyDown.bind(this)
         );
@@ -37,7 +40,7 @@ export class PopupEditorWrapper extends Component implements ICellEditor {
         return super.getGui();
     }
     
-    public init(params: any): void {
+    public init(params: ICellEditorParams): void {
         this.params = params;
         if (this.cellEditor.init) {
             this.cellEditor.init(params);
@@ -57,4 +60,17 @@ export class PopupEditorWrapper extends Component implements ICellEditor {
     public isPopup(): boolean {
         return true;
     }
+
+    public isCancelBeforeStart(): boolean {
+        if (this.cellEditor.isCancelBeforeStart) {
+            return this.cellEditor.isCancelBeforeStart();
+        }
+    }
+
+    public isCancelAfterEnd(): boolean {
+        if (this.cellEditor.isCancelAfterEnd) {
+            return this.cellEditor.isCancelAfterEnd();
+        }
+    }
+
 }

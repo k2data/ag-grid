@@ -18,7 +18,15 @@ import {ColumnKeyCreator} from "./columnController/columnKeyCreator";
 import {ColumnUtils} from "./columnController/columnUtils";
 import {DisplayedGroupCreator} from "./columnController/displayedGroupCreator";
 import {GroupInstanceIdCreator} from "./columnController/groupInstanceIdCreator";
-import {Context, Autowired, PostConstruct, Optional, Bean, Qualifier} from "./context/context";
+import {
+    Context,
+    Autowired,
+    PostConstruct,
+    Optional,
+    Bean,
+    Qualifier,
+    PreDestroy
+} from "./context/context";
 import {DragAndDropService} from "./dragAndDrop/dragAndDropService";
 import {DragService} from "./dragAndDrop/dragService";
 import {FilterManager} from "./filter/filterManager";
@@ -41,7 +49,7 @@ import {VerticalStack} from "./layout/verticalStack";
 import {AutoWidthCalculator} from "./rendering/autoWidthCalculator";
 import {RenderedRow} from "./rendering/renderedRow";
 import {RowRenderer} from "./rendering/rowRenderer";
-import {FilterStage} from "./rowControllers/inMemory/fillterStage";
+import {FilterStage} from "./rowControllers/inMemory/filterStage";
 import {FlattenStage} from "./rowControllers/inMemory/flattenStage";
 import {SortStage} from "./rowControllers/inMemory/sortStage";
 import {FloatingRowModel} from "./rowControllers/floatingRowModel";
@@ -58,11 +66,10 @@ import {GridCore} from "./gridCore";
 import {Logger} from "./logger";
 import {MasterSlaveService} from "./masterSlaveService";
 import {SelectionController} from "./selectionController";
-import {SelectionRendererFactory} from "./selectionRendererFactory";
 import {SortController} from "./sortController";
 import {SvgFactory} from "./svgFactory";
 import {TemplateService} from "./templateService";
-import {Utils} from "./utils";
+import {Utils, NumberSequence} from "./utils";
 import {ValueService} from "./valueService";
 import {PopupService} from "./widgets/popupService";
 import {GridRow} from "./entities/gridRow";
@@ -76,13 +83,21 @@ import {PopupSelectCellEditor} from "./rendering/cellEditors/popupSelectCellEdit
 import {PopupTextCellEditor} from "./rendering/cellEditors/popupTextCellEditor";
 import {SelectCellEditor} from "./rendering/cellEditors/selectCellEditor";
 import {TextCellEditor} from "./rendering/cellEditors/textCellEditor";
+import {LargeTextCellEditor} from "./rendering/cellEditors/largeTextCellEditor";
 import {CellRendererFactory} from "./rendering/cellRendererFactory";
-import {VirtualList} from "./widgets/virtualList";
-import {RichSelectCellEditor} from "./rendering/cellEditors/richSelect/richSelectCellEditor";
 import {GroupCellRenderer} from "./rendering/cellRenderers/groupCellRenderer";
 import {CellRendererService} from "./rendering/cellRendererService";
 import {ValueFormatterService} from "./rendering/valueFormatterService";
-import {DateCellEditor} from "./rendering/cellEditors/dateCellEditor";
+import {CheckboxSelectionComponent} from "./rendering/checkboxSelectionComponent";
+import {QuerySelector, Listener} from "./widgets/componentAnnotations";
+import {AgCheckbox} from "./widgets/agCheckbox";
+import {BodyDropPivotTarget} from "./headerRendering/bodyDropPivotTarget";
+import {BodyDropTarget} from "./headerRendering/bodyDropTarget";
+import {FocusService} from "./misc/focusService";
+import {SetLeftFeature} from "./rendering/features/setLeftFeature";
+import {RenderedCell} from "./rendering/renderedCell";
+import {HeaderRowComp} from "./headerRendering/headerRowComp";
+import {AnimateShowChangeCellRenderer} from "./rendering/cellRenderers/animateShowChangeCellRenderer";
 
 export function populateClientExports(exports: any): void {
 
@@ -103,9 +118,12 @@ export function populateClientExports(exports: any): void {
     exports.Context = Context;
     exports.Autowired = Autowired;
     exports.PostConstruct = PostConstruct;
+    exports.PreDestroy = PreDestroy;
     exports.Optional = Optional;
     exports.Bean = Bean;
     exports.Qualifier = Qualifier;
+    exports.Listener = Listener;
+    exports.QuerySelector = QuerySelector;
 
     // dragAndDrop
     exports.DragAndDropService = DragAndDropService;
@@ -129,9 +147,12 @@ export function populateClientExports(exports: any): void {
     exports.MouseEventService = MouseEventService;
 
     // headerRendering
+    exports.BodyDropPivotTarget = BodyDropPivotTarget;
+    exports.BodyDropTarget = BodyDropTarget;
     exports.CssClassApplier = CssClassApplier;
     exports.HeaderContainer = HeaderContainer;
     exports.HeaderRenderer = HeaderRenderer;
+    exports.HeaderRowComp = HeaderRowComp;
     exports.HeaderTemplateLoader = HeaderTemplateLoader;
     exports.HorizontalDragService = HorizontalDragService;
     exports.MoveColumnController = MoveColumnController;
@@ -144,18 +165,24 @@ export function populateClientExports(exports: any): void {
     exports.TabbedLayout = TabbedLayout;
     exports.VerticalStack = VerticalStack;
 
+    // misc
+    exports.FocusService = FocusService;
+
     // rendering / cellEditors
-    exports.DateCellEditor = DateCellEditor;
+    exports.LargeTextCellEditor = LargeTextCellEditor;
     exports.PopupEditorWrapper = PopupEditorWrapper;
     exports.PopupSelectCellEditor = PopupSelectCellEditor;
     exports.PopupTextCellEditor = PopupTextCellEditor;
     exports.SelectCellEditor = SelectCellEditor;
     exports.TextCellEditor = TextCellEditor;
-    exports.RichSelectCellEditor = RichSelectCellEditor;
 
     // rendering / cellRenderers
+    exports.AnimateShowChangeCellRenderer = AnimateShowChangeCellRenderer;
     exports.AnimateSlideCellRenderer = AnimateSlideCellRenderer;
     exports.GroupCellRenderer = GroupCellRenderer;
+
+    // features
+    exports.SetLeftFeature = SetLeftFeature;
 
     // rendering
     exports.AutoWidthCalculator = AutoWidthCalculator;
@@ -163,6 +190,8 @@ export function populateClientExports(exports: any): void {
     exports.RenderedHeaderCell = RenderedHeaderCell;
     exports.CellRendererFactory = CellRendererFactory;
     exports.CellRendererService = CellRendererService;
+    exports.CheckboxSelectionComponent = CheckboxSelectionComponent;
+    exports.RenderedCell = RenderedCell;
     exports.RenderedRow = RenderedRow;
     exports.RowRenderer = RowRenderer;
     exports.ValueFormatterService = ValueFormatterService;
@@ -179,11 +208,13 @@ export function populateClientExports(exports: any): void {
     exports.VirtualPageRowModel = VirtualPageRowModel;
 
     // widgets
+    exports.AgCheckbox = AgCheckbox;
+    exports.Component = Component;
     exports.PopupService = PopupService;
     exports.MenuItemComponent = MenuItemComponent;
-    exports.Component = Component;
     exports.MenuList = MenuList;
-    exports.VirtualList = VirtualList;
+    exports.Listener = Listener;
+    exports.QuerySelector = QuerySelector;
 
     // root
     exports.CellNavigationService = CellNavigationService;
@@ -202,11 +233,12 @@ export function populateClientExports(exports: any): void {
     exports.Logger = Logger;
     exports.MasterSlaveService = MasterSlaveService;
     exports.SelectionController = SelectionController;
-    exports.SelectionRendererFactory = SelectionRendererFactory;
+    exports.CheckboxSelectionComponent = CheckboxSelectionComponent;
     exports.SortController = SortController;
     exports.SvgFactory = SvgFactory;
     exports.TemplateService = TemplateService;
     exports.Utils = Utils;
+    exports.NumberSequence = NumberSequence;
     exports.ValueService = ValueService;
 
 }

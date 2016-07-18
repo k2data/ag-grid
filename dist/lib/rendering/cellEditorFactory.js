@@ -1,6 +1,10 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
+<<<<<<< HEAD
  * @version v4.0.5
+=======
+ * @version v5.0.3
+>>>>>>> upstream/master
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -20,8 +24,12 @@ var selectCellEditor_1 = require("./cellEditors/selectCellEditor");
 var popupEditorWrapper_1 = require("./cellEditors/popupEditorWrapper");
 var popupTextCellEditor_1 = require("./cellEditors/popupTextCellEditor");
 var popupSelectCellEditor_1 = require("./cellEditors/popupSelectCellEditor");
+<<<<<<< HEAD
 var richSelectCellEditor_1 = require("./cellEditors/richSelect/richSelectCellEditor");
 var dateCellEditor_1 = require("./cellEditors/dateCellEditor");
+=======
+var gridOptionsWrapper_1 = require("../gridOptionsWrapper");
+>>>>>>> upstream/master
 var CellEditorFactory = (function () {
     function CellEditorFactory() {
         this.cellEditorMap = {};
@@ -31,12 +39,24 @@ var CellEditorFactory = (function () {
         this.cellEditorMap[CellEditorFactory.SELECT] = selectCellEditor_1.SelectCellEditor;
         this.cellEditorMap[CellEditorFactory.POPUP_TEXT] = popupTextCellEditor_1.PopupTextCellEditor;
         this.cellEditorMap[CellEditorFactory.POPUP_SELECT] = popupSelectCellEditor_1.PopupSelectCellEditor;
+<<<<<<< HEAD
         this.cellEditorMap[CellEditorFactory.RICH_SELECT] = richSelectCellEditor_1.RichSelectCellEditor;
         this.cellEditorMap[CellEditorFactory.DATE] = dateCellEditor_1.DateCellEditor;
+=======
+>>>>>>> upstream/master
     };
     CellEditorFactory.prototype.addCellEditor = function (key, cellEditor) {
         this.cellEditorMap[key] = cellEditor;
     };
+<<<<<<< HEAD
+=======
+    // private registerEditorsFromGridOptions(): void {
+    //     var userProvidedCellEditors = this.gridOptionsWrapper.getCellEditors();
+    //     _.iterateObject(userProvidedCellEditors, (key: string, cellEditor: {new(): ICellEditor})=> {
+    //         this.addCellEditor(key, cellEditor);
+    //     });
+    // }
+>>>>>>> upstream/master
     CellEditorFactory.prototype.createCellEditor = function (key) {
         var CellEditorClass;
         if (utils_1.Utils.missing(key)) {
@@ -61,15 +81,27 @@ var CellEditorFactory = (function () {
     };
     CellEditorFactory.TEXT = 'text';
     CellEditorFactory.SELECT = 'select';
+<<<<<<< HEAD
     CellEditorFactory.DATE = 'date';
     CellEditorFactory.POPUP_TEXT = 'popupText';
     CellEditorFactory.POPUP_SELECT = 'popupSelect';
     CellEditorFactory.RICH_SELECT = 'richSelect';
+=======
+    CellEditorFactory.POPUP_TEXT = 'popupText';
+    CellEditorFactory.POPUP_SELECT = 'popupSelect';
+>>>>>>> upstream/master
     __decorate([
         context_1.Autowired('context'), 
         __metadata('design:type', context_1.Context)
     ], CellEditorFactory.prototype, "context", void 0);
     __decorate([
+<<<<<<< HEAD
+=======
+        context_1.Autowired('gridOptionsWrapper'), 
+        __metadata('design:type', gridOptionsWrapper_1.GridOptionsWrapper)
+    ], CellEditorFactory.prototype, "gridOptionsWrapper", void 0);
+    __decorate([
+>>>>>>> upstream/master
         context_1.PostConstruct, 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', []), 

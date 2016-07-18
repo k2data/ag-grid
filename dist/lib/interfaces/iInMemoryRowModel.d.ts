@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // Type definitions for ag-grid v4.0.5
+=======
+// Type definitions for ag-grid v5.0.3
+>>>>>>> upstream/master
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -12,10 +16,20 @@ export interface IInMemoryRowModel extends IRowModel {
      * nodes only. */
     getTopLevelNodes(): RowNode[];
     /** InMemory model only. */
+<<<<<<< HEAD
+=======
+    forEachLeafNode(callback: (rowNode: RowNode) => void): void;
+    /** InMemory model only. */
+>>>>>>> upstream/master
     forEachNodeAfterFilter(callback: (rowNode: RowNode) => void): void;
     /** InMemory model only. */
     forEachNodeAfterFilterAndSort(callback: (rowNode: RowNode) => void): void;
     /** InMemory model only. */
+<<<<<<< HEAD
+=======
+    forEachPivotNode(callback: (rowNode: RowNode) => void): void;
+    /** InMemory model only. */
+>>>>>>> upstream/master
     expandOrCollapseAll(expand: boolean): void;
     /** InMemory model only. */
     setRowData(rows: any[], refresh: boolean, firstId?: number): void;
