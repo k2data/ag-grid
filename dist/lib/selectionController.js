@@ -192,11 +192,7 @@ var SelectionController = (function () {
     };
     SelectionController.prototype.selectAllRowNodes = function () {
         if (this.rowModel.getType() !== constants_1.Constants.ROW_MODEL_TYPE_NORMAL) {
-<<<<<<< HEAD
-            throw 'selectAll only available with norma row model, ie not virtual pagination';
-=======
             throw 'selectAll only available with normal row model, ie not virtual pagination';
->>>>>>> upstream/master
         }
         this.rowModel.forEachNode(function (rowNode) {
             rowNode.selectThisNode(true);

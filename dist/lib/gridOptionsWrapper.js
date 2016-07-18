@@ -26,11 +26,7 @@ var events_1 = require("./events");
 var utils_1 = require("./utils");
 var DEFAULT_ROW_HEIGHT = 25;
 var DEFAULT_VIEWPORT_ROW_MODEL_PAGE_SIZE = 5;
-<<<<<<< HEAD
-var DEFAULT_VIEWPORT_ROW_MODEL_BUFER_SIZE = 5;
-=======
 var DEFAULT_VIEWPORT_ROW_MODEL_BUFFER_SIZE = 5;
->>>>>>> upstream/master
 function isTrue(value) {
     return value === true || value === 'true';
 }
@@ -72,18 +68,12 @@ var GridOptionsWrapper = (function () {
     GridOptionsWrapper.prototype.isRowModelVirtual = function () { return this.gridOptions.rowModelType === constants_1.Constants.ROW_MODEL_TYPE_VIRTUAL; };
     GridOptionsWrapper.prototype.isRowModelViewport = function () { return this.gridOptions.rowModelType === constants_1.Constants.ROW_MODEL_TYPE_VIEWPORT; };
     GridOptionsWrapper.prototype.isRowModelDefault = function () { return !(this.isRowModelPagination() || this.isRowModelVirtual() || this.isRowModelViewport()); };
-<<<<<<< HEAD
-=======
     GridOptionsWrapper.prototype.isSuppressFocusAfterRefresh = function () { return isTrue(this.gridOptions.suppressFocusAfterRefresh); };
->>>>>>> upstream/master
     GridOptionsWrapper.prototype.isShowToolPanel = function () { return isTrue(this.gridOptions.showToolPanel); };
     GridOptionsWrapper.prototype.isToolPanelSuppressRowGroups = function () { return isTrue(this.gridOptions.toolPanelSuppressRowGroups); };
     GridOptionsWrapper.prototype.isToolPanelSuppressValues = function () { return isTrue(this.gridOptions.toolPanelSuppressValues); };
-<<<<<<< HEAD
-=======
     GridOptionsWrapper.prototype.isToolPanelSuppressPivots = function () { return isTrue(this.gridOptions.toolPanelSuppressPivots); };
     GridOptionsWrapper.prototype.isToolPanelSuppressPivotMode = function () { return isTrue(this.gridOptions.toolPanelSuppressPivotMode); };
->>>>>>> upstream/master
     GridOptionsWrapper.prototype.isEnableCellChangeFlash = function () { return isTrue(this.gridOptions.enableCellChangeFlash); };
     GridOptionsWrapper.prototype.isGroupSelectsChildren = function () { return isTrue(this.gridOptions.groupSelectsChildren); };
     GridOptionsWrapper.prototype.isGroupIncludeFooter = function () { return isTrue(this.gridOptions.groupIncludeFooter); };
@@ -171,9 +161,6 @@ var GridOptionsWrapper = (function () {
     GridOptionsWrapper.prototype.getMainMenuItemsFunc = function () { return this.gridOptions.getMainMenuItems; };
     GridOptionsWrapper.prototype.getProcessCellForClipboardFunc = function () { return this.gridOptions.processCellForClipboard; };
     GridOptionsWrapper.prototype.getViewportRowModelPageSize = function () { return positiveNumberOrZero(this.gridOptions.viewportRowModelPageSize, DEFAULT_VIEWPORT_ROW_MODEL_PAGE_SIZE); };
-<<<<<<< HEAD
-    GridOptionsWrapper.prototype.getViewportRowModelBufferSize = function () { return positiveNumberOrZero(this.gridOptions.viewportRowModelBufferSize, DEFAULT_VIEWPORT_ROW_MODEL_BUFER_SIZE); };
-=======
     GridOptionsWrapper.prototype.getViewportRowModelBufferSize = function () { return positiveNumberOrZero(this.gridOptions.viewportRowModelBufferSize, DEFAULT_VIEWPORT_ROW_MODEL_BUFFER_SIZE); };
     // public getCellRenderers(): {[key: string]: {new(): ICellRenderer} | ICellRendererFunc} { return this.gridOptions.cellRenderers; }
     // public getCellEditors(): {[key: string]: {new(): ICellEditor}} { return this.gridOptions.cellEditors; }
@@ -189,7 +176,6 @@ var GridOptionsWrapper = (function () {
     GridOptionsWrapper.prototype.removeEventListener = function (key, listener) {
         this.propertyEventService.removeEventListener(key, listener);
     };
->>>>>>> upstream/master
     GridOptionsWrapper.prototype.executeProcessRowPostCreateFunc = function (params) {
         if (this.gridOptions.processRowPostCreate) {
             this.gridOptions.processRowPostCreate(params);
@@ -224,8 +210,6 @@ var GridOptionsWrapper = (function () {
             return false;
         }
     };
-<<<<<<< HEAD
-=======
     GridOptionsWrapper.prototype.getLayoutInterval = function () {
         if (typeof this.gridOptions.layoutInterval === 'number') {
             return this.gridOptions.layoutInterval;
@@ -234,7 +218,6 @@ var GridOptionsWrapper = (function () {
             return constants_1.Constants.LAYOUT_INTERVAL;
         }
     };
->>>>>>> upstream/master
     GridOptionsWrapper.prototype.getMinColWidth = function () {
         if (this.gridOptions.minColWidth > GridOptionsWrapper.MIN_COL_WIDTH) {
             return this.gridOptions.minColWidth;

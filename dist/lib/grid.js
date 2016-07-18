@@ -39,30 +39,19 @@ var focusedCellController_1 = require("./focusedCellController");
 var mouseEventService_1 = require("./gridPanel/mouseEventService");
 var cellNavigationService_1 = require("./cellNavigationService");
 var utils_1 = require("./utils");
-<<<<<<< HEAD
-var fillterStage_1 = require("./rowControllers/inMemory/fillterStage");
-=======
 var filterStage_1 = require("./rowControllers/inMemory/filterStage");
->>>>>>> upstream/master
 var sortStage_1 = require("./rowControllers/inMemory/sortStage");
 var flattenStage_1 = require("./rowControllers/inMemory/flattenStage");
 var focusService_1 = require("./misc/focusService");
 var cellEditorFactory_1 = require("./rendering/cellEditorFactory");
 var events_1 = require("./events");
-<<<<<<< HEAD
-var viewportRowModel_1 = require("./rowControllers/viewportRowModel");
-=======
->>>>>>> upstream/master
 var virtualPageRowModel_1 = require("./rowControllers/virtualPageRowModel");
 var inMemoryRowModel_1 = require("./rowControllers/inMemory/inMemoryRowModel");
 var cellRendererFactory_1 = require("./rendering/cellRendererFactory");
 var cellRendererService_1 = require("./rendering/cellRendererService");
 var valueFormatterService_1 = require("./rendering/valueFormatterService");
-<<<<<<< HEAD
-=======
 var agCheckbox_1 = require("./widgets/agCheckbox");
 var largeTextCellEditor_1 = require("./rendering/cellEditors/largeTextCellEditor");
->>>>>>> upstream/master
 var Grid = (function () {
     function Grid(eGridDiv, gridOptions, globalEventListener, $scope, $compile, quickFilterOnScope) {
         if (globalEventListener === void 0) { globalEventListener = null; }
@@ -96,31 +85,21 @@ var Grid = (function () {
                 logger_1.LoggerFactory, oldToolPanelDragAndDropService_1.OldToolPanelDragAndDropService, columnUtils_1.ColumnUtils, autoWidthCalculator_1.AutoWidthCalculator, gridApi_1.GridApi,
                 paginationController_1.PaginationController, popupService_1.PopupService, gridCore_1.GridCore, standardMenu_1.StandardMenuFactory,
                 dragAndDropService_1.DragAndDropService, sortController_1.SortController, columnController_1.ColumnApi, focusedCellController_1.FocusedCellController, mouseEventService_1.MouseEventService,
-<<<<<<< HEAD
-                cellNavigationService_1.CellNavigationService, fillterStage_1.FilterStage, sortStage_1.SortStage, flattenStage_1.FlattenStage, focusService_1.FocusService,
-                cellEditorFactory_1.CellEditorFactory, cellRendererService_1.CellRendererService, valueFormatterService_1.ValueFormatterService],
-            debug: !!gridOptions.debug
-        });
-=======
                 cellNavigationService_1.CellNavigationService, filterStage_1.FilterStage, sortStage_1.SortStage, flattenStage_1.FlattenStage, focusService_1.FocusService,
                 cellEditorFactory_1.CellEditorFactory, cellRendererService_1.CellRendererService, valueFormatterService_1.ValueFormatterService],
             components: [{ componentName: 'AgCheckbox', theClass: agCheckbox_1.AgCheckbox }],
             debug: !!gridOptions.debug
         });
         this.context.getBean('cellEditorFactory').addCellEditor(Grid.LARGE_TEXT, largeTextCellEditor_1.LargeTextCellEditor);
->>>>>>> upstream/master
         var eventService = this.context.getBean('eventService');
         var readyEvent = {
             api: gridOptions.api,
             columnApi: gridOptions.columnApi
         };
         eventService.dispatchEvent(events_1.Events.EVENT_GRID_READY, readyEvent);
-<<<<<<< HEAD
-=======
         if (gridOptions.debug) {
             console.log('ag-Grid -> initialised successfully, enterprise = ' + enterprise);
         }
->>>>>>> upstream/master
     }
     Grid.setEnterpriseBeans = function (enterpriseBeans, rowModelClasses) {
         this.enterpriseBeans = enterpriseBeans;
@@ -143,20 +122,6 @@ var Grid = (function () {
         }
         return inMemoryRowModel_1.InMemoryRowModel;
     };
-<<<<<<< HEAD
-    Grid.prototype.getRowModelClass = function (gridOptions) {
-        if (gridOptions.rowModelType === constants_1.Constants.ROW_MODEL_TYPE_VIEWPORT) {
-            return viewportRowModel_1.ViewportRowModel;
-        }
-        else if (gridOptions.rowModelType === constants_1.Constants.ROW_MODEL_TYPE_VIRTUAL) {
-            return virtualPageRowModel_1.VirtualPageRowModel;
-        }
-        else {
-            return inMemoryRowModel_1.InMemoryRowModel;
-        }
-    };
-=======
->>>>>>> upstream/master
     ;
     Grid.prototype.destroy = function () {
         this.context.destroy();

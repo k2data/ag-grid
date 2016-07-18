@@ -3,24 +3,14 @@
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { IEventEmitter } from "../interfaces/iEventEmitter";
-<<<<<<< HEAD
-export declare class Component implements IEventEmitter {
-=======
 import { Context } from "../context/context";
 import { GridOptionsWrapper } from "../gridOptionsWrapper";
 export declare class Component implements IEventEmitter {
     static EVENT_VISIBLE_CHANGED: string;
->>>>>>> upstream/master
     private eGui;
     private destroyFunctions;
     private localEventService;
     private childComponents;
-<<<<<<< HEAD
-    constructor(template?: string);
-    setTemplate(template: string): void;
-    addEventListener(eventType: string, listener: Function): void;
-    removeEventListener(eventType: string, listener: Function): void;
-=======
     private annotatedEventListeners;
     private visible;
     constructor(template?: string);
@@ -35,7 +25,6 @@ export declare class Component implements IEventEmitter {
     addEventListener(eventType: string, listener: Function): void;
     removeEventListener(eventType: string, listener: Function): void;
     dispatchEventAsync(eventType: string, event?: any): void;
->>>>>>> upstream/master
     dispatchEvent(eventType: string, event?: any): void;
     getGui(): HTMLElement;
     protected queryForHtmlElement(cssSelector: string): HTMLElement;
@@ -45,13 +34,8 @@ export declare class Component implements IEventEmitter {
     setVisible(visible: boolean): void;
     addOrRemoveCssClass(className: string, addOrRemove: boolean): void;
     destroy(): void;
-<<<<<<< HEAD
-    addGuiEventListener(event: string, listener: () => void): void;
-    addDestroyableEventListener(eElement: HTMLElement | IEventEmitter, event: string, listener: (event?: any) => void): void;
-=======
     addGuiEventListener(event: string, listener: (event: any) => void): void;
     addDestroyableEventListener(eElement: HTMLElement | IEventEmitter | GridOptionsWrapper, event: string, listener: (event?: any) => void): void;
->>>>>>> upstream/master
     addDestroyFunc(func: () => void): void;
     addCssClass(className: string): void;
     getAttribute(key: string): string;

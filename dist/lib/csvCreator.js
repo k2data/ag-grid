@@ -46,19 +46,12 @@ var CsvCreator = (function () {
         }
     };
     CsvCreator.prototype.getDataAsCsv = function (params) {
-<<<<<<< HEAD
-        var _this = this;
-=======
->>>>>>> upstream/master
         if (this.rowModel.getType() !== constants_1.Constants.ROW_MODEL_TYPE_NORMAL) {
             console.log('ag-Grid: getDataAsCsv is only available for standard row model');
             return '';
         }
         var inMemoryRowModel = this.rowModel;
-<<<<<<< HEAD
-=======
         var that = this;
->>>>>>> upstream/master
         var result = '';
         var skipGroups = params && params.skipGroups;
         var skipHeader = params && params.skipHeader;
@@ -89,21 +82,6 @@ var CsvCreator = (function () {
         }
         // first pass, put in the header names of the cols
         if (!skipHeader) {
-<<<<<<< HEAD
-            columnsToExport.forEach(function (column, index) {
-                var nameForCol = _this.getHeaderName(params.processHeaderCallback, column);
-                if (nameForCol === null || nameForCol === undefined) {
-                    nameForCol = '';
-                }
-                if (index != 0) {
-                    result += columnSeparator;
-                }
-                result += '"' + _this.escape(nameForCol) + '"';
-            });
-            result += LINE_SEPARATOR;
-        }
-        inMemoryRowModel.forEachNodeAfterFilterAndSort(function (node) {
-=======
             columnsToExport.forEach(processHeaderColumn);
             result += LINE_SEPARATOR;
         }
@@ -117,7 +95,6 @@ var CsvCreator = (function () {
             result += params.customFooter;
         }
         function processRow(node) {
->>>>>>> upstream/master
             if (skipGroups && node.group) {
                 return;
             }
@@ -174,11 +151,7 @@ var CsvCreator = (function () {
             });
         }
         else {
-<<<<<<< HEAD
-            return this.columnController.getDisplayNameForCol(column);
-=======
             return this.columnController.getDisplayNameForCol(column, true);
->>>>>>> upstream/master
         }
     };
     CsvCreator.prototype.processCell = function (rowNode, column, value, processCellCallback) {

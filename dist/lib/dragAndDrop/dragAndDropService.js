@@ -28,8 +28,6 @@ var DragAndDropService = (function () {
     function DragAndDropService() {
         this.dropTargets = [];
     }
-<<<<<<< HEAD
-=======
     DragAndDropService.prototype.init = function () {
         this.ePinnedIcon = utils_1.Utils.createIcon('columnMovePin', this.gridOptionsWrapper, null, svgFactory.createPinIcon);
         this.ePlusIcon = utils_1.Utils.createIcon('columnMoveAdd', this.gridOptionsWrapper, null, svgFactory.createPlusIcon);
@@ -42,7 +40,6 @@ var DragAndDropService = (function () {
         this.ePivotIcon = utils_1.Utils.createIcon('columnMovePivot', this.gridOptionsWrapper, null, svgFactory.createPivotIcon);
         this.eDropNotAllowedIcon = utils_1.Utils.createIcon('dropNotAllowed', this.gridOptionsWrapper, null, svgFactory.createDropNotAllowedIcon);
     };
->>>>>>> upstream/master
     DragAndDropService.prototype.setBeans = function (loggerFactory) {
         this.logger = loggerFactory.create('OldToolPanelDragAndDropService');
         this.eBody = document.querySelector('body');

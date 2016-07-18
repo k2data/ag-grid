@@ -65,9 +65,6 @@ export declare class Events {
     static EVENT_GRID_READY: string;
     static EVENT_GRID_SIZE_CHANGED: string;
     static EVENT_VIEWPORT_CHANGED: string;
-<<<<<<< HEAD
-=======
     static EVENT_DRAG_STARTED: string;
     static EVENT_DRAG_STOPPED: string;
->>>>>>> upstream/master
 }

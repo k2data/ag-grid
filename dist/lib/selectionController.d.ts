@@ -9,11 +9,8 @@ export declare class SelectionController {
     private gridOptionsWrapper;
     private selectedNodes;
     private logger;
-<<<<<<< HEAD
-=======
     private lastSelectedNode;
     private groupSelectsChildren;
->>>>>>> upstream/master
     private setBeans(loggerFactory);
     init(): void;
     setLastSelectedNode(rowNode: RowNode): void;

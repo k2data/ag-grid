@@ -22,10 +22,7 @@ export declare class InMemoryRowModel implements IInMemoryRowModel {
     private rowsToDisplay;
     init(): void;
     getType(): string;
-<<<<<<< HEAD:dist/lib/rowControllers/inMemory/inMemoryRowModel.d.ts
-=======
     private onValueChanged();
->>>>>>> upstream/master:dist/lib/rowControllers/inMemory/inMemoryRowModel.d.ts
     refreshModel(step: number, fromIndex?: any, groupState?: any): void;
     isEmpty(): boolean;
     isRowsToRender(): boolean;

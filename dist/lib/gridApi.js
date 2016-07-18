@@ -71,12 +71,9 @@ var GridApi = (function () {
     };
     GridApi.prototype.setViewportDatasource = function (viewportDatasource) {
         if (this.gridOptionsWrapper.isRowModelViewport()) {
-<<<<<<< HEAD
-=======
             // this is bad coding, because it's using an interface that's exposed in the enterprise.
             // really we should create an interface in the core for viewportDatasource and let
             // the enterprise implement it, rather than casting to 'any' here
->>>>>>> upstream/master
             this.rowModel.setViewportDatasource(viewportDatasource);
         }
         else {
@@ -84,19 +81,12 @@ var GridApi = (function () {
         }
     };
     GridApi.prototype.setRowData = function (rowData) {
-<<<<<<< HEAD
-        if (utils_1.Utils.missing(this.inMemoryRowModel)) {
-            console.log('cannot call setRowData unless using normal row model');
-        }
-        this.inMemoryRowModel.setRowData(rowData, true);
-=======
         if (this.gridOptionsWrapper.isRowModelDefault()) {
             this.inMemoryRowModel.setRowData(rowData, true);
         }
         else {
             console.log('cannot call setRowData unless using normal row model');
         }
->>>>>>> upstream/master
     };
     GridApi.prototype.setFloatingTopRowData = function (rows) {
         this.floatingRowModel.setFloatingTopRowData(rows);
@@ -150,15 +140,12 @@ var GridApi = (function () {
             console.log('cannot call onGroupExpandedOrCollapsed unless using normal row model');
         }
         this.inMemoryRowModel.refreshModel(constants_1.Constants.STEP_MAP, refreshFromIndex);
-<<<<<<< HEAD
-=======
     };
     GridApi.prototype.refreshInMemoryRowModel = function () {
         if (utils_1.Utils.missing(this.inMemoryRowModel)) {
             console.log('cannot call refreshInMemoryRowModel unless using normal row model');
         }
         this.inMemoryRowModel.refreshModel(constants_1.Constants.STEP_EVERYTHING);
->>>>>>> upstream/master
     };
     GridApi.prototype.expandAll = function () {
         if (utils_1.Utils.missing(this.inMemoryRowModel)) {
@@ -311,21 +298,13 @@ var GridApi = (function () {
         return this.getFilterApi(colDef);
     };
     GridApi.prototype.getFilterApi = function (key) {
-<<<<<<< HEAD
-        var column = this.columnController.getColumn(key);
-=======
         var column = this.columnController.getPrimaryColumn(key);
->>>>>>> upstream/master
         if (column) {
             return this.filterManager.getFilterApi(column);
         }
     };
     GridApi.prototype.destroyFilter = function (key) {
-<<<<<<< HEAD
-        var column = this.columnController.getColumn(key);
-=======
         var column = this.columnController.getPrimaryColumn(key);
->>>>>>> upstream/master
         if (column) {
             return this.filterManager.destroyFilter(column);
         }
@@ -437,20 +416,6 @@ var GridApi = (function () {
         this.clipboardService.copyRangeDown();
     };
     GridApi.prototype.showColumnMenuAfterButtonClick = function (colKey, buttonElement) {
-<<<<<<< HEAD
-        var column = this.columnController.getColumn(colKey);
-        this.menuFactory.showMenuAfterButtonClick(column, buttonElement);
-    };
-    GridApi.prototype.showColumnMenuAfterMouseClick = function (colKey, mouseEvent) {
-        var column = this.columnController.getColumn(colKey);
-        this.menuFactory.showMenuAfterMouseEvent(column, mouseEvent);
-    };
-    GridApi.prototype.addCellRenderer = function (key, cellRenderer) {
-        this.cellRendererFactory.addCellRenderer(key, cellRenderer);
-    };
-    GridApi.prototype.addCellEditor = function (key, cellEditor) {
-        this.cellEditorFactory.addCellEditor(key, cellEditor);
-=======
         var column = this.columnController.getPrimaryColumn(colKey);
         this.menuFactory.showMenuAfterButtonClick(column, buttonElement);
     };
@@ -476,7 +441,6 @@ var GridApi = (function () {
         if (this.aggFuncService) {
             this.aggFuncService.clear();
         }
->>>>>>> upstream/master
     };
     __decorate([
         context_1.Autowired('csvCreator'), 
@@ -559,13 +523,10 @@ var GridApi = (function () {
         __metadata('design:type', Object)
     ], GridApi.prototype, "clipboardService", void 0);
     __decorate([
-<<<<<<< HEAD
-=======
         context_1.Optional('aggFuncService'), 
         __metadata('design:type', Object)
     ], GridApi.prototype, "aggFuncService", void 0);
     __decorate([
->>>>>>> upstream/master
         context_1.Autowired('menuFactory'), 
         __metadata('design:type', Object)
     ], GridApi.prototype, "menuFactory", void 0);

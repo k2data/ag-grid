@@ -9,11 +9,7 @@ export declare class BalancedColumnTreeBuilder {
     private context;
     private logger;
     private setBeans(loggerFactory);
-<<<<<<< HEAD
-    createBalancedColumnGroups(abstractColDefs: AbstractColDef[]): any;
-=======
     createBalancedColumnGroups(abstractColDefs: AbstractColDef[], primaryColumns: boolean): any;
->>>>>>> upstream/master
     private balanceColumnTree(unbalancedTree, currentDept, columnDept, columnKeyCreator);
     private findMaxDept(treeChildren, dept);
     private recursivelyCreateColumns(abstractColDefs, level, columnKeyCreator, primaryColumns);

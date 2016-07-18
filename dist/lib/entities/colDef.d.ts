@@ -7,10 +7,7 @@ import { SetFilterParameters } from "../filter/setFilterParameters";
 import { TextAndNumberFilterParameters } from "../filter/textAndNumberFilterParameters";
 import { ICellEditor } from "../rendering/cellEditors/iCellEditor";
 import { ICellRendererFunc, ICellRenderer } from "../rendering/cellRenderers/iCellRenderer";
-<<<<<<< HEAD
-=======
 import { Column } from "./column";
->>>>>>> upstream/master
 /** AbstractColDef can be a group or a column definition */
 export interface AbstractColDef {
     /** The name to render in the column header */
@@ -95,13 +92,8 @@ export interface ColDef extends AbstractColDef {
     cellFormatter?: (params: any) => string;
     /** A function to format a floating value, should return a string. Not used for CSV export or copy to clipboard, only for UI cell rendering. */
     floatingCellFormatter?: (params: any) => string;
-<<<<<<< HEAD
-    /** Name of function to use for aggregation. One of [sum,min,max]. */
-    aggFunc?: string;
-=======
     /** Name of function to use for aggregation. One of [sum,min,max,first,last] or a function. */
     aggFunc?: string | IAggFunc;
->>>>>>> upstream/master
     /** To group by this column by default, provide an index here. */
     rowGroupIndex?: number;
     /** To pivot by this column by default, provide an index here. */
@@ -164,11 +156,8 @@ export interface ColDef extends AbstractColDef {
     };
     /** If true, grid will flash cell after cell is refreshed */
     enableCellChangeFlash?: boolean;
-<<<<<<< HEAD
-=======
     /** Never set this, it is used internally by grid when doing in-grid pivoting */
     pivotKeys?: string[];
     /** Never set this, it is used internally by grid when doing in-grid pivoting */
     pivotValueColumn?: Column;
->>>>>>> upstream/master
 }

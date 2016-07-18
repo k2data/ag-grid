@@ -48,10 +48,7 @@ var RowRenderer = (function () {
         this.logger = loggerFactory.create('BalancedColumnTreeBuilder');
     };
     RowRenderer.prototype.init = function () {
-<<<<<<< HEAD
-=======
         var _this = this;
->>>>>>> upstream/master
         this.getContainersFromGridPanel();
         var columnListener = this.onColumnEvent.bind(this);
         var refreshViewListener = this.refreshView.bind(this);
@@ -142,12 +139,7 @@ var RowRenderer = (function () {
     };
     RowRenderer.prototype.refreshView = function (refreshEvent) {
         this.logger.log('refreshView');
-<<<<<<< HEAD
-        var focusedCell = this.focusedCellController.getFocusCellIfBrowserFocused();
-        this.focusedCellController.getFocusedCell();
-=======
         var focusedCell = this.focusedCellController.getFocusCellToUseAfterRefresh();
->>>>>>> upstream/master
         var refreshFromIndex = refreshEvent ? refreshEvent.fromIndex : null;
         if (!this.gridOptionsWrapper.isForPrint()) {
             var containerHeight = this.rowModel.getRowCombinedHeight();
@@ -169,9 +161,6 @@ var RowRenderer = (function () {
         }
     };
     RowRenderer.prototype.softRefreshView = function () {
-<<<<<<< HEAD
-        var focusedCell = this.focusedCellController.getFocusCellIfBrowserFocused();
-=======
         var focusedCell = this.focusedCellController.getFocusCellToUseAfterRefresh();
         this.forEachRenderedCell(function (renderedCell) {
             if (renderedCell.isVolatile()) {
@@ -187,11 +176,9 @@ var RowRenderer = (function () {
         });
     };
     RowRenderer.prototype.forEachRenderedCell = function (callback) {
->>>>>>> upstream/master
         utils_1.Utils.iterateObject(this.renderedRows, function (key, renderedRow) {
             renderedRow.forEachRenderedCell(callback);
         });
-        this.restoreFocusedCell(focusedCell);
     };
     RowRenderer.prototype.forEachRenderedRow = function (callback) {
         utils_1.Utils.iterateObject(this.renderedRows, callback);
@@ -206,11 +193,7 @@ var RowRenderer = (function () {
         if (!rowNodes || rowNodes.length == 0) {
             return;
         }
-<<<<<<< HEAD
-        var focusedCell = this.focusedCellController.getFocusCellIfBrowserFocused();
-=======
         var focusedCell = this.focusedCellController.getFocusCellToUseAfterRefresh();
->>>>>>> upstream/master
         // we only need to be worried about rendered rows, as this method is
         // called to whats rendered. if the row isn't rendered, we don't care
         var indexesToRemove = [];
@@ -258,10 +241,7 @@ var RowRenderer = (function () {
         this.drawVirtualRows();
     };
     RowRenderer.prototype.destroy = function () {
-<<<<<<< HEAD
-=======
         this.destroyFunctions.forEach(function (func) { return func(); });
->>>>>>> upstream/master
         var rowsToRemove = Object.keys(this.renderedRows);
         this.removeVirtualRow(rowsToRemove);
     };
@@ -478,31 +458,18 @@ var RowRenderer = (function () {
         var cellComponent = rowComponent.getRenderedCellForColumn(gridCell.column);
         return cellComponent;
     };
-<<<<<<< HEAD
-    // called by the cell, when tab is pressed while editing
-=======
     // called by the cell, when tab is pressed while editing.
     // @return: true when navigation successful, otherwise false
->>>>>>> upstream/master
     RowRenderer.prototype.moveFocusToNextCell = function (rowIndex, column, floating, shiftKey, startEditing) {
         var nextCell = new gridCell_1.GridCell(rowIndex, floating, column);
         while (true) {
             nextCell = this.cellNavigationService.getNextTabbedCell(nextCell, shiftKey);
-<<<<<<< HEAD
-            var nextRenderedCell = this.getComponentForCell(nextCell);
-            // if no 'next cell', means we have got to last cell of grid, so nothing to move to,
-            // so bottom right cell going forwards, or top left going backwards
-            if (!nextRenderedCell) {
-                return;
-            }
-=======
             // if no 'next cell', means we have got to last cell of grid, so nothing to move to,
             // so bottom right cell going forwards, or top left going backwards
             if (!nextCell) {
                 return false;
             }
             var nextRenderedCell = this.getComponentForCell(nextCell);
->>>>>>> upstream/master
             // if editing, but cell not editable, skip cell
             if (startEditing && !nextRenderedCell.isCellEditable()) {
                 continue;
@@ -528,12 +495,8 @@ var RowRenderer = (function () {
             if (this.rangeController) {
                 this.rangeController.setRangeToCell(new gridCell_1.GridCell(nextCell.rowIndex, nextCell.floating, nextCell.column));
             }
-<<<<<<< HEAD
-            return;
-=======
             // we successfully tabbed onto a grid cell, so return true
             return true;
->>>>>>> upstream/master
         }
     };
     __decorate([
@@ -549,13 +512,6 @@ var RowRenderer = (function () {
         __metadata('design:type', gridCore_1.GridCore)
     ], RowRenderer.prototype, "gridCore", void 0);
     __decorate([
-<<<<<<< HEAD
-        context_1.Autowired('selectionRendererFactory'), 
-        __metadata('design:type', selectionRendererFactory_1.SelectionRendererFactory)
-    ], RowRenderer.prototype, "selectionRendererFactory", void 0);
-    __decorate([
-=======
->>>>>>> upstream/master
         context_1.Autowired('gridPanel'), 
         __metadata('design:type', gridPanel_1.GridPanel)
     ], RowRenderer.prototype, "gridPanel", void 0);

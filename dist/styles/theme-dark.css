@@ -13,53 +13,6 @@
 .ag-dark .ag-root {
   border: 1px solid #808080;
 }
-<<<<<<< HEAD
-.ag-dark .ag-row-group-cell {
-  background: #430000;
-  border: 1px solid #808080;
-  padding: 2px;
-}
-.ag-dark .ag-row-group-cell-ghost {
-  opacity: 0.3;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-  filter: alpha(opacity=30);
-}
-.ag-dark .ag-row-group-cell-text {
-  padding-left: 2px;
-  padding-right: 2px;
-}
-.ag-dark .ag-row-group-cell-button {
-  border: 1px solid transparent;
-  padding-left: 2px;
-  padding-right: 2px;
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-}
-.ag-dark .ag-row-group-cell-button:hover {
-  border: 1px solid #808080;
-}
-.ag-dark .ag-row-group-empty-message {
-  padding-left: 2px;
-  padding-right: 2px;
-  border: 1px solid transparent;
-  color: #909090;
-}
-.ag-dark .ag-row-group-icon {
-  padding-right: 4px;
-}
-.ag-dark .ag-row-group-panel {
-  border-top: 1px solid #808080;
-  border-left: 1px solid #808080;
-  border-right: 1px solid #808080;
-  padding: 4px;
-  background-color: #403e3e;
-  color: #e0e0e0;
-}
-.ag-dark .ag-cell {
-  border-right: 1px solid #808080;
-}
-=======
->>>>>>> upstream/master
 .ag-dark .ag-cell-not-inline-editing {
   padding: 2px;
 }
@@ -121,29 +74,6 @@
   -ms-transition: border 1s;
   transition: border 1s;
 }
-<<<<<<< HEAD
-.ag-dark .ag-cell-data-changed {
-  background-color: #5f9ea0;
-}
-.ag-dark .ag-cell-data-changed-animation {
-  -webkit-transition: background-color 1s;
-  -moz-transition: background-color 1s;
-  -o-transition: background-color 1s;
-  -ms-transition: background-color 1s;
-  transition: background-color 1s;
-}
-.ag-dark .ag-cell-data-changed:not(.ag-cell-focus) {
-  background-color: #5f9ea0;
-}
-.ag-dark .ag-cell-data-changed-animation:not(.ag-cell-focus) {
-  -webkit-transition: background-color 1s;
-  -moz-transition: background-color 1s;
-  -o-transition: background-color 1s;
-  -ms-transition: background-color 1s;
-  transition: background-color 1s;
-}
-=======
->>>>>>> upstream/master
 .ag-dark .ag-value-change-delta {
   padding-right: 2px;
 }
@@ -174,13 +104,6 @@
   transition: background-color 0.1s;
 }
 .ag-dark .ag-rich-select {
-<<<<<<< HEAD
-  border: 1px solid #000;
-  background-color: #eee;
-}
-.ag-dark .ag-rich-select-list {
-  background-color: #fff;
-=======
   font-size: 14px;
   border: 1px solid #808080;
   background-color: #302e2e;
@@ -199,7 +122,6 @@
 }
 .ag-dark .ag-large-text {
   border: 1px solid #808080;
->>>>>>> upstream/master
 }
 .ag-dark .ag-header {
   color: #e0e0e0;
@@ -318,17 +240,10 @@
   font-style: italic;
 }
 .ag-dark .ag-group-expanded {
-<<<<<<< HEAD
-  padding-right: 2px;
-}
-.ag-dark .ag-group-contracted {
-  padding-right: 2px;
-=======
   padding-right: 4px;
 }
 .ag-dark .ag-group-contracted {
   padding-right: 4px;
->>>>>>> upstream/master
 }
 .ag-dark .ag-group-value {
   padding-right: 2px;

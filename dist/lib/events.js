@@ -69,11 +69,8 @@ var Events = (function () {
     Events.EVENT_GRID_READY = 'gridReady';
     Events.EVENT_GRID_SIZE_CHANGED = 'gridSizeChanged';
     Events.EVENT_VIEWPORT_CHANGED = 'viewportChanged';
-<<<<<<< HEAD
-=======
     Events.EVENT_DRAG_STARTED = 'dragStarted';
     Events.EVENT_DRAG_STOPPED = 'dragStopped';
->>>>>>> upstream/master
     return Events;
 })();
 exports.Events = Events;

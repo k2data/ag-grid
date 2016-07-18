@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-// Type definitions for ag-grid v4.0.5
-=======
 // Type definitions for ag-grid v5.0.3
->>>>>>> upstream/master
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -11,19 +7,12 @@ import { ICellRenderer } from "./iCellRenderer";
 export declare class GroupCellRenderer extends Component implements ICellRenderer {
     private static TEMPLATE;
     private gridOptionsWrapper;
-<<<<<<< HEAD
-    private selectionRendererFactory;
-=======
->>>>>>> upstream/master
     private expressionService;
     private eventService;
     private cellRendererService;
     private valueFormatterService;
-<<<<<<< HEAD
-=======
     private context;
     private columnController;
->>>>>>> upstream/master
     private eExpanded;
     private eContracted;
     private eCheckbox;

@@ -87,11 +87,7 @@ var ValueService = (function () {
         }
     };
     ValueService.prototype.setValue = function (rowNode, colKey, newValue) {
-<<<<<<< HEAD
-        var column = this.columnController.getColumn(colKey);
-=======
         var column = this.columnController.getPrimaryColumn(colKey);
->>>>>>> upstream/master
         if (!rowNode || !column) {
             return;
         }

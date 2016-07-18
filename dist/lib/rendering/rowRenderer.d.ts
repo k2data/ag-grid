@@ -80,9 +80,5 @@ export declare class RowRenderer {
     getRenderedNodes(): any[];
     navigateToNextCell(key: any, rowIndex: number, column: Column, floating: string): void;
     private getComponentForCell(gridCell);
-<<<<<<< HEAD
-    moveFocusToNextCell(rowIndex: any, column: any, floating: string, shiftKey: boolean, startEditing: boolean): void;
-=======
     moveFocusToNextCell(rowIndex: any, column: any, floating: string, shiftKey: boolean, startEditing: boolean): boolean;
->>>>>>> upstream/master
 }

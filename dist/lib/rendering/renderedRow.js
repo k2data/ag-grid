@@ -116,15 +116,12 @@ var RenderedRow = (function () {
             this.angular1Compile();
         }
     };
-<<<<<<< HEAD
-=======
     // when grid columns change, then all cells should be cleaned out,
     // as the new columns could have same id as the previous columns and may conflict
     RenderedRow.prototype.onGridColumnsChanged = function () {
         var allRenderedCellIds = Object.keys(this.renderedCells);
         this.removeRenderedCells(allRenderedCellIds);
     };
->>>>>>> upstream/master
     // method makes sure the right cells are present, and are in the right container. so when this gets called for
     // the first time, it sets up all the cells. but then over time the cells might appear / dissappear or move
     // container (ie into pinned)
@@ -324,16 +321,6 @@ var RenderedRow = (function () {
     RenderedRow.prototype.removeEventListener = function (eventType, listener) {
         this.renderedRowEventService.removeEventListener(eventType, listener);
     };
-<<<<<<< HEAD
-    RenderedRow.prototype.softRefresh = function () {
-        this.forEachRenderedCell(function (renderedCell) {
-            if (renderedCell.isVolatile()) {
-                renderedCell.refreshCell();
-            }
-        });
-    };
-=======
->>>>>>> upstream/master
     RenderedRow.prototype.getRenderedCellForColumn = function (column) {
         return this.renderedCells[column.getColId()];
     };
@@ -406,10 +393,6 @@ var RenderedRow = (function () {
         var eRow = document.createElement('span');
         // padding means we are on the right hand side of a pinned table, ie
         // in the main body.
-<<<<<<< HEAD
-        eRow = document.createElement('span');
-=======
->>>>>>> upstream/master
         if (!padding) {
             var cellRenderer = this.gridOptionsWrapper.getGroupRowRenderer();
             var cellRendererParams = this.gridOptionsWrapper.getGroupRowRendererParams();
@@ -437,15 +420,11 @@ var RenderedRow = (function () {
             };
             if (cellRendererParams) {
                 utils_1.Utils.assign(params, cellRendererParams);
-<<<<<<< HEAD
-=======
             }
             var cellComponent = this.cellRendererService.useCellRenderer(cellRenderer, eRow, params);
             if (cellComponent && cellComponent.destroy) {
                 this.destroyFunctions.push(function () { return cellComponent.destroy(); });
->>>>>>> upstream/master
             }
-            this.cellRendererService.useCellRenderer(cellRenderer, eRow, params);
         }
         if (this.rowNode.footer) {
             utils_1.Utils.addCssClass(eRow, 'ag-footer-cell-entire-row');
@@ -566,11 +545,7 @@ var RenderedRow = (function () {
         if (!colIds) {
             return;
         }
-<<<<<<< HEAD
-        var columnsToRefresh = this.columnController.getColumns(colIds);
-=======
         var columnsToRefresh = this.columnController.getGridColumns(colIds);
->>>>>>> upstream/master
         this.forEachRenderedCell(function (renderedCell) {
             var colForCel = renderedCell.getColumn();
             if (columnsToRefresh.indexOf(colForCel) >= 0) {

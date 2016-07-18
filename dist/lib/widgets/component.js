@@ -11,14 +11,6 @@ var Component = (function () {
     function Component(template) {
         this.destroyFunctions = [];
         this.childComponents = [];
-<<<<<<< HEAD
-        if (template) {
-            this.eGui = utils_1.Utils.loadTemplate(template);
-        }
-    }
-    Component.prototype.setTemplate = function (template) {
-        this.eGui = utils_1.Utils.loadTemplate(template);
-=======
         this.annotatedEventListeners = [];
         this.visible = true;
         if (template) {
@@ -122,7 +114,6 @@ var Component = (function () {
             _this.eGui.removeEventListener(eventListener.eventName, eventListener.listener);
         });
         this.annotatedEventListeners = null;
->>>>>>> upstream/master
     };
     Component.prototype.addEventListener = function (eventType, listener) {
         if (!this.localEventService) {
@@ -135,13 +126,10 @@ var Component = (function () {
             this.localEventService.removeEventListener(eventType, listener);
         }
     };
-<<<<<<< HEAD
-=======
     Component.prototype.dispatchEventAsync = function (eventType, event) {
         var _this = this;
         setTimeout(function () { return _this.dispatchEvent(eventType, event); }, 0);
     };
->>>>>>> upstream/master
     Component.prototype.dispatchEvent = function (eventType, event) {
         if (this.localEventService) {
             this.localEventService.dispatchEvent(eventType, event);
@@ -191,12 +179,9 @@ var Component = (function () {
     };
     Component.prototype.addDestroyableEventListener = function (eElement, event, listener) {
         if (eElement instanceof HTMLElement) {
-<<<<<<< HEAD
-=======
             eElement.addEventListener(event, listener);
         }
         else if (eElement instanceof gridOptionsWrapper_1.GridOptionsWrapper) {
->>>>>>> upstream/master
             eElement.addEventListener(event, listener);
         }
         else {
@@ -204,12 +189,9 @@ var Component = (function () {
         }
         this.destroyFunctions.push(function () {
             if (eElement instanceof HTMLElement) {
-<<<<<<< HEAD
-=======
                 eElement.removeEventListener(event, listener);
             }
             else if (eElement instanceof gridOptionsWrapper_1.GridOptionsWrapper) {
->>>>>>> upstream/master
                 eElement.removeEventListener(event, listener);
             }
             else {

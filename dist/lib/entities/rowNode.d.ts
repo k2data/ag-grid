@@ -8,20 +8,14 @@ export declare class RowNode {
     static EVENT_ROW_SELECTED: string;
     static EVENT_DATA_CHANGED: string;
     static EVENT_CELL_CHANGED: string;
-<<<<<<< HEAD
-=======
     static EVENT_MOUSE_ENTER: string;
     static EVENT_MOUSE_LEAVE: string;
->>>>>>> upstream/master
     private mainEventService;
     private gridOptionsWrapper;
     private selectionController;
     private columnController;
     private valueService;
-<<<<<<< HEAD
-=======
     private rowModel;
->>>>>>> upstream/master
     /** Unique ID for the node. Can be thought of as the index of the row in the original list. */
     id: number;
     /** The user provided data */

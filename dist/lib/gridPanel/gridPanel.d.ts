@@ -19,10 +19,7 @@ export declare class GridPanel {
     private csvCreator;
     private mouseEventService;
     private focusedCellController;
-<<<<<<< HEAD
-=======
     private $scope;
->>>>>>> upstream/master
     private layout;
     private logger;
     private forPrint;

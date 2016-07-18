@@ -9,11 +9,7 @@ import { Column } from "./column";
 import { IViewportDatasource } from "../interfaces/iViewportDatasource";
 import { MenuItem } from "../widgets/menuItemComponent";
 import { ICellRendererFunc, ICellRenderer } from "../rendering/cellRenderers/iCellRenderer";
-<<<<<<< HEAD
-import { ICellEditor } from "../rendering/cellEditors/iCellEditor";
-=======
 import { IAggFunc } from "./colDef";
->>>>>>> upstream/master
 /****************************************************************
  * Don't forget to update ComponentUtil if changing this class. *
  ****************************************************************/
@@ -77,8 +73,6 @@ export interface GridOptions {
     viewportRowModelPageSize?: number;
     viewportRowModelBufferSize?: number;
     enableCellChangeFlash?: boolean;
-<<<<<<< HEAD
-=======
     quickFilterText?: string;
     aggFuncs?: {
         [key: string]: IAggFunc;
@@ -87,23 +81,12 @@ export interface GridOptions {
     layoutInterval?: number;
     functionsReadOnly?: boolean;
     functionsPassive?: boolean;
->>>>>>> upstream/master
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
      ****************************************************************/
     localeText?: any;
     localeTextFunc?: Function;
     suppressScrollLag?: boolean;
-    cellRenderers?: {
-        [key: string]: {
-            new (): ICellRenderer;
-        } | ICellRendererFunc;
-    };
-    cellEditors?: {
-        [key: string]: {
-            new (): ICellEditor;
-        };
-    };
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
      ****************************************************************/
@@ -171,31 +154,22 @@ export interface GridOptions {
      ****************************************************************/
     onColumnEverythingChanged?(event?: any): void;
     onNewColumnsLoaded?(event?: any): void;
-<<<<<<< HEAD
-    onColumnRowGroupChanged?(event?: any): void;
-=======
     onColumnPivotModeChanged?(event?: any): void;
     onColumnRowGroupChanged?(event?: any): void;
     onColumnPivotChanged?(event?: any): void;
     onGridColumnsChanged?(event?: any): void;
->>>>>>> upstream/master
     onColumnValueChanged?(event?: any): void;
     onColumnMoved?(event?: any): void;
     onColumnVisible?(event?: any): void;
     onColumnPinned?(event?: any): void;
     onColumnGroupOpened?(event?: any): void;
     onColumnResized?(event?: any): void;
-<<<<<<< HEAD
-=======
     onDisplayedColumnsChanged?(event?: any): void;
     onVirtualColumnsChanged?(event?: any): void;
->>>>>>> upstream/master
     onRowGroupOpened?(event?: any): void;
     onRowDataChanged?(event?: any): void;
     onFloatingRowDataChanged?(event?: any): void;
     onRangeSelectionChanged?(event?: any): void;
-<<<<<<< HEAD
-=======
     onColumnRowGroupAddRequest?(event?: any): void;
     onColumnRowGroupRemoveRequest?(event?: any): void;
     onColumnPivotAddRequest?(event?: any): void;
@@ -203,7 +177,6 @@ export interface GridOptions {
     onColumnValueAddRequest?(event?: any): void;
     onColumnValueRemoveRequest?(event?: any): void;
     onColumnAggFuncChangeRequest?(event?: any): void;
->>>>>>> upstream/master
     onClipboardPaste?(event?: any): void;
     onHeaderHeightChanged?(event?: any): void;
     onModelUpdated?(event?: any): void;
@@ -227,11 +200,8 @@ export interface GridOptions {
     onGridReady?(event?: any): void;
     onGridSizeChanged?(event?: any): void;
     onViewportChanged?(event?: any): void;
-<<<<<<< HEAD
-=======
     onDragStarted?(event?: any): void;
     onDragStopped?(event?: any): void;
->>>>>>> upstream/master
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
      ****************************************************************/
@@ -246,11 +216,7 @@ export interface NodeChildDetails {
     key?: any;
 }
 export interface GetContextMenuItemsParams {
-<<<<<<< HEAD
-    defaultItems: [string];
-=======
     defaultItems: string[];
->>>>>>> upstream/master
     column: Column;
     node: RowNode;
     value: any;

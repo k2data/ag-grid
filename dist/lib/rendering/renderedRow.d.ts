@@ -35,10 +35,7 @@ export declare class RenderedRow {
     private eGroupRowPaddingRight;
     private destroyFunctions;
     private renderedRowEventService;
-<<<<<<< HEAD
-=======
     private initialised;
->>>>>>> upstream/master
     constructor(parentScope: any, rowRenderer: RowRenderer, eBodyContainer: HTMLElement, ePinnedLeftContainer: HTMLElement, ePinnedRightContainer: HTMLElement, node: RowNode, rowIndex: number);
     init(): void;
     private angular1Compile();
@@ -54,11 +51,7 @@ export declare class RenderedRow {
     private addHoverFunctionality();
     private addHoverClass(hover);
     private addCellFocusedListener();
-<<<<<<< HEAD
-    private forEachRenderedCell(callback);
-=======
     forEachRenderedCell(callback: (renderedCell: RenderedCell) => void): void;
->>>>>>> upstream/master
     private addNodeDataChangedListener();
     private createContainers();
     private attachContainers();

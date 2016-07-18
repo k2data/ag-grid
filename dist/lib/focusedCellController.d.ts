@@ -13,11 +13,7 @@ export declare class FocusedCellController {
     private init();
     clearFocusedCell(): void;
     getFocusedCell(): GridCell;
-<<<<<<< HEAD
-    getFocusCellIfBrowserFocused(): GridCell;
-=======
     getFocusCellToUseAfterRefresh(): GridCell;
->>>>>>> upstream/master
     private getGridCellForDomElement(eBrowserCell);
     setFocusedCell(rowIndex: number, colKey: Column | ColDef | string, floating: string, forceBrowserFocus?: boolean): void;
     isCellFocused(gridCell: GridCell): boolean;

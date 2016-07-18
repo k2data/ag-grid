@@ -1,10 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
-<<<<<<< HEAD
- * @version v4.0.5
-=======
  * @version v5.0.3
->>>>>>> upstream/master
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -24,28 +20,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var svgFactory_1 = require("../../svgFactory");
 var gridOptionsWrapper_1 = require("../../gridOptionsWrapper");
-<<<<<<< HEAD
-var selectionRendererFactory_1 = require("../../selectionRendererFactory");
-var expressionService_1 = require("../../expressionService");
-var eventService_1 = require("../../eventService");
-var constants_1 = require("../../constants");
-var utils_1 = require('../../utils');
-=======
 var expressionService_1 = require("../../expressionService");
 var eventService_1 = require("../../eventService");
 var constants_1 = require("../../constants");
 var utils_1 = require("../../utils");
->>>>>>> upstream/master
 var events_1 = require("../../events");
 var context_1 = require("../../context/context");
 var component_1 = require("../../widgets/component");
 var cellRendererService_1 = require("../cellRendererService");
 var valueFormatterService_1 = require("../valueFormatterService");
-<<<<<<< HEAD
-=======
 var checkboxSelectionComponent_1 = require("../checkboxSelectionComponent");
 var columnController_1 = require("../../columnController/columnController");
->>>>>>> upstream/master
 var svgFactory = svgFactory_1.SvgFactory.getInstance();
 var GroupCellRenderer = (function (_super) {
     __extends(GroupCellRenderer, _super);
@@ -81,20 +66,12 @@ var GroupCellRenderer = (function (_super) {
                 paddingFactor = 10;
             }
             var paddingPx = node.level * paddingFactor;
-<<<<<<< HEAD
-            if (node.footer) {
-                paddingPx += 10;
-            }
-            else if (!node.group) {
-                paddingPx += 5;
-=======
             var reducedLeafNode = this.columnController.isPivotMode() && this.rowNode.leafGroup;
             if (node.footer) {
                 paddingPx += 15;
             }
             else if (!node.group || reducedLeafNode) {
                 paddingPx += 10;
->>>>>>> upstream/master
             }
             this.getGui().style.paddingLeft = paddingPx + 'px';
         }
@@ -143,9 +120,6 @@ var GroupCellRenderer = (function (_super) {
     GroupCellRenderer.prototype.createGroupCell = function (params) {
         // pull out the column that the grouping is on
         var rowGroupColumns = params.columnApi.getRowGroupColumns();
-<<<<<<< HEAD
-        var columnOfGroupedCol = rowGroupColumns[params.node.level];
-=======
         // if we are using in memory grid grouping, then we try to look up the column that
         // we did the grouping on. however if it is not possible (happens when user provides
         // the data already grouped) then we just the current col, ie use cellrenderer of current col
@@ -153,7 +127,6 @@ var GroupCellRenderer = (function (_super) {
         if (utils_1.Utils.missing(columnOfGroupedCol)) {
             columnOfGroupedCol = params.column;
         }
->>>>>>> upstream/master
         var colDefOfGroupedCol = columnOfGroupedCol.getColDef();
         var groupName = this.getGroupName(params);
         var valueFormatted = this.valueFormatterService.formatValue(columnOfGroupedCol, params.node, params.scope, this.rowIndex, groupName);
@@ -206,15 +179,6 @@ var GroupCellRenderer = (function (_super) {
     GroupCellRenderer.prototype.addCheckboxIfNeeded = function (params) {
         var checkboxNeeded = params.checkbox && !this.rowNode.footer && !this.rowNode.floating;
         if (checkboxNeeded) {
-<<<<<<< HEAD
-            var eCheckbox = this.selectionRendererFactory.createSelectionCheckbox(this.rowNode, params.addRenderedRowListener);
-            this.eCheckbox.appendChild(eCheckbox);
-        }
-    };
-    GroupCellRenderer.prototype.addExpandAndContract = function (eGroupCell) {
-        var eExpandedIcon = utils_1.Utils.createIconNoSpan('groupExpanded', this.gridOptionsWrapper, null, svgFactory.createArrowDownSvg);
-        var eContractedIcon = utils_1.Utils.createIconNoSpan('groupContracted', this.gridOptionsWrapper, null, svgFactory.createArrowRightSvg);
-=======
             var cbSelectionComponent = new checkboxSelectionComponent_1.CheckboxSelectionComponent();
             this.context.wireBean(cbSelectionComponent);
             cbSelectionComponent.init({ rowNode: this.rowNode });
@@ -225,7 +189,6 @@ var GroupCellRenderer = (function (_super) {
     GroupCellRenderer.prototype.addExpandAndContract = function (eGroupCell) {
         var eExpandedIcon = utils_1.Utils.createIconNoSpan('groupExpanded', this.gridOptionsWrapper, null, svgFactory.createGroupContractedIcon);
         var eContractedIcon = utils_1.Utils.createIconNoSpan('groupContracted', this.gridOptionsWrapper, null, svgFactory.createGroupExpandedIcon);
->>>>>>> upstream/master
         this.eExpanded.appendChild(eExpandedIcon);
         this.eContracted.appendChild(eContractedIcon);
         this.addDestroyableEventListener(this.eExpanded, 'click', this.onExpandOrContract.bind(this));
@@ -250,12 +213,8 @@ var GroupCellRenderer = (function (_super) {
         this.eventService.dispatchEvent(events_1.Events.EVENT_ROW_GROUP_OPENED, event);
     };
     GroupCellRenderer.prototype.showExpandAndContractIcons = function () {
-<<<<<<< HEAD
-        var expandable = this.rowNode.group && !this.rowNode.footer;
-=======
         var reducedLeafNode = this.columnController.isPivotMode() && this.rowNode.leafGroup;
         var expandable = this.rowNode.group && !this.rowNode.footer && !reducedLeafNode;
->>>>>>> upstream/master
         if (expandable) {
             // if expandable, show one based on expand state
             utils_1.Utils.setVisible(this.eExpanded, this.rowNode.expanded);
@@ -290,13 +249,6 @@ var GroupCellRenderer = (function (_super) {
         __metadata('design:type', gridOptionsWrapper_1.GridOptionsWrapper)
     ], GroupCellRenderer.prototype, "gridOptionsWrapper", void 0);
     __decorate([
-<<<<<<< HEAD
-        context_1.Autowired('selectionRendererFactory'), 
-        __metadata('design:type', selectionRendererFactory_1.SelectionRendererFactory)
-    ], GroupCellRenderer.prototype, "selectionRendererFactory", void 0);
-    __decorate([
-=======
->>>>>>> upstream/master
         context_1.Autowired('expressionService'), 
         __metadata('design:type', expressionService_1.ExpressionService)
     ], GroupCellRenderer.prototype, "expressionService", void 0);
@@ -312,8 +264,6 @@ var GroupCellRenderer = (function (_super) {
         context_1.Autowired('valueFormatterService'), 
         __metadata('design:type', valueFormatterService_1.ValueFormatterService)
     ], GroupCellRenderer.prototype, "valueFormatterService", void 0);
-<<<<<<< HEAD
-=======
     __decorate([
         context_1.Autowired('context'), 
         __metadata('design:type', context_1.Context)
@@ -322,7 +272,6 @@ var GroupCellRenderer = (function (_super) {
         context_1.Autowired('columnController'), 
         __metadata('design:type', columnController_1.ColumnController)
     ], GroupCellRenderer.prototype, "columnController", void 0);
->>>>>>> upstream/master
     return GroupCellRenderer;
 })(component_1.Component);
 exports.GroupCellRenderer = GroupCellRenderer;

@@ -20,16 +20,11 @@ var selectionController_1 = require("../selectionController");
 var valueService_1 = require("../valueService");
 var columnController_1 = require("../columnController/columnController");
 var context_1 = require("../context/context");
-<<<<<<< HEAD
-var RowNode = (function () {
-    function RowNode() {
-=======
 var constants_1 = require("../constants");
 var RowNode = (function () {
     function RowNode() {
         /** Children mapped by the pivot columns */
         this.childrenMapped = {};
->>>>>>> upstream/master
         this.selected = false;
     }
     RowNode.prototype.setData = function (data) {
@@ -49,11 +44,7 @@ var RowNode = (function () {
     // this method is for the client to call, so the cell listens for the change
     // event, and also flashes the cell when the change occurs.
     RowNode.prototype.setDataValue = function (colKey, newValue) {
-<<<<<<< HEAD
-        var column = this.columnController.getColumn(colKey);
-=======
         var column = this.columnController.getGridColumn(colKey);
->>>>>>> upstream/master
         this.valueService.setValue(this, column, newValue);
         var event = { column: column, newValue: newValue };
         this.dispatchLocalEvent(RowNode.EVENT_CELL_CHANGED, event);
@@ -283,11 +274,8 @@ var RowNode = (function () {
     RowNode.EVENT_ROW_SELECTED = 'rowSelected';
     RowNode.EVENT_DATA_CHANGED = 'dataChanged';
     RowNode.EVENT_CELL_CHANGED = 'cellChanged';
-<<<<<<< HEAD
-=======
     RowNode.EVENT_MOUSE_ENTER = 'mouseEnter';
     RowNode.EVENT_MOUSE_LEAVE = 'mouseLeave';
->>>>>>> upstream/master
     __decorate([
         context_1.Autowired('eventService'), 
         __metadata('design:type', eventService_1.EventService)
@@ -308,13 +296,10 @@ var RowNode = (function () {
         context_1.Autowired('valueService'), 
         __metadata('design:type', valueService_1.ValueService)
     ], RowNode.prototype, "valueService", void 0);
-<<<<<<< HEAD
-=======
     __decorate([
         context_1.Autowired('rowModel'), 
         __metadata('design:type', Object)
     ], RowNode.prototype, "rowModel", void 0);
->>>>>>> upstream/master
     return RowNode;
 })();
 exports.RowNode = RowNode;

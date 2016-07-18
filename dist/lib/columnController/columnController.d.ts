@@ -7,10 +7,6 @@ import { Column } from "../entities/column";
 import { ColDef, AbstractColDef, ColGroupDef } from "../entities/colDef";
 import { ColumnGroupChild } from "../entities/columnGroupChild";
 import { OriginalColumnGroupChild } from "../entities/originalColumnGroupChild";
-<<<<<<< HEAD
-import { AbstractColDef } from "../entities/colDef";
-=======
->>>>>>> upstream/master
 export declare class ColumnApi {
     private _columnController;
     sizeColumnsToFit(gridWidth: any): void;
@@ -40,10 +36,6 @@ export declare class ColumnApi {
     moveRowGroupColumn(fromIndex: number, toIndex: number): void;
     setColumnAggFunct(column: Column, aggFunc: string): void;
     setColumnWidth(key: Column | string | ColDef, newWidth: number, finished?: boolean): void;
-<<<<<<< HEAD
-    removeValueColumn(column: Column): void;
-    addValueColumn(column: Column): void;
-=======
     setPivotMode(pivotMode: boolean): void;
     isPivotMode(): boolean;
     getSecondaryPivotColumn(pivotKeys: string[], valueColKey: Column | ColDef | String): Column;
@@ -52,14 +44,11 @@ export declare class ColumnApi {
     removeAggregationColumns(colKeys: (Column | ColDef | String)[]): void;
     addAggregationColumn(colKey: (Column | ColDef | String)): void;
     addAggregationColumns(colKeys: (Column | ColDef | String)[]): void;
->>>>>>> upstream/master
     setRowGroupColumns(colKeys: (Column | ColDef | String)[]): void;
     removeRowGroupColumn(colKey: Column | ColDef | String): void;
     removeRowGroupColumns(colKeys: (Column | ColDef | String)[]): void;
     addRowGroupColumn(colKey: Column | ColDef | String): void;
     addRowGroupColumns(colKeys: (Column | ColDef | String)[]): void;
-<<<<<<< HEAD
-=======
     getRowGroupColumns(): Column[];
     setPivotColumns(colKeys: (Column | ColDef | String)[]): void;
     removePivotColumn(colKey: Column | ColDef | String): void;
@@ -67,7 +56,6 @@ export declare class ColumnApi {
     addPivotColumn(colKey: Column | ColDef | String): void;
     addPivotColumns(colKeys: (Column | ColDef | String)[]): void;
     getPivotColumns(): Column[];
->>>>>>> upstream/master
     getLeftDisplayedColumnGroups(): ColumnGroupChild[];
     getCenterDisplayedColumnGroups(): ColumnGroupChild[];
     getRightDisplayedColumnGroups(): ColumnGroupChild[];
@@ -131,15 +119,12 @@ export declare class ColumnController {
     private viewportLeft;
     private viewportRight;
     init(): void;
-<<<<<<< HEAD
-=======
     private setViewportLeftAndRight();
     private checkDisplayedCenterColumns();
     setWidthAndScrollPosition(totalWidth: number, scrollPosition: number): void;
     isPivotMode(): boolean;
     setPivotMode(pivotMode: boolean): void;
     getSecondaryPivotColumn(pivotKeys: string[], valueColKey: Column | ColDef | String): Column;
->>>>>>> upstream/master
     private setBeans(loggerFactory);
     private setFirstRightAndLastLeftPinned();
     autoSizeColumns(keys: (Column | ColDef | String)[]): void;
@@ -158,19 +143,11 @@ export declare class ColumnController {
     getAllDisplayedVirtualColumns(): Column[];
     getPinnedLeftContainerWidth(): number;
     getPinnedRightContainerWidth(): number;
-<<<<<<< HEAD
-    addRowGroupColumns(keys: (Column | ColDef | String)[]): void;
-=======
     addRowGroupColumns(keys: (Column | ColDef | String)[], columnsToIncludeInEvent?: Column[]): void;
->>>>>>> upstream/master
     setRowGroupColumns(keys: (Column | ColDef | String)[]): void;
     addRowGroupColumn(key: Column | ColDef | String): void;
     removeRowGroupColumns(keys: (Column | ColDef | String)[]): void;
     removeRowGroupColumn(key: Column | ColDef | String): void;
-<<<<<<< HEAD
-    addValueColumn(column: Column): void;
-    removeValueColumn(column: Column): void;
-=======
     addPivotColumns(keys: (Column | ColDef | String)[], columnsToIncludeInEvent?: Column[]): void;
     setPivotColumns(keys: (Column | ColDef | String)[]): void;
     addPivotColumn(key: Column | ColDef | String): void;
@@ -180,7 +157,6 @@ export declare class ColumnController {
     addValueColumn(colKey: (Column | ColDef | String)): void;
     removeValueColumn(colKey: (Column | ColDef | String)): void;
     removeValueColumns(keys: (Column | ColDef | String)[]): void;
->>>>>>> upstream/master
     private normaliseColumnWidth(column, newWidth);
     private getPrimaryOrGridColumn(key);
     setColumnWidth(key: Column | string | ColDef, newWidth: number, finished: boolean): void;

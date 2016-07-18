@@ -16,53 +16,6 @@
 .ag-blue .ag-cell-not-inline-editing {
   padding: 2px;
 }
-<<<<<<< HEAD
-.ag-blue .ag-row-group-cell-ghost {
-  opacity: 0.5;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-  filter: alpha(opacity=50);
-}
-.ag-blue .ag-row-group-cell-text {
-  padding-left: 2px;
-  padding-right: 2px;
-}
-.ag-blue .ag-row-group-cell-button {
-  border: 1px solid transparent;
-  padding-left: 2px;
-  padding-right: 2px;
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-}
-.ag-blue .ag-row-group-cell-button:hover {
-  border: 1px solid #000;
-}
-.ag-blue .ag-row-group-empty-message {
-  padding-left: 2px;
-  padding-right: 2px;
-  border: 1px solid transparent;
-  color: #808080;
-}
-.ag-blue .ag-row-group-icon {
-  padding-right: 4px;
-}
-.ag-blue .ag-row-group-panel {
-  border-top: 1px solid #9bc2e6;
-  border-left: 1px solid #9bc2e6;
-  border-right: 1px solid #9bc2e6;
-  padding: 4px;
-  background-color: #ddebf7;
-  color: #fff;
-}
-.ag-blue .ag-cell {
-  top: -1px;
-  letter-spacing: -0.02em;
-}
-.ag-blue .ag-cell-not-inline-editing {
-  padding-left: 2px;
-  padding-right: 2px;
-}
-=======
->>>>>>> upstream/master
 .ag-blue .ag-cell-range-selected-1:not(.ag-cell-focus) {
   background-color: rgba(120,120,120,0.4);
 }
@@ -121,29 +74,6 @@
   -ms-transition: border 1s;
   transition: border 1s;
 }
-<<<<<<< HEAD
-.ag-blue .ag-cell-data-changed {
-  background: #87cefa;
-}
-.ag-blue .ag-cell-data-changed-animation {
-  -webkit-transition: background-color 1s;
-  -moz-transition: background-color 1s;
-  -o-transition: background-color 1s;
-  -ms-transition: background-color 1s;
-  transition: background-color 1s;
-}
-.ag-blue .ag-cell-data-changed:not(.ag-cell-focus) {
-  background: #87cefa;
-}
-.ag-blue .ag-cell-data-changed-animation:not(.ag-cell-focus) {
-  -webkit-transition: background-color 1s;
-  -moz-transition: background-color 1s;
-  -o-transition: background-color 1s;
-  -ms-transition: background-color 1s;
-  transition: background-color 1s;
-}
-=======
->>>>>>> upstream/master
 .ag-blue .ag-value-change-delta {
   padding-right: 2px;
 }
@@ -166,11 +96,7 @@
   transition: background-color 1s;
 }
 .ag-blue .ag-value-change-value-highlight {
-<<<<<<< HEAD
-  background-color: #add8e6;
-=======
   background-color: #cec;
->>>>>>> upstream/master
   -webkit-transition: background-color 0.1s;
   -moz-transition: background-color 0.1s;
   -o-transition: background-color 0.1s;
@@ -178,13 +104,6 @@
   transition: background-color 0.1s;
 }
 .ag-blue .ag-rich-select {
-<<<<<<< HEAD
-  border: 1px solid #000;
-  background-color: #ddebf7;
-}
-.ag-blue .ag-rich-select-list {
-  background-color: #fff;
-=======
   font-size: 14px;
   border: 1px solid #9bc2e6;
   background-color: #fff;
@@ -203,7 +122,6 @@
 }
 .ag-blue .ag-large-text {
   border: 1px solid #9bc2e6;
->>>>>>> upstream/master
 }
 .ag-blue .ag-header {
   color: #fff;
@@ -322,17 +240,10 @@
   font-style: italic;
 }
 .ag-blue .ag-group-expanded {
-<<<<<<< HEAD
-  padding-right: 2px;
-}
-.ag-blue .ag-group-contracted {
-  padding-right: 2px;
-=======
   padding-right: 4px;
 }
 .ag-blue .ag-group-contracted {
   padding-right: 4px;
->>>>>>> upstream/master
 }
 .ag-blue .ag-group-value {
   padding-right: 2px;

@@ -17,17 +17,10 @@ export declare class ValueService {
     private initialised;
     init(): void;
     getValue(column: Column, node: RowNode): any;
-<<<<<<< HEAD
-    getValueUsingSpecificData(column: Column, data: any, node: any): any;
-    private getValueUsingField(data, field);
-    setValue(rowNode: RowNode, colKey: string | ColDef | Column, newValue: any): void;
-    private setValueUsingField(data, field, newValue);
-=======
     getValueUsingSpecificData(column: Column, data: any, node: RowNode): any;
     private getValueUsingField(data, field, fieldContainsDots);
     setValue(rowNode: RowNode, colKey: string | ColDef | Column, newValue: any): void;
     private setValueUsingField(data, field, newValue, isFieldContainsDots);
->>>>>>> upstream/master
     private executeValueGetter(valueGetter, data, column, node);
     private getValueCallback(data, node, field);
 }

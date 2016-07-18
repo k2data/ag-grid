@@ -47,14 +47,10 @@ var FocusedCellController = (function () {
     // first focus a cell, then second click outside the grid, as then the
     // grid cell will still be focused as far as the grid is conerned,
     // however the browser focus will have moved somewhere else.
-<<<<<<< HEAD
-    FocusedCellController.prototype.getFocusCellIfBrowserFocused = function () {
-=======
     FocusedCellController.prototype.getFocusCellToUseAfterRefresh = function () {
         if (this.gridOptionsWrapper.isSuppressFocusAfterRefresh()) {
             return null;
         }
->>>>>>> upstream/master
         if (!this.focusedCell) {
             return null;
         }
@@ -113,11 +109,7 @@ var FocusedCellController = (function () {
             // match the column by checking a) it has a valid colId and b) it has the 'ag-cell' class
             var colId = utils_1.Utils.getElementAttribute(eTarget, 'colid');
             if (utils_1.Utils.exists(colId) && utils_1.Utils.containsClass(eTarget, 'ag-cell')) {
-<<<<<<< HEAD
-                var foundColumn = that.columnController.getColumn(colId);
-=======
                 var foundColumn = that.columnController.getGridColumn(colId);
->>>>>>> upstream/master
                 if (foundColumn) {
                     column = foundColumn;
                 }

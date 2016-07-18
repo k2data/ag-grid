@@ -5,11 +5,7 @@
 import { RowNode } from "./entities/rowNode";
 import { GridOptions, NodeChildDetails, GetContextMenuItems, GetMainMenuItems, ProcessRowParams, ProcessCellForExportParams } from "./entities/gridOptions";
 import { GridApi } from "./gridApi";
-<<<<<<< HEAD
-import { ColDef } from "./entities/colDef";
-=======
 import { ColDef, IAggFunc } from "./entities/colDef";
->>>>>>> upstream/master
 import { ColumnApi } from "./columnController/columnController";
 import { IViewportDatasource } from "./interfaces/iViewportDatasource";
 import { ICellRendererFunc, ICellRenderer } from "./rendering/cellRenderers/iCellRenderer";
@@ -37,11 +33,8 @@ export declare class GridOptionsWrapper {
     isShowToolPanel(): boolean;
     isToolPanelSuppressRowGroups(): boolean;
     isToolPanelSuppressValues(): boolean;
-<<<<<<< HEAD
-=======
     isToolPanelSuppressPivots(): boolean;
     isToolPanelSuppressPivotMode(): boolean;
->>>>>>> upstream/master
     isEnableCellChangeFlash(): boolean;
     isGroupSelectsChildren(): boolean;
     isGroupIncludeFooter(): boolean;
@@ -136,21 +129,15 @@ export declare class GridOptionsWrapper {
     getProcessCellForClipboardFunc(): (params: ProcessCellForExportParams) => any;
     getViewportRowModelPageSize(): number;
     getViewportRowModelBufferSize(): number;
-<<<<<<< HEAD
-=======
     setProperty(key: string, value: any): void;
     addEventListener(key: string, listener: Function): void;
     removeEventListener(key: string, listener: Function): void;
->>>>>>> upstream/master
     executeProcessRowPostCreateFunc(params: ProcessRowParams): void;
     getHeaderHeight(): number;
     setHeaderHeight(headerHeight: number): void;
     isExternalFilterPresent(): boolean;
     doesExternalFilterPass(node: RowNode): boolean;
-<<<<<<< HEAD
-=======
     getLayoutInterval(): number;
->>>>>>> upstream/master
     getMinColWidth(): number;
     getMaxColWidth(): number;
     getColWidth(): number;

@@ -989,28 +989,22 @@ var GridPanel = (function () {
         __metadata('design:type', focusedCellController_1.FocusedCellController)
     ], GridPanel.prototype, "focusedCellController", void 0);
     __decorate([
-<<<<<<< HEAD
-=======
         context_1.Autowired('$scope'), 
         __metadata('design:type', Object)
     ], GridPanel.prototype, "$scope", void 0);
     __decorate([
->>>>>>> upstream/master
         __param(0, context_1.Qualifier('loggerFactory')), 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', [logger_1.LoggerFactory]), 
         __metadata('design:returntype', void 0)
     ], GridPanel.prototype, "agWire", null);
     __decorate([
-<<<<<<< HEAD
-=======
         context_1.PreDestroy, 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', []), 
         __metadata('design:returntype', void 0)
     ], GridPanel.prototype, "destroy", null);
     __decorate([
->>>>>>> upstream/master
         context_1.PostConstruct, 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', []), 

@@ -25,10 +25,7 @@ var context_1 = require("../context/context");
 var cssClassApplier_1 = require("./cssClassApplier");
 var dragAndDropService_1 = require("../dragAndDrop/dragAndDropService");
 var sortController_1 = require("../sortController");
-<<<<<<< HEAD
-=======
 var setLeftFeature_1 = require("../rendering/features/setLeftFeature");
->>>>>>> upstream/master
 var RenderedHeaderCell = (function () {
     function RenderedHeaderCell(column, eRoot, dragSourceDropTarget) {
         // for better structured code, anything we need to do when this column gets destroyed,
@@ -370,13 +367,10 @@ var RenderedHeaderCell = (function () {
         __metadata('design:type', sortController_1.SortController)
     ], RenderedHeaderCell.prototype, "sortController", void 0);
     __decorate([
-<<<<<<< HEAD
-=======
         context_1.Autowired('$scope'), 
         __metadata('design:type', Object)
     ], RenderedHeaderCell.prototype, "$scope", void 0);
     __decorate([
->>>>>>> upstream/master
         context_1.PostConstruct, 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', []), 

@@ -72,17 +72,12 @@ export declare class DragAndDropService {
     private eLeftIcon;
     private eRightIcon;
     private eGroupIcon;
-<<<<<<< HEAD
-    private setBeans(loggerFactory);
-    addDragSource(params: DragSource): void;
-=======
     private eAggregateIcon;
     private ePivotIcon;
     private eDropNotAllowedIcon;
     private init();
     private setBeans(loggerFactory);
     addDragSource(dragSource: DragSource): void;
->>>>>>> upstream/master
     nudge(): void;
     private onDragStart(dragSource, mouseEvent);
     private onDragStop(mouseEvent);

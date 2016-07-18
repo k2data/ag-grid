@@ -97,13 +97,10 @@ var FlattenStage = (function () {
         context_1.Autowired('context'), 
         __metadata('design:type', context_1.Context)
     ], FlattenStage.prototype, "context", void 0);
-<<<<<<< HEAD
-=======
     __decorate([
         context_1.Autowired('columnController'), 
         __metadata('design:type', columnController_1.ColumnController)
     ], FlattenStage.prototype, "columnController", void 0);
->>>>>>> upstream/master
     FlattenStage = __decorate([
         context_1.Bean('flattenStage'), 
         __metadata('design:paramtypes', [])

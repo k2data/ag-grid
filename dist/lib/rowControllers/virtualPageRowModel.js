@@ -267,10 +267,7 @@ var VirtualPageRowModel = (function () {
         }
     };
     VirtualPageRowModel.prototype.loadPage = function (pageNumber) {
-<<<<<<< HEAD:dist/lib/rowControllers/virtualPageRowModel.js
-=======
         var _this = this;
->>>>>>> upstream/master:dist/lib/rowControllers/virtualPageRowModel.js
         this.pageLoadsInProgress.push(pageNumber);
         var startRow = pageNumber * this.pageSize;
         var endRow = (pageNumber + 1) * this.pageSize;

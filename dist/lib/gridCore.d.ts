@@ -33,11 +33,8 @@ export declare class GridCore {
     private destroyFunctions;
     constructor(loggerFactory: LoggerFactory);
     init(): void;
-<<<<<<< HEAD
-=======
     private createNorthPanel();
     private onDropPanelVisible();
->>>>>>> upstream/master
     getRootGui(): HTMLElement;
     private createSouthPanel();
     private onRowGroupChanged();

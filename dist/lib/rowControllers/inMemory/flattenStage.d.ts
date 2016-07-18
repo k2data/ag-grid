@@ -9,14 +9,9 @@ export declare class FlattenStage implements IRowNodeStage {
     private selectionController;
     private eventService;
     private context;
-<<<<<<< HEAD
-    execute(rowsToFlatten: RowNode[]): RowNode[];
-    private recursivelyAddToRowsToDisplay(rowsToFlatten, result, nextRowTop);
-=======
     private columnController;
     execute(rootNode: RowNode): RowNode[];
     private recursivelyAddToRowsToDisplay(rowsToFlatten, result, nextRowTop, reduce);
->>>>>>> upstream/master
     private addRowNodeToRowsToDisplay(rowNode, result, nextRowTop);
     private createFooterNode(groupNode);
 }

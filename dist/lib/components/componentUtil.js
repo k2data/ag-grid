@@ -154,23 +154,15 @@ var ComponentUtil = (function () {
         'overlayNoRowsTemplate', 'headerCellTemplate', 'quickFilterText', 'rowModelType'];
     ComponentUtil.OBJECT_PROPERTIES = [
         'rowStyle', 'context', 'groupColumnDef', 'localeText', 'icons', 'datasource', 'viewportDatasource',
-<<<<<<< HEAD
-        'groupRowRendererParams', 'cellRenderers', 'cellEditors'
-=======
         'groupRowRendererParams', 'aggFuncs'
->>>>>>> upstream/master
     ];
     ComponentUtil.ARRAY_PROPERTIES = [
         'slaveGrids', 'rowData', 'floatingTopRowData', 'floatingBottomRowData', 'columnDefs'
     ];
     ComponentUtil.NUMBER_PROPERTIES = [
         'rowHeight', 'rowBuffer', 'colWidth', 'headerHeight', 'groupDefaultExpanded',
-<<<<<<< HEAD
-        'minColWidth', 'maxColWidth', 'viewportRowModelPageSize', 'viewportRowModelBufferSize'
-=======
         'minColWidth', 'maxColWidth', 'viewportRowModelPageSize', 'viewportRowModelBufferSize',
         'layoutInterval'
->>>>>>> upstream/master
     ];
     ComponentUtil.BOOLEAN_PROPERTIES = [
         'toolPanelSuppressRowGroups', 'toolPanelSuppressValues', 'toolPanelSuppressPivots', 'toolPanelSuppressPivotMode',
@@ -185,24 +177,16 @@ var ComponentUtil = (function () {
         'suppressFieldDotNotation', 'enableRangeSelection', 'suppressEnterprise', 'rowGroupPanelShow',
         'pivotPanelShow',
         'suppressContextMenu', 'suppressMenuFilterPanel', 'suppressMenuMainPanel', 'suppressMenuColumnPanel',
-<<<<<<< HEAD
-        'enableStatusBar', 'rememberGroupStateWhenNewData', 'enableCellChangeFlash'
-=======
         'enableStatusBar', 'rememberGroupStateWhenNewData', 'enableCellChangeFlash', 'suppressDragLeaveHidesColumns',
         'suppressMiddleClickScrolls', 'suppressPreventDefaultOnMouseWheel', 'suppressUseColIdForGroups',
         'suppressCopyRowsToClipboard', 'pivotMode', 'suppressAggFuncInHeader', 'suppressColumnVirtualisation',
         'suppressFocusAfterRefresh', 'functionsPassive', 'functionsReadOnly'
->>>>>>> upstream/master
     ];
     ComponentUtil.FUNCTION_PROPERTIES = ['headerCellRenderer', 'localeTextFunc', 'groupRowInnerRenderer',
         'groupRowRenderer', 'isScrollLag', 'isExternalFilterPresent', 'getRowHeight',
         'doesExternalFilterPass', 'getRowClass', 'getRowStyle', 'getHeaderCellTemplate', 'traverseNode',
         'getContextMenuItems', 'getMainMenuItems', 'processRowPostCreate', 'processCellForClipboard',
-<<<<<<< HEAD
-        'getNodeChildDetails'];
-=======
         'getNodeChildDetails', 'groupRowAggNodes'];
->>>>>>> upstream/master
     ComponentUtil.ALL_PROPERTIES = ComponentUtil.ARRAY_PROPERTIES
         .concat(ComponentUtil.OBJECT_PROPERTIES)
         .concat(ComponentUtil.STRING_PROPERTIES)

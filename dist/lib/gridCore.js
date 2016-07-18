@@ -66,17 +66,11 @@ var GridCore = (function () {
         this.doLayout();
         this.finished = false;
         this.periodicallyDoLayout();
-<<<<<<< HEAD
-        this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_ROW_GROUP_CHANGE, this.onRowGroupChanged.bind(this));
-=======
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_ROW_GROUP_CHANGED, this.onRowGroupChanged.bind(this));
->>>>>>> upstream/master
         this.eventService.addEventListener(events_1.Events.EVENT_COLUMN_EVERYTHING_CHANGED, this.onRowGroupChanged.bind(this));
         this.onRowGroupChanged();
         this.logger.log('ready');
     };
-<<<<<<< HEAD
-=======
     GridCore.prototype.createNorthPanel = function () {
         var _this = this;
         if (!this.gridOptionsWrapper.isEnterprise()) {
@@ -102,7 +96,6 @@ var GridCore = (function () {
         this.rowGroupComp.addOrRemoveCssClass('ag-width-half', bothVisible);
         this.pivotComp.addOrRemoveCssClass('ag-width-half', bothVisible);
     };
->>>>>>> upstream/master
     GridCore.prototype.getRootGui = function () {
         return this.eRootPanel.getGui();
     };
@@ -139,10 +132,7 @@ var GridCore = (function () {
         else {
             this.rowGroupComp.setVisible(false);
         }
-<<<<<<< HEAD
-=======
         this.eRootPanel.doLayout();
->>>>>>> upstream/master
     };
     GridCore.prototype.addWindowResizeListener = function () {
         var that = this;
@@ -301,12 +291,6 @@ var GridCore = (function () {
         __metadata('design:type', focusedCellController_1.FocusedCellController)
     ], GridCore.prototype, "focusedCellController", void 0);
     __decorate([
-<<<<<<< HEAD
-        context_1.Optional('rowGroupPanel'), 
-        __metadata('design:type', component_1.Component)
-    ], GridCore.prototype, "rowGroupPanel", void 0);
-    __decorate([
-=======
         context_1.Optional('rowGroupCompFactory'), 
         __metadata('design:type', Object)
     ], GridCore.prototype, "rowGroupCompFactory", void 0);
@@ -315,7 +299,6 @@ var GridCore = (function () {
         __metadata('design:type', Object)
     ], GridCore.prototype, "pivotCompFactory", void 0);
     __decorate([
->>>>>>> upstream/master
         context_1.Optional('toolPanel'), 
         __metadata('design:type', component_1.Component)
     ], GridCore.prototype, "toolPanel", void 0);
