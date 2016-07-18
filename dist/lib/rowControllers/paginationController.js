@@ -34,15 +34,15 @@ var template = '<div class="ag-paging-panel ag-font-style">' +
     '<span id="recordCount"></span>' +
     '</span>' +
     '<span class="ag-paging-page-summary-panel" style="float:right;line-height:30px;">' +
-    '<button type="button" class="ag-paging-button" id="btFirst"><i class="fa fa-angle-double-left" aria-hidden="true"></i></button>' +
-    '<button type="button" class="ag-paging-button" id="btPrevious"><i class="fa fa-angle-left" aria-hidden="true"></i></button>' +
+    '<button type="button" class="ag-paging-button" id="btFirst">[FIRST]</i></button>' +
+    '<button type="button" class="ag-paging-button" id="btPrevious">[PREVIOUS]</button>' +
     //'[PAGE] '+
     //'<span id="current"></span>'+
     '<input id="current" style="width:30px;height:20px;border:1px solid gray;text-align:center"/>' +
     ' [OF] ' +
     '<span id="total"></span>' +
-    '<button type="button" class="ag-paging-button" id="btNext"><i class="fa fa-angle-right" aria-hidden="true"></i></button>' +
-    '<button type="button" class="ag-paging-button" id="btLast"><i class="fa fa-angle-double-right" aria-hidden="true"></i></button>' +
+    '<button type="button" class="ag-paging-button" id="btNext">[NEXT]</button>' +
+    '<button type="button" class="ag-paging-button" id="btLast">[LAST]</button>' +
     '</span>' +
     '</div>';
 var PaginationController = (function () {
