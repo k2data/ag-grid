@@ -30,7 +30,7 @@ var template =
                 '<button type="button" class="ag-paging-button" id="btPrevious">[PREVIOUS]</button>'+
                 //'[PAGE] '+
                 //'<span id="current"></span>'+
-                '<input id="current" style="width:30px;height:20px;border:1px solid gray;text-align:center"/>' + //根据项目需求修改了当前页可输入
+                '<input id="current" style="width:30px;height:20px;border:1px solid gray;text-align:center;line-height:20px"/>' + //根据项目需求修改了当前页可输入
                 ' [OF] '+
                 '<span id="total"></span>'+
                 '<button type="button" class="ag-paging-button" id="btNext">[NEXT]</button>'+
