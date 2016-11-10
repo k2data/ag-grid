@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -31,7 +31,8 @@ export declare class PaginationController {
     private currentPage;
     init(): void;
     setDatasource(datasource: any): void;
-    private reset();
+    private checkForDeprecated();
+    private reset(freshDatasource);
     private myToLocaleString(input);
     private setTotalLabels();
     private calculateTotalPages();

@@ -35,7 +35,7 @@ export class PopupService {
         var maxX = widthOfParent - minWidth;
         if (x > maxX) {
             // try putting menu to the left
-            x = sourceRect.left - minWidth;
+            x = sourceRect.left - parentRect.left - minWidth;
         }
         if (x < 0) { // in case the popup has a negative value
             x = 0;
@@ -46,7 +46,7 @@ export class PopupService {
     }
 
     public positionPopupUnderMouseEvent(params: {
-                            mouseEvent: MouseEvent,
+                            mouseEvent: MouseEvent|Touch,
                             ePopup: HTMLElement}): void {
 
         var parentRect = this.getPopupParent().getBoundingClientRect();
@@ -175,7 +175,7 @@ export class PopupService {
     //adds an element to a div, but also listens to background checking for clicks,
     //so that when the background is clicked, the child is removed again, giving
     //a model look to popups.
-    public addAsModalPopup(eChild: any, closeOnEsc: boolean, closedCallback?: ()=>void) {
+    public addAsModalPopup(eChild: any, closeOnEsc: boolean, closedCallback?: ()=>void): (event?: any)=>void {
         var eBody = document.body;
         if (!eBody) {
             console.warn('ag-grid: could not find the body of the document, document.body is empty');
@@ -199,17 +199,21 @@ export class PopupService {
         // if we add these listeners now, then the current mouse
         // click will be included, which we don't want
         setTimeout(function() {
-            if(closeOnEsc) {
+            if (closeOnEsc) {
                 eBody.addEventListener('keydown', hidePopupOnEsc);
             }
             eBody.addEventListener('click', hidePopup);
+            eBody.addEventListener('touchstart', hidePopup);
             eBody.addEventListener('contextmenu', hidePopup);
             //eBody.addEventListener('mousedown', hidePopup);
-            eChild.addEventListener('click', consumeClick);
+            eChild.addEventListener('click', consumeMouseClick);
+            eChild.addEventListener('touchstart', consumeTouchClick);
             //eChild.addEventListener('mousedown', consumeClick);
         }, 0);
 
-        var eventFromChild: any = null;
+        // var timeOfMouseEventOnChild = new Date().getTime();
+        var childMouseClick: MouseEvent = null;
+        var childTouch: TouchEvent = null;
 
         function hidePopupOnEsc(event: any) {
             var key = event.which || event.keyCode;
@@ -218,10 +222,10 @@ export class PopupService {
             }
         }
 
-        function hidePopup(event: any) {
-            if (event && event === eventFromChild) {
-                return;
-            }
+        function hidePopup(event?: any) {
+            // we don't hide popup if the event was on the child
+            if (event && event === childMouseClick) { return; }
+            if (event && event === childTouch) { return; }
             // this method should only be called once. the client can have different
             // paths, each one wanting to close, so this method may be called multiple
             // times.
@@ -234,16 +238,21 @@ export class PopupService {
             eBody.removeEventListener('keydown', hidePopupOnEsc);
             //eBody.removeEventListener('mousedown', hidePopupOnEsc);
             eBody.removeEventListener('click', hidePopup);
+            eBody.removeEventListener('touchstart', hidePopup);
             eBody.removeEventListener('contextmenu', hidePopup);
-            eChild.removeEventListener('click', consumeClick);
+            eChild.removeEventListener('click', consumeMouseClick);
+            eChild.removeEventListener('touchstart', consumeTouchClick);
             //eChild.removeEventListener('mousedown', consumeClick);
             if (closedCallback) {
                 closedCallback();
             }
         }
 
-        function consumeClick(event: any) {
-            eventFromChild = event;
+        function consumeMouseClick(event: any) {
+            childMouseClick = event;
+        }
+        function consumeTouchClick(event: any) {
+            childTouch = event;
         }
 
         return hidePopup;

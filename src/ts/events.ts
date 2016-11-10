@@ -49,24 +49,19 @@ export class Events {
 
     public static EVENT_RANGE_SELECTION_CHANGED = 'rangeSelectionChanged';
 
-    public static EVENT_COLUMN_ROW_GROUP_ADD_REQUEST = 'columnRowGroupAddRequest';
-    public static EVENT_COLUMN_ROW_GROUP_REMOVE_REQUEST = 'columnRowGroupRemoveRequest';
-
-    public static EVENT_COLUMN_PIVOT_ADD_REQUEST = 'columnPivotAddRequest';
-    public static EVENT_COLUMN_PIVOT_REMOVE_REQUEST = 'columnPivotRemoveRequest';
-
-    public static EVENT_COLUMN_VALUE_ADD_REQUEST = 'columnValueAddRequest';
-    public static EVENT_COLUMN_VALUE_REMOVE_REQUEST = 'columnValueRemoveRequest';
+    public static EVENT_COLUMN_ROW_GROUP_CHANGE_REQUEST = 'columnRowGroupChangeRequest';
+    public static EVENT_COLUMN_PIVOT_CHANGE_REQUEST = 'columnPivotChangeRequest';
+    public static EVENT_COLUMN_VALUE_CHANGE_REQUEST = 'columnValueChangeRequest';
 
     public static EVENT_COLUMN_AGG_FUNC_CHANGE_REQUEST = 'columnAggFuncChangeRequest';
 
     public static EVENT_FLASH_CELLS = 'clipboardPaste';
-    public static EVENT_HEADER_HEIGHT_CHANGED = 'headerHeightChanged';
     public static EVENT_MODEL_UPDATED = 'modelUpdated';
     public static EVENT_CELL_CLICKED = 'cellClicked';
     public static EVENT_CELL_DOUBLE_CLICKED = 'cellDoubleClicked';
     public static EVENT_CELL_CONTEXT_MENU = 'cellContextMenu';
     public static EVENT_CELL_VALUE_CHANGED = 'cellValueChanged';
+    public static EVENT_ROW_VALUE_CHANGED = 'rowValueChanged';
     public static EVENT_CELL_FOCUSED = 'cellFocused';
     public static EVENT_ROW_SELECTED = 'rowSelected';
     public static EVENT_SELECTION_CHANGED = 'selectionChanged';
@@ -85,4 +80,9 @@ export class Events {
     public static EVENT_VIEWPORT_CHANGED = 'viewportChanged';
     public static EVENT_DRAG_STARTED = 'dragStarted';
     public static EVENT_DRAG_STOPPED = 'dragStopped';
+
+    public static EVENT_ITEMS_ADDED = 'itemsAdded';
+    public static EVENT_ITEMS_REMOVED = 'itemsRemoved';
+
+    public static EVENT_BODY_SCROLL = 'bodyScroll';
 }

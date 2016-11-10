@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -26,6 +26,7 @@ var cssClassApplier_1 = require("./cssClassApplier");
 var dragAndDropService_1 = require("../dragAndDrop/dragAndDropService");
 var sortController_1 = require("../sortController");
 var setLeftFeature_1 = require("../rendering/features/setLeftFeature");
+var touchListener_1 = require("../widgets/touchListener");
 var RenderedHeaderCell = (function () {
     function RenderedHeaderCell(column, eRoot, dragSourceDropTarget) {
         // for better structured code, anything we need to do when this column gets destroyed,
@@ -44,13 +45,14 @@ var RenderedHeaderCell = (function () {
         utils_1.Utils.addCssClass(this.eHeaderCell, 'ag-header-cell');
         this.createScope();
         this.addAttributes();
-        cssClassApplier_1.CssClassApplier.addHeaderClassesFromCollDef(this.column.getColDef(), this.eHeaderCell, this.gridOptionsWrapper);
+        cssClassApplier_1.CssClassApplier.addHeaderClassesFromCollDef(this.column.getColDef(), this.eHeaderCell, this.gridOptionsWrapper, this.column, null);
         // label div
         var eHeaderCellLabel = this.eHeaderCell.querySelector('#agHeaderCellLabel');
-        this.displayName = this.columnController.getDisplayNameForCol(this.column, true);
+        this.displayName = this.columnController.getDisplayNameForColumn(this.column, true);
         this.setupMovingCss();
         this.setupTooltip();
         this.setupResize();
+        this.setupTap();
         this.setupMove(eHeaderCellLabel);
         this.setupMenu();
         this.setupSort(eHeaderCellLabel);
@@ -100,9 +102,9 @@ var RenderedHeaderCell = (function () {
             utils_1.Utils.addOrRemoveCssClass(_this.eHeaderCell, 'ag-header-cell-filtered', filterPresent);
             utils_1.Utils.addOrRemoveCssClass(eFilterIcon, 'ag-hidden', !filterPresent);
         };
-        this.column.addEventListener(column_1.Column.EVENT_FILTER_ACTIVE_CHANGED, filterChangedListener);
+        this.column.addEventListener(column_1.Column.EVENT_FILTER_CHANGED, filterChangedListener);
         this.destroyFunctions.push(function () {
-            _this.column.removeEventListener(column_1.Column.EVENT_FILTER_ACTIVE_CHANGED, filterChangedListener);
+            _this.column.removeEventListener(column_1.Column.EVENT_FILTER_CHANGED, filterChangedListener);
         });
         filterChangedListener();
     };
@@ -190,22 +192,45 @@ var RenderedHeaderCell = (function () {
         });
     };
     RenderedHeaderCell.prototype.setupMove = function (eHeaderCellLabel) {
+        var _this = this;
         var suppressMove = this.gridOptionsWrapper.isSuppressMovableColumns()
             || this.column.getColDef().suppressMovable
-            || this.gridOptionsWrapper.isForPrint()
-            || this.columnController.isPivotMode();
+            || this.gridOptionsWrapper.isForPrint();
+        // || this.columnController.isPivotMode();
         if (suppressMove) {
             return;
         }
         if (eHeaderCellLabel) {
             var dragSource = {
+                type: dragAndDropService_1.DragSourceType.HeaderCell,
                 eElement: eHeaderCellLabel,
                 dragItem: [this.column],
                 dragItemName: this.displayName,
                 dragSourceDropTarget: this.dragSourceDropTarget
             };
-            this.dragAndDropService.addDragSource(dragSource);
+            this.dragAndDropService.addDragSource(dragSource, true);
+            this.destroyFunctions.push(function () { return _this.dragAndDropService.removeDragSource(dragSource); });
         }
+    };
+    RenderedHeaderCell.prototype.setupTap = function () {
+        var _this = this;
+        if (this.gridOptionsWrapper.isSuppressTouch()) {
+            return;
+        }
+        var touchListener = new touchListener_1.TouchListener(this.getGui());
+        var tapListener = function (touch) {
+            _this.sortController.progressSort(_this.column, false);
+        };
+        var longTapListener = function (touch) {
+            _this.gridOptionsWrapper.getApi().showColumnMenuAfterMouseClick(_this.column, touch);
+        };
+        touchListener.addEventListener(touchListener_1.TouchListener.EVENT_TAP, tapListener);
+        touchListener.addEventListener(touchListener_1.TouchListener.EVENT_LONG_TAP, longTapListener);
+        this.destroyFunctions.push(function () {
+            touchListener.removeEventListener(touchListener_1.TouchListener.EVENT_TAP, tapListener);
+            touchListener.removeEventListener(touchListener_1.TouchListener.EVENT_LONG_TAP, longTapListener);
+            touchListener.destroy();
+        });
     };
     RenderedHeaderCell.prototype.setupResize = function () {
         var _this = this;
@@ -220,7 +245,7 @@ var RenderedHeaderCell = (function () {
             utils_1.Utils.removeFromParent(eResize);
             return;
         }
-        this.dragService.addDragHandling({
+        this.horizontalDragService.addDragHandling({
             eDraggableElement: eResize,
             eBody: this.eRoot,
             cursor: 'col-resize',
@@ -349,7 +374,7 @@ var RenderedHeaderCell = (function () {
     __decorate([
         context_1.Autowired('horizontalDragService'), 
         __metadata('design:type', horizontalDragService_1.HorizontalDragService)
-    ], RenderedHeaderCell.prototype, "dragService", void 0);
+    ], RenderedHeaderCell.prototype, "horizontalDragService", void 0);
     __decorate([
         context_1.Autowired('menuFactory'), 
         __metadata('design:type', Object)

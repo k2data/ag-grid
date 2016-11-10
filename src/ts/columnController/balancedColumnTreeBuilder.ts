@@ -12,6 +12,8 @@ import {Bean} from "../context/context";
 import {Qualifier} from "../context/context";
 import {Autowired} from "../context/context";
 import {Context} from "../context/context";
+import {ColumnGroupChild} from "../entities/columnGroupChild";
+import {Utils as _} from "../utils";
 
 // takes in a list of columns, as specified by the column definitions, and returns column groups
 @Bean('balancedColumnTreeBuilder')
@@ -27,7 +29,7 @@ export class BalancedColumnTreeBuilder {
         this.logger = loggerFactory.create('BalancedColumnTreeBuilder');
     }
 
-    public createBalancedColumnGroups(abstractColDefs: AbstractColDef[], primaryColumns: boolean): any {
+    public createBalancedColumnGroups(abstractColDefs: (ColDef|ColGroupDef)[], primaryColumns: boolean): any {
         // column key creator dishes out unique column id's in a deterministic way,
         // so if we have two grids (that cold be master/slave) with same column definitions,
         // then this ensures the two grids use identical id's.
@@ -39,7 +41,7 @@ export class BalancedColumnTreeBuilder {
         this.logger.log('Number of levels for grouped columns is ' + treeDept);
         var balancedTree = this.balanceColumnTree(unbalancedTree, 0, treeDept, columnKeyCreator);
 
-        this.columnUtils.deptFirstOriginalTreeSearch(balancedTree, (child: OriginalColumnGroupChild)=> {
+        this.columnUtils.depthFirstOriginalTreeSearch(balancedTree, (child: OriginalColumnGroupChild)=> {
             if (child instanceof OriginalColumnGroup) {
                 (<OriginalColumnGroup>child).calculateExpandable();
             }
@@ -69,7 +71,8 @@ export class BalancedColumnTreeBuilder {
                 var newChild = child;
                 for (var i = columnDept-1; i>=currentDept; i--) {
                     var newColId = columnKeyCreator.getUniqueKey(null, null);
-                    var paddedGroup = new OriginalColumnGroup(null, newColId);
+                    let colGroupDefMerged = this.createMergedColGroupDef(null);
+                    var paddedGroup = new OriginalColumnGroup(colGroupDefMerged, newColId, true);
                     paddedGroup.setChildren([newChild]);
                     newChild = paddedGroup;
                 }
@@ -95,7 +98,7 @@ export class BalancedColumnTreeBuilder {
         return maxDeptThisLevel;
     }
 
-    private recursivelyCreateColumns(abstractColDefs: AbstractColDef[], level: number,
+    private recursivelyCreateColumns(abstractColDefs: (ColDef|ColGroupDef)[], level: number,
                                      columnKeyCreator: ColumnKeyCreator, primaryColumns: boolean): OriginalColumnGroupChild[] {
 
         var result: OriginalColumnGroupChild[] = [];
@@ -104,25 +107,52 @@ export class BalancedColumnTreeBuilder {
             return result;
         }
 
-        abstractColDefs.forEach( (abstractColDef: AbstractColDef)=> {
-            this.checkForDeprecatedItems(abstractColDef);
+        abstractColDefs.forEach( (abstractColDef: ColDef|ColGroupDef)=> {
+            let newGroupOrColumn: OriginalColumnGroupChild;
             if (this.isColumnGroup(abstractColDef)) {
-                var groupColDef = <ColGroupDef> abstractColDef;
-                var groupId = columnKeyCreator.getUniqueKey(groupColDef.groupId, null);
-                var originalGroup = new OriginalColumnGroup(groupColDef, groupId);
-                var children = this.recursivelyCreateColumns(groupColDef.children, level + 1, columnKeyCreator, primaryColumns);
-                originalGroup.setChildren(children);
-                result.push(originalGroup);
+                newGroupOrColumn = this.createColumnGroup(columnKeyCreator, primaryColumns, <ColGroupDef> abstractColDef, level);
             } else {
-                var colDef = <ColDef> abstractColDef;
-                var colId = columnKeyCreator.getUniqueKey(colDef.colId, colDef.field);
-                var column = new Column(colDef, colId, primaryColumns);
-                this.context.wireBean(column);
-                result.push(column);
+                newGroupOrColumn = this.createColumn(columnKeyCreator, primaryColumns, <ColDef> abstractColDef);
             }
+            result.push(newGroupOrColumn);
         });
 
         return result;
+    }
+
+    private createColumnGroup(columnKeyCreator: ColumnKeyCreator,  primaryColumns: boolean, colGroupDef: ColGroupDef, level: number): OriginalColumnGroup {
+
+        let colGroupDefMerged = this.createMergedColGroupDef(colGroupDef);
+
+        var groupId = columnKeyCreator.getUniqueKey(colGroupDefMerged.groupId, null);
+        var originalGroup = new OriginalColumnGroup(colGroupDefMerged, groupId, false);
+        var children = this.recursivelyCreateColumns(colGroupDefMerged.children, level + 1, columnKeyCreator, primaryColumns);
+
+        originalGroup.setChildren(children);
+
+        return originalGroup;
+    }
+
+    private createMergedColGroupDef(colGroupDef: ColGroupDef): ColGroupDef {
+        var colGroupDefMerged: ColGroupDef = <ColGroupDef> {};
+        _.assign(colGroupDefMerged, this.gridOptionsWrapper.getDefaultColGroupDef());
+        _.assign(colGroupDefMerged, colGroupDef);
+        this.checkForDeprecatedItems(colGroupDefMerged);
+        return colGroupDefMerged;
+    }
+
+    private createColumn(columnKeyCreator: ColumnKeyCreator,  primaryColumns: boolean, colDef3: ColDef): Column {
+        var colDefMerged: ColDef = <ColDef> {};
+        _.assign(colDefMerged, this.gridOptionsWrapper.getDefaultColDef());
+        _.assign(colDefMerged, colDef3);
+        this.checkForDeprecatedItems(colDefMerged);
+
+        var colId = columnKeyCreator.getUniqueKey(colDefMerged.colId, colDefMerged.field);
+
+        var column = new Column(colDefMerged, colId, primaryColumns);
+        this.context.wireBean(column);
+
+        return column;
     }
 
     private checkForDeprecatedItems(colDef: AbstractColDef) {
@@ -157,7 +187,7 @@ export class BalancedColumnTreeBuilder {
     }
 
     // if object has children, we assume it's a group
-    private isColumnGroup(abstractColDef: AbstractColDef): boolean {
+    private isColumnGroup(abstractColDef: ColDef|ColGroupDef): boolean {
         return (<ColGroupDef>abstractColDef).children !== undefined;
     }
 

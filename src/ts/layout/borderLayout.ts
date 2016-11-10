@@ -2,6 +2,38 @@ import {Utils as _} from '../utils';
 
 export class BorderLayout {
 
+    private static TEMPLATE_FULL_HEIGHT =
+        '<div class="ag-bl ag-bl-full-height">' +
+        '  <div class="ag-bl-west ag-bl-full-height-west" id="west"></div>' +
+        '  <div class="ag-bl-east ag-bl-full-height-east" id="east"></div>' +
+        '  <div class="ag-bl-center ag-bl-full-height-center" id="center"></div>' +
+        '  <div class="ag-bl-overlay" id="overlay"></div>' +
+        '</div>';
+
+    private static TEMPLATE_NORMAL =
+        '<div class="ag-bl ag-bl-normal">' +
+        '  <div id="north"></div>' +
+        '  <div class="ag-bl-center-row ag-bl-normal-center-row" id="centerRow">' +
+        '    <div class="ag-bl-west ag-bl-normal-west" id="west"></div>' +
+        '    <div class="ag-bl-east ag-bl-normal-east" id="east"></div>' +
+        '    <div class="ag-bl-center ag-bl-normal-center" id="center"></div>' +
+        '  </div>' +
+        '  <div id="south"></div>' +
+        '  <div class="ag-bl-overlay" id="overlay"></div>' +
+        '</div>';
+
+    private static TEMPLATE_DONT_FILL =
+        '<div class="ag-bl ag-bl-dont-fill">' +
+        '  <div id="north"></div>' +
+        '  <div id="centerRow">' +
+        '    <div id="west"></div>' +
+        '    <div id="east"></div>' +
+        '    <div id="center"></div>' +
+        '  </div>' +
+        '  <div id="south"></div>' +
+        '  <div class="ag-bl-overlay" id="overlay"></div>' +
+        '</div>';
+
     private eNorthWrapper: any;
     private eSouthWrapper: any;
     private eEastWrapper: any;
@@ -20,12 +52,13 @@ export class BorderLayout {
     private fullHeight: any;
     private layoutActive: any;
 
-    private eGui: any;
-    private id: any;
+    private eGui: HTMLElement;
+    private id: string;
     private childPanels: any;
-    private centerHeightLastTime: any;
-    private centerWidthLastTime: any;
-    private centerLeftMarginLastTime: any;
+    private centerHeightLastTime = -1;
+    private centerWidthLastTime = -1;
+    private centerLeftMarginLastTime = -1;
+    private visibleLastTime = false;
 
     private sizeChangeListeners = <any>[];
     private overlays: any;
@@ -39,39 +72,13 @@ export class BorderLayout {
         var template: any;
         if (!params.dontFill) {
             if (this.fullHeight) {
-                template =
-                    '<div style="height: 100%; overflow: auto; position: relative;">' +
-                    '<div id="west" style="height: 100%; float: left;"></div>' +
-                    '<div id="east" style="height: 100%; float: right;"></div>' +
-                    '<div id="center" style="height: 100%;"></div>' +
-                    '<div id="overlay" style="pointer-events: none; position: absolute; height: 100%; width: 100%; top: 0px; left: 0px;"></div>' +
-                    '</div>';
+                template = BorderLayout.TEMPLATE_FULL_HEIGHT;
             } else {
-                template =
-                    '<div style="height: 100%; position: relative;">' +
-                    '<div id="north"></div>' +
-                    '<div id="centerRow" style="height: 100%; overflow: hidden;">' +
-                    '<div id="west" style="height: 100%; float: left;"></div>' +
-                    '<div id="east" style="height: 100%; float: right;"></div>' +
-                    '<div id="center" style="height: 100%;"></div>' +
-                    '</div>' +
-                    '<div id="south"></div>' +
-                    '<div id="overlay" style="pointer-events: none; position: absolute; height: 100%; width: 100%; top: 0px; left: 0px;"></div>' +
-                    '</div>';
+                template = BorderLayout.TEMPLATE_NORMAL;
             }
             this.layoutActive = true;
         } else {
-            template =
-                '<div style="position: relative;">' +
-                '<div id="north"></div>' +
-                '<div id="centerRow">' +
-                '<div id="west"></div>' +
-                '<div id="east"></div>' +
-                '<div id="center"></div>' +
-                '</div>' +
-                '<div id="south"></div>' +
-                '<div id="overlay" style="pointer-events: none; position: absolute; height: 100%; width: 100%; top: 0px; left: 0px;"></div>' +
-                '</div>';
+            template = BorderLayout.TEMPLATE_DONT_FILL;
             this.layoutActive = false;
         }
 
@@ -144,16 +151,23 @@ export class BorderLayout {
     // returns true if any item changed size, otherwise returns false
     public doLayout() {
 
-        if (!_.isVisible(this.eGui)) {
+        var isVisible = _.isVisible(this.eGui);
+        if (!isVisible) {
+            this.visibleLastTime = false;
             return false;
         }
 
         var atLeastOneChanged = false;
 
+        if (this.visibleLastTime !== isVisible) {
+            atLeastOneChanged = true;
+        }
+
+        this.visibleLastTime = true;
+
         var childLayouts = [this.eNorthChildLayout, this.eSouthChildLayout, this.eEastChildLayout, this.eWestChildLayout];
-        var that = this;
-        _.forEach(childLayouts, function (childLayout: any) {
-            var childChangedSize = that.layoutChild(childLayout);
+        childLayouts.forEach(childLayout => {
+            var childChangedSize = this.layoutChild(childLayout);
             if (childChangedSize) {
                 atLeastOneChanged = true;
             }
@@ -276,8 +290,6 @@ export class BorderLayout {
         }
 
         this.hideOverlay();
-        //
-        //this.setOverlayVisible(false);
     }
 
     public hideOverlay() {

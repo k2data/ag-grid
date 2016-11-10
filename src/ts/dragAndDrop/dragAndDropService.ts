@@ -1,15 +1,20 @@
 import {Logger, LoggerFactory} from "../logger";
-import {Qualifier, PostConstruct, Bean, Autowired} from "../context/context";
+import {Qualifier, PostConstruct, Bean, Autowired, PreDestroy} from "../context/context";
 import {Column} from "../entities/column";
 import {Utils as _} from "../utils";
 import {GridOptionsWrapper} from "../gridOptionsWrapper";
 import {SvgFactory} from "../svgFactory";
-import {DragService} from "./dragService";
+import {DragService, DragListenerParams} from "./dragService";
 import {ColumnController} from "../columnController/columnController";
 
 var svgFactory = SvgFactory.getInstance();
 
+export enum DragSourceType { ToolPanel, HeaderCell }
+
 export interface DragSource {
+    /** So the drop target knows what type of event it is, useful for columns,
+     * we we re-ordering or moving dropping from toolPanel */
+    type: DragSourceType;
     /** Element which, when dragged, will kick off the DnD process */
     eElement: HTMLElement;
     /** If eElement is dragged, then the dragItem is the object that gets passed around. */
@@ -78,6 +83,8 @@ export class DragAndDropService {
 
     private logger: Logger;
 
+    private dragSourceAndParamsList: {params: DragListenerParams, dragSource: DragSource}[] = [];
+
     private dragItem: Column[];
     private eventLastTime: MouseEvent;
     private dragSource: DragSource;
@@ -123,16 +130,33 @@ export class DragAndDropService {
         }
     }
 
-    // we do not need to clean up drag sources, as we are just adding a listener to the element.
-    // when the element is disposed, the drag source is also disposed, even though this service
-    // remains. this is a bit different to normal 'addListener' methods
-    public addDragSource(dragSource: DragSource): void {
-        this.dragService.addDragSource({
+    public addDragSource(dragSource: DragSource, allowTouch = false): void {
+        let params = <DragListenerParams> {
             eElement: dragSource.eElement,
             onDragStart: this.onDragStart.bind(this, dragSource),
             onDragStop: this.onDragStop.bind(this),
             onDragging: this.onDragging.bind(this)
+        };
+
+        this.dragSourceAndParamsList.push({params: params, dragSource: dragSource});
+
+        this.dragService.addDragSource(params, allowTouch);
+    }
+
+    public removeDragSource(dragSource: DragSource): void {
+        var sourceAndParams = _.find(this.dragSourceAndParamsList, item => item.dragSource === dragSource);
+        if (sourceAndParams) {
+            this.dragService.removeDragSource(sourceAndParams.params);
+            _.removeFromArray(this.dragSourceAndParamsList, sourceAndParams);
+        }
+    }
+
+    @PreDestroy
+    private destroy(): void {
+        this.dragSourceAndParamsList.forEach( sourceAndParams => {
+            this.dragService.removeDragSource(sourceAndParams.params);
         });
+        this.dragSourceAndParamsList.length = 0;
     }
 
     public nudge(): void {
@@ -285,18 +309,21 @@ export class DragAndDropService {
         // horizontally, place cursor just right of icon
         var left = event.pageX - 30;
 
+        var windowScrollY = window.pageYOffset || document.documentElement.scrollTop;
+        var windowScrollX = window.pageXOffset || document.documentElement.scrollLeft;
+
         // check ghost is not positioned outside of the browser
         if (browserWidth>0) {
-            if ( (left + this.eGhost.clientWidth) > browserWidth) {
-                left = browserWidth - this.eGhost.clientWidth;
+            if ( (left + this.eGhost.clientWidth) > (browserWidth + windowScrollX) ) {
+                left = browserWidth + windowScrollX - this.eGhost.clientWidth;
             }
         }
         if (left < 0) {
             left = 0;
         }
         if (browserHeight>0) {
-            if ( (top + this.eGhost.clientHeight) > browserHeight) {
-                top = browserHeight - this.eGhost.clientHeight;
+            if ( (top + this.eGhost.clientHeight) > (browserHeight + windowScrollY) ) {
+                top = browserHeight + windowScrollY - this.eGhost.clientHeight;
             }
         }
         if (top < 0) {

@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -7,23 +7,37 @@
 export declare class DragService {
     private loggerFactory;
     private eventService;
+    private gridOptionsWrapper;
     private currentDragParams;
     private dragging;
-    private eventLastTime;
-    private dragStartEvent;
+    private mouseEventLastTime;
+    private mouseStartEvent;
+    private touchLastTime;
+    private touchStart;
     private onMouseUpListener;
     private onMouseMoveListener;
+    private onTouchEndListener;
+    private onTouchMoveListener;
     private logger;
-    private destroyFunctions;
+    private dragEndFunctions;
     private eBody;
+    private dragSources;
     private init();
     private destroy();
+    private removeListener(dragSourceAndListener);
+    removeDragSource(params: DragListenerParams): void;
     private setNoSelectToBody(noSelect);
-    addDragSource(params: DragListenerParams): void;
+    addDragSource(params: DragListenerParams, includeTouch?: boolean): void;
+    private onTouchStart(params, touchEvent);
     private onMouseDown(params, mouseEvent);
-    private isEventNearStartEvent(event);
+    private isEventNearStartEvent(currentEvent, startEvent);
+    private getFirstActiveTouch(touchList);
+    private onCommonMove(currentEvent, startEvent);
+    private onTouchMove(touchEvent);
     private onMouseMove(mouseEvent);
+    onTouchUp(touchEvent: TouchEvent): void;
     onMouseUp(mouseEvent: MouseEvent): void;
+    onUpCommon(eventOrTouch: MouseEvent | Touch): void;
 }
 export interface DragListenerParams {
     /** After how many pixels of dragging should the drag operation start. Default is 4px. */
@@ -31,9 +45,9 @@ export interface DragListenerParams {
     /** Dom element to add the drag handling to */
     eElement: HTMLElement;
     /** Callback for drag starting */
-    onDragStart: (mouseEvent: MouseEvent) => void;
+    onDragStart: (mouseEvent: MouseEvent | Touch) => void;
     /** Callback for drag stopping */
-    onDragStop: (mouseEvent: MouseEvent) => void;
+    onDragStop: (mouseEvent: MouseEvent | Touch) => void;
     /** Callback for mouse move while dragging */
-    onDragging: (mouseEvent: MouseEvent) => void;
+    onDragging: (mouseEvent: MouseEvent | Touch) => void;
 }

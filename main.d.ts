@@ -13,7 +13,6 @@ export * from './dist/lib/context/context';
 
 export * from './dist/lib/dragAndDrop/dragAndDropService';
 export * from './dist/lib/dragAndDrop/dragService';
-export * from './dist/lib/dragAndDrop/oldToolPanelDragAndDropService';
 
 export * from './dist/lib/entities/colDef';
 export * from './dist/lib/entities/column';
@@ -55,6 +54,8 @@ export * from './dist/lib/interfaces/iClipboardService';
 export * from './dist/lib/interfaces/iCompFactory';
 export * from './dist/lib/interfaces/iContextMenuFactory';
 export * from './dist/lib/interfaces/iEventEmitter';
+export * from './dist/lib/interfaces/iFrameworkFactory';
+export * from './dist/lib/interfaces/iFilter';
 export * from './dist/lib/interfaces/iMenu';
 export * from './dist/lib/interfaces/iMenuFactory';
 export * from './dist/lib/interfaces/iRangeController';
@@ -67,6 +68,7 @@ export * from './dist/lib/layout/tabbedLayout';
 export * from './dist/lib/layout/verticalStack';
 
 export * from './dist/lib/misc/focusService';
+export * from './dist/lib/misc/methodNotImplementedException';
 
 export * from './dist/lib/rendering/cellEditors/iCellEditor';
 export * from './dist/lib/rendering/cellEditors/largeTextCellEditor';
@@ -96,11 +98,16 @@ export * from './dist/lib/rendering/valueFormatterService';
 export * from './dist/lib/rowControllers/inMemory/filterStage';
 export * from './dist/lib/rowControllers/inMemory/flattenStage';
 export * from './dist/lib/rowControllers/inMemory/inMemoryRowModel';
+export * from './dist/lib/rowControllers/inMemory/inMemoryNodeManager';
 export * from './dist/lib/rowControllers/inMemory/sortStage';
+
+export * from './dist/lib/rowControllers/virtualPagination/virtualPageRowModel';
+export * from './dist/lib/rowControllers/virtualPagination/virtualPageCache';
+export * from './dist/lib/rowControllers/virtualPagination/virtualPage';
 
 export * from './dist/lib/rowControllers/floatingRowModel';
 export * from './dist/lib/rowControllers/paginationController';
-export * from './dist/lib/rowControllers/virtualPageRowModel';
+export * from './dist/lib/rowControllers/iDatasource';
 
 export * from './dist/lib/widgets/agCheckbox';
 export * from './dist/lib/widgets/component';
@@ -108,7 +115,9 @@ export * from './dist/lib/widgets/componentAnnotations';
 export * from './dist/lib/widgets/menuItemComponent';
 export * from './dist/lib/widgets/menuList';
 export * from './dist/lib/widgets/popupService';
+export * from './dist/lib/widgets/touchListener';
 
+export * from './dist/lib/baseFrameworkFactory';
 export * from './dist/lib/cellNavigationService';
 export * from './dist/lib/clientExports';
 export * from './dist/lib/columnChangeEvent';

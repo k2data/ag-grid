@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -33,6 +33,34 @@ var RowNode = (function () {
         var event = { oldData: oldData, newData: data };
         this.dispatchLocalEvent(RowNode.EVENT_DATA_CHANGED, event);
     };
+    RowNode.prototype.setDataAndId = function (data, id) {
+        var oldData = this.data;
+        this.data = data;
+        this.setId(id);
+        this.selectionController.syncInRowNode(this);
+        var event = { oldData: oldData, newData: data };
+        this.dispatchLocalEvent(RowNode.EVENT_DATA_CHANGED, event);
+    };
+    RowNode.prototype.setId = function (id) {
+        // see if user is providing the id's
+        var getRowNodeId = this.gridOptionsWrapper.getRowNodeIdFunc();
+        if (getRowNodeId) {
+            // if user is providing the id's, then we set the id only after the data has been set.
+            // this is important for virtual pagination and viewport, where empty rows exist.
+            if (this.data) {
+                this.id = getRowNodeId(this.data);
+            }
+            else {
+                // this can happen if user has set blank into the rowNode after the row previously
+                // having data. this happens in virtual page row model, when data is delete and
+                // the page is refreshed.
+                this.id = undefined;
+            }
+        }
+        else {
+            this.id = id;
+        }
+    };
     RowNode.prototype.dispatchLocalEvent = function (eventName, event) {
         if (this.eventService) {
             this.eventService.dispatchEvent(eventName, event);
@@ -52,6 +80,9 @@ var RowNode = (function () {
     RowNode.prototype.resetQuickFilterAggregateText = function () {
         this.quickFilterAggregateText = null;
     };
+    RowNode.prototype.isExpandable = function () {
+        return this.group || this.canFlower;
+    };
     RowNode.prototype.isSelected = function () {
         // for footers, we just return what our sibling selected state is, as cannot select a footer
         if (this.footer) {
@@ -59,9 +90,9 @@ var RowNode = (function () {
         }
         return this.selected;
     };
-    RowNode.prototype.deptFirstSearch = function (callback) {
+    RowNode.prototype.depthFirstSearch = function (callback) {
         if (this.childrenAfterGroup) {
-            this.childrenAfterGroup.forEach(function (child) { return child.deptFirstSearch(callback); });
+            this.childrenAfterGroup.forEach(function (child) { return child.depthFirstSearch(callback); });
         }
         callback(this);
     };
@@ -104,13 +135,12 @@ var RowNode = (function () {
     RowNode.prototype.calculateSelectedFromChildrenBubbleUp = function () {
         this.calculateSelectedFromChildren();
         if (this.parent) {
-            this.parent.calculateSelectedFromChildren();
+            this.parent.calculateSelectedFromChildrenBubbleUp();
         }
     };
     RowNode.prototype.setSelectedInitialValue = function (selected) {
         this.selected = selected;
     };
-    /** Returns true if this row is selected */
     RowNode.prototype.setSelected = function (newValue, clearSelection, tailingNodeInSequence) {
         if (clearSelection === void 0) { clearSelection = false; }
         if (tailingNodeInSequence === void 0) { tailingNodeInSequence = false; }
@@ -127,6 +157,10 @@ var RowNode = (function () {
         var clearSelection = params.clearSelection === true;
         var tailingNodeInSequence = params.tailingNodeInSequence === true;
         var rangeSelect = params.rangeSelect === true;
+        if (this.id === undefined) {
+            console.warn('ag-Grid: cannot select node until id for node is known');
+            return;
+        }
         if (this.floating) {
             console.log('ag-Grid: cannot select floating rows');
             return;
@@ -228,7 +262,7 @@ var RowNode = (function () {
         var inMemoryRowModel = this.rowModel;
         inMemoryRowModel.getTopLevelNodes().forEach(function (topLevelNode) {
             if (topLevelNode.group) {
-                topLevelNode.deptFirstSearch(function (childNode) {
+                topLevelNode.depthFirstSearch(function (childNode) {
                     if (childNode.group) {
                         childNode.calculateSelectedFromChildren();
                     }

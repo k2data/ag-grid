@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -72,7 +72,7 @@ var valueService_1 = require("./valueService");
 var popupService_1 = require("./widgets/popupService");
 var gridRow_1 = require("./entities/gridRow");
 var inMemoryRowModel_1 = require("./rowControllers/inMemory/inMemoryRowModel");
-var virtualPageRowModel_1 = require("./rowControllers/virtualPageRowModel");
+var virtualPageRowModel_1 = require("./rowControllers/virtualPagination/virtualPageRowModel");
 var menuItemComponent_1 = require("./widgets/menuItemComponent");
 var animateSlideCellRenderer_1 = require("./rendering/cellRenderers/animateSlideCellRenderer");
 var cellEditorFactory_1 = require("./rendering/cellEditorFactory");
@@ -96,6 +96,12 @@ var setLeftFeature_1 = require("./rendering/features/setLeftFeature");
 var renderedCell_1 = require("./rendering/renderedCell");
 var headerRowComp_1 = require("./headerRendering/headerRowComp");
 var animateShowChangeCellRenderer_1 = require("./rendering/cellRenderers/animateShowChangeCellRenderer");
+var inMemoryNodeManager_1 = require("./rowControllers/inMemory/inMemoryNodeManager");
+var virtualPageCache_1 = require("./rowControllers/virtualPagination/virtualPageCache");
+var virtualPage_1 = require("./rowControllers/virtualPagination/virtualPage");
+var baseFrameworkFactory_1 = require("./baseFrameworkFactory");
+var methodNotImplementedException_1 = require("./misc/methodNotImplementedException");
+var touchListener_1 = require("./widgets/touchListener");
 function populateClientExports(exports) {
     // columnController
     exports.BalancedColumnTreeBuilder = balancedColumnTreeBuilder_1.BalancedColumnTreeBuilder;
@@ -121,6 +127,7 @@ function populateClientExports(exports) {
     // dragAndDrop
     exports.DragAndDropService = dragAndDropService_1.DragAndDropService;
     exports.DragService = dragService_1.DragService;
+    exports.DragSourceType = dragAndDropService_1.DragSourceType;
     // entities
     exports.Column = column_1.Column;
     exports.ColumnGroup = columnGroup_1.ColumnGroup;
@@ -154,6 +161,7 @@ function populateClientExports(exports) {
     exports.VerticalStack = verticalStack_1.VerticalStack;
     // misc
     exports.FocusService = focusService_1.FocusService;
+    exports.MethodNotImplementedException = methodNotImplementedException_1.MethodNotImplementedException;
     // rendering / cellEditors
     exports.LargeTextCellEditor = largeTextCellEditor_1.LargeTextCellEditor;
     exports.PopupEditorWrapper = popupEditorWrapper_1.PopupEditorWrapper;
@@ -183,10 +191,13 @@ function populateClientExports(exports) {
     exports.FlattenStage = flattenStage_1.FlattenStage;
     exports.InMemoryRowModel = inMemoryRowModel_1.InMemoryRowModel;
     exports.SortStage = sortStage_1.SortStage;
+    exports.InMemoryNodeManager = inMemoryNodeManager_1.InMemoryNodeManager;
     // rowControllers
     exports.FloatingRowModel = floatingRowModel_1.FloatingRowModel;
     exports.PaginationController = paginationController_1.PaginationController;
     exports.VirtualPageRowModel = virtualPageRowModel_1.VirtualPageRowModel;
+    exports.VirtualPageCache = virtualPageCache_1.VirtualPageCache;
+    exports.VirtualPage = virtualPage_1.VirtualPage;
     // widgets
     exports.AgCheckbox = agCheckbox_1.AgCheckbox;
     exports.Component = component_1.Component;
@@ -195,7 +206,9 @@ function populateClientExports(exports) {
     exports.MenuList = menuList_1.MenuList;
     exports.Listener = componentAnnotations_1.Listener;
     exports.QuerySelector = componentAnnotations_1.QuerySelector;
+    exports.TouchListener = touchListener_1.TouchListener;
     // root
+    exports.BaseFrameworkFactory = baseFrameworkFactory_1.BaseFrameworkFactory;
     exports.CellNavigationService = cellNavigationService_1.CellNavigationService;
     exports.ColumnChangeEvent = columnChangeEvent_1.ColumnChangeEvent;
     exports.Constants = constants_1.Constants;

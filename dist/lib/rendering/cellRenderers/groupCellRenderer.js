@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -70,7 +70,7 @@ var GroupCellRenderer = (function (_super) {
             if (node.footer) {
                 paddingPx += 15;
             }
-            else if (!node.group || reducedLeafNode) {
+            else if (!node.isExpandable() || reducedLeafNode) {
                 paddingPx += 10;
             }
             this.getGui().style.paddingLeft = paddingPx + 'px';
@@ -92,7 +92,12 @@ var GroupCellRenderer = (function (_super) {
         }
     };
     GroupCellRenderer.prototype.createFromInnerRenderer = function (params) {
-        this.cellRendererService.useCellRenderer(params.innerRenderer, this.eValue, params);
+        var innerComponent = this.cellRendererService.useCellRenderer(params.innerRenderer, this.eValue, params);
+        this.addDestroyFunc(function () {
+            if (innerComponent && innerComponent.destroy) {
+                innerComponent.destroy();
+            }
+        });
     };
     GroupCellRenderer.prototype.createFooterCell = function (params) {
         var footerValue;
@@ -176,8 +181,19 @@ var GroupCellRenderer = (function (_super) {
             this.eValue.innerHTML = params.value;
         }
     };
+    GroupCellRenderer.prototype.isUserWantsSelected = function (params) {
+        if (typeof params.checkbox === 'function') {
+            return params.checkbox(params);
+        }
+        else {
+            return params.checkbox === true;
+        }
+    };
     GroupCellRenderer.prototype.addCheckboxIfNeeded = function (params) {
-        var checkboxNeeded = params.checkbox && !this.rowNode.footer && !this.rowNode.floating;
+        var checkboxNeeded = this.isUserWantsSelected(params)
+            && !this.rowNode.footer
+            && !this.rowNode.floating
+            && !this.rowNode.flower;
         if (checkboxNeeded) {
             var cbSelectionComponent = new checkboxSelectionComponent_1.CheckboxSelectionComponent();
             this.context.wireBean(cbSelectionComponent);
@@ -214,7 +230,7 @@ var GroupCellRenderer = (function (_super) {
     };
     GroupCellRenderer.prototype.showExpandAndContractIcons = function () {
         var reducedLeafNode = this.columnController.isPivotMode() && this.rowNode.leafGroup;
-        var expandable = this.rowNode.group && !this.rowNode.footer && !reducedLeafNode;
+        var expandable = this.rowNode.isExpandable() && !this.rowNode.footer && !reducedLeafNode;
         if (expandable) {
             // if expandable, show one based on expand state
             utils_1.Utils.setVisible(this.eExpanded, this.rowNode.expanded);

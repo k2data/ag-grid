@@ -5,7 +5,8 @@ import {Column} from "./column";
 import {IViewportDatasource} from "../interfaces/iViewportDatasource";
 import {MenuItem} from "../widgets/menuItemComponent";
 import {ICellRendererFunc, ICellRenderer} from "../rendering/cellRenderers/iCellRenderer";
-import {IAggFunc} from "./colDef";
+import {IAggFunc, ColGroupDef, ColDef} from "./colDef";
+import {IDatasource} from "../rowControllers/iDatasource";
 
 /****************************************************************
  * Don't forget to update ComponentUtil if changing this class. *
@@ -17,12 +18,14 @@ export interface GridOptions {
      ****************************************************************/
 
     // set once in init, can never change
+    scrollbarWidth?: number;
     toolPanelSuppressRowGroups?: boolean;
     toolPanelSuppressValues?: boolean;
     toolPanelSuppressPivots?: boolean;
     toolPanelSuppressPivotMode?: boolean;
     suppressRowClickSelection?: boolean;
     suppressCellSelection?: boolean;
+    suppressRowHoverClass?: boolean;
     sortingOrder?: string[];
     suppressMultiSort?: boolean;
     suppressHorizontalScroll?: boolean;
@@ -50,6 +53,7 @@ export interface GridOptions {
     suppressLoadingOverlay?: boolean;
     suppressNoRowsOverlay?: boolean;
     suppressAutoSize?: boolean;
+    autoSizePadding?: number;
     suppressColumnMoveAnimation?: boolean;
     suppressMovableColumns?: boolean;
     suppressDragLeaveHidesColumns?: boolean;
@@ -80,6 +84,13 @@ export interface GridOptions {
     layoutInterval?: number;
     functionsReadOnly?: boolean;
     functionsPassive?: boolean;
+    maxConcurrentDatasourceRequests?: number;
+    maxPagesInCache?: number;
+    paginationOverflowSize?: number;
+    paginationInitialRowCount?: number;
+    paginationPageSize?: number;
+    editType?: string;
+    suppressTouch?: boolean;
 
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
@@ -93,6 +104,8 @@ export interface GridOptions {
     // cellRenderers?: {[key: string]: {new(): ICellRenderer} | ICellRendererFunc};
     /* a map of strings (cellEditor keys) to cellEditors */
     // cellEditors?: {[key: string]: {new(): ICellEditor}};
+    defaultColGroupDef?: ColGroupDef;
+    defaultColDef?: ColDef;
 
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
@@ -105,7 +118,7 @@ export interface GridOptions {
     groupSuppressRow?: boolean;
     groupSuppressBlankHeader?: boolean;
     forPrint?: boolean;
-    groupColumnDef?: any; // change to typed
+    groupColumnDef?: ColDef;
 
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
@@ -121,7 +134,7 @@ export interface GridOptions {
     rowDeselection?: boolean;
     overlayLoadingTemplate?: string;
     overlayNoRowsTemplate?: string;
-    checkboxSelection?: Function;
+    checkboxSelection?: (params: any)=> boolean;
     rowHeight?: number;
     headerCellTemplate?: string;
 
@@ -134,8 +147,8 @@ export interface GridOptions {
     floatingTopRowData?: any[]; // should this be immutable ag2?
     floatingBottomRowData?: any[]; // should this be immutable ag2?
     showToolPanel?: boolean;
-    columnDefs?: any[]; // change to typed
-    datasource?: any; // should be typed
+    columnDefs?: (ColDef|ColGroupDef)[];
+    datasource?: IDatasource;
     viewportDatasource?: IViewportDatasource;
     // in properties
     headerHeight?: number;
@@ -146,23 +159,36 @@ export interface GridOptions {
 
     // callbacks
     groupRowRenderer?: {new(): ICellRenderer} | ICellRendererFunc | string;
+    groupRowRendererFramework?: any;
     groupRowRendererParams?: any;
     groupRowInnerRenderer?: {new(): ICellRenderer} | ICellRendererFunc | string;
+    groupRowInnerRendererFramework?: any;
     isScrollLag?(): boolean;
     isExternalFilterPresent?(): boolean;
     doesExternalFilterPass?(node: RowNode): boolean;
     getRowStyle?: Function;
     getRowClass?: Function;
     getRowHeight?: Function;
+
+    fullWidthCellRenderer?: {new(): ICellRenderer} | ICellRendererFunc | string;
+    fullWidthCellRendererFramework?: any;
+    fullWidthCellRendererParams?: any;
+    isFullWidthCell?(rowNode: RowNode): boolean;
+
     headerCellRenderer?: any;
     groupRowAggNodes?(nodes: RowNode[]): any;
     getBusinessKeyForNode?(node: RowNode): string;
     getHeaderCellTemplate?: (params: any) => string | HTMLElement;
-    getNodeChildDetails?(dataItem: any): NodeChildDetails;
+    getNodeChildDetails?: GetNodeChildDetails;
     getContextMenuItems?: GetContextMenuItems;
     getMainMenuItems?: GetMainMenuItems;
+    getRowNodeId?: GetRowNodeIdFunc;
+    doesDataFlower?(dataItem: any): boolean;
     processRowPostCreate?(params: ProcessRowParams): void;
     processCellForClipboard?(params: ProcessCellForExportParams): any;
+    processCellFromClipboard?(params: ProcessCellForExportParams): any;
+    processSecondaryColDef?(colDef: ColDef): void;
+    processSecondaryColGroupDef?(colGroupDef: ColGroupDef): void;
 
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
@@ -201,6 +227,7 @@ export interface GridOptions {
     onCellDoubleClicked?(event?: any): void;
     onCellContextMenu?(event?: any): void;
     onCellValueChanged?(event?: any): void;
+    onRowValueChanged?(event?: any): void;
     onCellFocused?(event?: any): void;
     onRowSelected?(event?: any): void;
     onSelectionChanged?(event?: any): void;
@@ -219,6 +246,8 @@ export interface GridOptions {
     onViewportChanged?(event?: any): void;
     onDragStarted?(event?: any): void;
     onDragStopped?(event?: any): void;
+    onItemsAdded?(event?: any): void;
+    onItemsRemove?(event?: any): void;
 
     /****************************************************************
      * Don't forget to update ComponentUtil if changing this class. *
@@ -227,6 +256,10 @@ export interface GridOptions {
     // apis, set by the grid on init
     api?: GridApi; // change to typed
     columnApi?: ColumnApi; // change to typed
+}
+
+export interface GetNodeChildDetails {
+    (dataItem: any): NodeChildDetails;
 }
 
 export interface NodeChildDetails {
@@ -261,6 +294,10 @@ export interface GetMainMenuItemsParams {
 
 export interface GetMainMenuItems {
     (params: GetMainMenuItemsParams): (string|MenuItem)[]
+}
+
+export interface GetRowNodeIdFunc {
+    (data: any): string
 }
 
 export interface ProcessRowParams {

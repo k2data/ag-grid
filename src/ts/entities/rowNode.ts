@@ -26,8 +26,9 @@ export class RowNode {
     @Autowired('valueService') private valueService: ValueService;
     @Autowired('rowModel') private rowModel: IRowModel;
 
-    /** Unique ID for the node. Can be thought of as the index of the row in the original list. */
-    public id: number;
+    /** Unique ID for the node. Either provided by the grid, or user can set to match the primary
+     * key in the database (or whatever data source is used). */
+    public id: string;
     /** The user provided data */
     public data: any;
     /** The parent node to this node, or empty if top level */
@@ -36,6 +37,10 @@ export class RowNode {
     public level: number;
     /** True if this node is a group node (ie has children) */
     public group: boolean;
+    /** True if this node can flower (ie can be expanded, but has no direct children) */
+    public canFlower: boolean;
+    /** True if this node is a flower */
+    public flower: boolean;
     /** True if this node is a group and the group is the bottom level in the tree */
     public leafGroup: boolean;
     /** True if this is the first child in this group */
@@ -87,8 +92,40 @@ export class RowNode {
     public setData(data: any): void {
         var oldData = this.data;
         this.data = data;
+
         var event = {oldData: oldData, newData: data};
         this.dispatchLocalEvent(RowNode.EVENT_DATA_CHANGED, event);
+    }
+
+    public setDataAndId(data: any, id: string): void {
+        var oldData = this.data;
+        this.data = data;
+
+        this.setId(id);
+
+        this.selectionController.syncInRowNode(this);
+
+        var event = {oldData: oldData, newData: data};
+        this.dispatchLocalEvent(RowNode.EVENT_DATA_CHANGED, event);
+    }
+
+    public setId(id: string): void {
+        // see if user is providing the id's
+        var getRowNodeId = this.gridOptionsWrapper.getRowNodeIdFunc();
+        if (getRowNodeId) {
+            // if user is providing the id's, then we set the id only after the data has been set.
+            // this is important for virtual pagination and viewport, where empty rows exist.
+            if (this.data) {
+                this.id = getRowNodeId(this.data);
+            } else {
+                // this can happen if user has set blank into the rowNode after the row previously
+                // having data. this happens in virtual page row model, when data is delete and
+                // the page is refreshed.
+                this.id = undefined;
+            }
+        } else {
+            this.id = id;
+        }
     }
 
     private dispatchLocalEvent(eventName: string, event?: any): void {
@@ -113,6 +150,10 @@ export class RowNode {
         this.quickFilterAggregateText = null;
     }
 
+    public isExpandable(): boolean {
+        return this.group || this.canFlower;
+    }
+
     public isSelected(): boolean {
         // for footers, we just return what our sibling selected state is, as cannot select a footer
         if (this.footer) {
@@ -122,9 +163,9 @@ export class RowNode {
         return this.selected;
     }
 
-    public deptFirstSearch( callback: (rowNode: RowNode) => void ): void {
+    public depthFirstSearch( callback: (rowNode: RowNode) => void ): void {
         if (this.childrenAfterGroup) {
-            this.childrenAfterGroup.forEach( child => child.deptFirstSearch(callback) );
+            this.childrenAfterGroup.forEach( child => child.depthFirstSearch(callback) );
         }
         callback(this);
     }
@@ -167,7 +208,7 @@ export class RowNode {
     private calculateSelectedFromChildrenBubbleUp(): void {
         this.calculateSelectedFromChildren();
         if (this.parent) {
-            this.parent.calculateSelectedFromChildren();
+            this.parent.calculateSelectedFromChildrenBubbleUp();
         }
     }
 
@@ -175,7 +216,6 @@ export class RowNode {
         this.selected = selected;
     }
 
-    /** Returns true if this row is selected */
     public setSelected(newValue: boolean, clearSelection: boolean = false, tailingNodeInSequence: boolean = false) {
         this.setSelectedParams({
             newValue: newValue,
@@ -192,6 +232,11 @@ export class RowNode {
         var clearSelection = params.clearSelection === true;
         var tailingNodeInSequence = params.tailingNodeInSequence === true;
         var rangeSelect = params.rangeSelect === true;
+
+        if (this.id===undefined) {
+            console.warn('ag-Grid: cannot select node until id for node is known');
+            return;
+        }
 
         if (this.floating) {
             console.log('ag-Grid: cannot select floating rows');
@@ -315,7 +360,7 @@ export class RowNode {
         var inMemoryRowModel = <InMemoryRowModel> this.rowModel;
         inMemoryRowModel.getTopLevelNodes().forEach( topLevelNode => {
             if (topLevelNode.group) {
-                topLevelNode.deptFirstSearch( childNode => {
+                topLevelNode.depthFirstSearch( childNode => {
                     if (childNode.group) {
                         childNode.calculateSelectedFromChildren();
                     }
@@ -333,7 +378,7 @@ export class RowNode {
                 this.dispatchLocalEvent(RowNode.EVENT_ROW_SELECTED);
             }
 
-            var event:any = {node: this};
+            var event: any = {node: this};
             this.mainEventService.dispatchEvent(Events.EVENT_ROW_SELECTED, event)
         }
     }

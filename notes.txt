@@ -1,7 +1,10 @@
 Doing releases:
 
+Update the license manager, to next version.
+
 ag-Grid
 
++ Major release?  Update LicenseManager with new timestamp
 + Update version in bower.json
 + Update version in package.json
 + Run 'gulp release'
@@ -41,10 +44,14 @@ ag-Grid-React-Example
 
 + Update version in package.json
 + Make sure it's referencing correct ag-Grid version (including enterprise and react modules)
++ Release in GitHub
++ No npm publish
 
++ then ng2 (ng2 publish too)
 
 ag-Grid-Docs
 
++ update changeLogIndex.php with release details
 + Update 'notusedXXX' across the project to the next number
 + Update version in package.json
 + Commit to Github (do NOT include built files in /dist)

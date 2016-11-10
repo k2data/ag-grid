@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -35,20 +35,17 @@ export declare class Events {
     static EVENT_ROW_DATA_CHANGED: string;
     static EVENT_FLOATING_ROW_DATA_CHANGED: string;
     static EVENT_RANGE_SELECTION_CHANGED: string;
-    static EVENT_COLUMN_ROW_GROUP_ADD_REQUEST: string;
-    static EVENT_COLUMN_ROW_GROUP_REMOVE_REQUEST: string;
-    static EVENT_COLUMN_PIVOT_ADD_REQUEST: string;
-    static EVENT_COLUMN_PIVOT_REMOVE_REQUEST: string;
-    static EVENT_COLUMN_VALUE_ADD_REQUEST: string;
-    static EVENT_COLUMN_VALUE_REMOVE_REQUEST: string;
+    static EVENT_COLUMN_ROW_GROUP_CHANGE_REQUEST: string;
+    static EVENT_COLUMN_PIVOT_CHANGE_REQUEST: string;
+    static EVENT_COLUMN_VALUE_CHANGE_REQUEST: string;
     static EVENT_COLUMN_AGG_FUNC_CHANGE_REQUEST: string;
     static EVENT_FLASH_CELLS: string;
-    static EVENT_HEADER_HEIGHT_CHANGED: string;
     static EVENT_MODEL_UPDATED: string;
     static EVENT_CELL_CLICKED: string;
     static EVENT_CELL_DOUBLE_CLICKED: string;
     static EVENT_CELL_CONTEXT_MENU: string;
     static EVENT_CELL_VALUE_CHANGED: string;
+    static EVENT_ROW_VALUE_CHANGED: string;
     static EVENT_CELL_FOCUSED: string;
     static EVENT_ROW_SELECTED: string;
     static EVENT_SELECTION_CHANGED: string;
@@ -67,4 +64,7 @@ export declare class Events {
     static EVENT_VIEWPORT_CHANGED: string;
     static EVENT_DRAG_STARTED: string;
     static EVENT_DRAG_STOPPED: string;
+    static EVENT_ITEMS_ADDED: string;
+    static EVENT_ITEMS_REMOVED: string;
+    static EVENT_BODY_SCROLL: string;
 }

@@ -1,9 +1,11 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { Column } from "../entities/column";
+import { RowNode } from "../entities/rowNode";
 import { RenderedRow } from "./renderedRow";
+import { GridCell } from "../entities/gridCell";
 import { Component } from "../widgets/component";
 export declare class RenderedCell extends Component {
     private context;
@@ -47,12 +49,15 @@ export declare class RenderedCell extends Component {
     private renderedRow;
     private firstRightPinned;
     private lastLeftPinned;
-    constructor(column: any, node: any, rowIndex: number, scope: any, renderedRow: RenderedRow);
+    constructor(column: Column, node: RowNode, rowIndex: number, scope: any, renderedRow: RenderedRow);
+    getGridCell(): GridCell;
+    setFocusInOnEditor(): void;
+    setFocusOutOnEditor(): void;
     destroy(): void;
     private setPinnedClasses();
     getParentRow(): HTMLElement;
     setParentRow(eParentRow: HTMLElement): void;
-    calculateCheckboxSelection(): any;
+    calculateCheckboxSelection(): boolean;
     getColumn(): Column;
     private getValue();
     private getDataForRow();
@@ -65,30 +70,36 @@ export declare class RenderedCell extends Component {
     private addCellFocusedListener();
     private setWidthOnCell();
     init(): void;
+    private addDomData();
     private onEnterKeyDown();
     private onF2KeyDown();
     private onEscapeKeyDown();
     private onPopupEditorClosed();
+    isEditing(): boolean;
     private onTabKeyDown(event);
     private onBackspaceOrDeleteKeyPressed(key);
     private onSpaceKeyPressed(event);
     private onNavigationKeyPressed(event, key);
-    private addKeyPressListener();
-    private onKeyDown(event);
-    private addKeyDownListener();
-    private createCellEditor(keyPress?, charPress?);
+    onKeyPress(event: KeyboardEvent): void;
+    onKeyDown(event: KeyboardEvent): void;
+    private createCellEditorParams(keyPress, charPress, cellStartedEdit);
+    private createCellEditor(keyPress, charPress, cellStartedEdit);
     private stopEditingAndFocus();
-    startEditingIfEnabled(keyPress?: number, charPress?: string): void;
+    startRowOrCellEdit(keyPress?: number, charPress?: string): void;
+    startEditingIfEnabled(keyPress?: number, charPress?: string, cellStartedEdit?: boolean): boolean;
     private addInCellEditor();
     private addPopupCellEditor();
-    focusCell(forceBrowserFocus: boolean): void;
+    focusCell(forceBrowserFocus?: boolean): void;
+    stopRowOrCellEdit(cancel?: boolean): void;
     stopEditing(cancel?: boolean): void;
     private createParams();
-    private createEvent(event, eventSource?);
+    private createEvent(event);
+    getRenderedRow(): RenderedRow;
+    isSuppressNavigable(): boolean;
     isCellEditable(): boolean;
-    onMouseEvent(eventName: string, mouseEvent: MouseEvent, eventSource: HTMLElement): void;
+    onMouseEvent(eventName: string, mouseEvent: MouseEvent): void;
     private onContextMenu(mouseEvent);
-    private onCellDoubleClicked(mouseEvent, eventSource);
+    private onCellDoubleClicked(mouseEvent);
     private onMouseDown();
     private onCellClicked(mouseEvent);
     private setInlineEditingClass();

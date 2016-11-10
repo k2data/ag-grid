@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -6,7 +6,6 @@ import { RenderedCell } from "./renderedCell";
 import { RowNode } from "../entities/rowNode";
 import { RowRenderer } from "./rowRenderer";
 import { Column } from "../entities/column";
-import { GridCell } from "../entities/gridCell";
 export declare class RenderedRow {
     static EVENT_RENDERED_ROW_REMOVED: string;
     private gridOptionsWrapper;
@@ -16,29 +15,47 @@ export declare class RenderedRow {
     private context;
     private focusedCellController;
     private cellRendererService;
-    ePinnedLeftRow: HTMLElement;
-    ePinnedRightRow: HTMLElement;
-    eBodyRow: HTMLElement;
-    private eLeftCenterAndRightRows;
+    private gridPanel;
+    private ePinnedLeftRow;
+    private ePinnedRightRow;
+    private eBodyRow;
+    private eFullWidthRow;
+    private eAllRowContainers;
+    private fullWidthRowComponent;
     private renderedCells;
     private scope;
     private rowNode;
     private rowIndex;
-    private rowIsHeaderThatSpans;
+    private fullWidthRow;
+    private fullWidthCellRenderer;
+    private fullWidthCellRendererParams;
     private parentScope;
     private rowRenderer;
     private eBodyContainer;
+    private eBodyContainerDF;
+    private eFullWidthContainer;
     private ePinnedLeftContainer;
+    private ePinnedLeftContainerDF;
     private ePinnedRightContainer;
-    private eGroupRow;
-    private eGroupRowPaddingCentre;
-    private eGroupRowPaddingRight;
+    private ePinnedRightContainerDF;
     private destroyFunctions;
     private renderedRowEventService;
+    private editingRow;
     private initialised;
-    constructor(parentScope: any, rowRenderer: RowRenderer, eBodyContainer: HTMLElement, ePinnedLeftContainer: HTMLElement, ePinnedRightContainer: HTMLElement, node: RowNode, rowIndex: number);
+    constructor(parentScope: any, rowRenderer: RowRenderer, eBodyContainer: HTMLElement, eBodyContainerDF: DocumentFragment, eFullWidthContainer: HTMLElement, ePinnedLeftContainer: HTMLElement, ePinnedLeftContainerDF: DocumentFragment, ePinnedRightContainer: HTMLElement, ePinnedRightContainerDF: DocumentFragment, node: RowNode, rowIndex: number);
+    private setupRowContainers();
+    private addDomData(eRowContainer);
+    private setupFullWidthContainers();
+    private addMouseWheelListenerToFullWidthRow();
+    private setupFullWidthGroupContainers();
+    private setupNormalContainers();
     init(): void;
-    private angular1Compile();
+    stopRowEditing(cancel: boolean): void;
+    stopEditing(cancel?: boolean): void;
+    startRowEditing(keyPress?: number, charPress?: string, sourceRenderedCell?: RenderedCell): void;
+    private setEditingRow(value);
+    private addDataChangedListener();
+    private angular1Compile(element);
     private addColumnListener();
     private onDisplayedColumnsChanged(event);
     private onVirtualColumnsChanged(event);
@@ -47,15 +64,14 @@ export declare class RenderedRow {
     private removeRenderedCells(colIds);
     private ensureCellInCorrectRow(renderedCell);
     private getOrCreateCell(column);
+    private onRowSelected();
     private addRowSelectedListener();
+    onMouseEvent(eventName: string, mouseEvent: MouseEvent): void;
     private addHoverFunctionality();
     private addHoverClass(hover);
     private addCellFocusedListener();
     forEachRenderedCell(callback: (renderedCell: RenderedCell) => void): void;
     private addNodeDataChangedListener();
-    private createContainers();
-    private attachContainers();
-    onMouseEvent(eventName: string, mouseEvent: MouseEvent, eventSource: HTMLElement, cell: GridCell): void;
     private setTopAndHeightCss();
     private addRowIds();
     addEventListener(eventType: string, listener: Function): void;
@@ -66,16 +82,22 @@ export declare class RenderedRow {
     private destroyScope();
     isDataInList(rows: any[]): boolean;
     isGroup(): boolean;
-    private refreshGroupRow();
+    private refreshFullWidthComponent();
+    private createFullWidthComponent();
+    private destroyFullWidthComponent();
+    private createFullWidthParams(eRow);
     private createGroupSpanningEntireRowCell(padding);
     private createChildScopeOrNull(data);
-    private addDynamicStyles();
+    private addStyleFromRowStyle();
+    private addStyleFromRowStyleFunc();
     private createParams();
     private createEvent(event, eventSource);
-    private createRowContainer();
-    onRowClicked(event: MouseEvent): void;
+    private createRowContainer(eParentDF, eParent);
+    private onRowDblClick(event);
+    onRowClick(event: MouseEvent): void;
     getRowNode(): any;
-    getRowIndex(): any;
     refreshCells(colIds: string[], animate: boolean): void;
-    private addDynamicClasses();
+    private addClassesFromRowClassFunc();
+    private addGridClasses();
+    private addClassesFromRowClass();
 }

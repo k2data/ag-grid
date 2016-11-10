@@ -1,27 +1,35 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
+import { Column } from "./entities/column";
 import { ProcessCellForExportParams, ProcessHeaderForExportParams } from "./entities/gridOptions";
+import { ColDef } from "./entities/colDef";
 export interface CsvExportParams {
     skipHeader?: boolean;
     skipFooters?: boolean;
     skipGroups?: boolean;
+    skipFloatingTop?: boolean;
+    skipFloatingBottom?: boolean;
     suppressQuotes?: boolean;
+    columnKeys?: (Column | ColDef | string)[];
     fileName?: string;
     customHeader?: string;
     customFooter?: string;
     allColumns?: boolean;
     columnSeparator?: string;
     onlySelected?: boolean;
+    onlySelectedAllPages?: boolean;
     processCellCallback?(params: ProcessCellForExportParams): void;
     processHeaderCallback?(params: ProcessHeaderForExportParams): string;
 }
 export declare class CsvCreator {
     private rowModel;
+    private floatingRowModel;
     private columnController;
     private valueService;
     private gridOptionsWrapper;
+    private selectionController;
     exportDataAsCsv(params?: CsvExportParams): void;
     getDataAsCsv(params?: CsvExportParams): string;
     private getHeaderName(callback, column);

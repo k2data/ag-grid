@@ -89,7 +89,7 @@ export class SelectionController {
         }
         var inMemoryRowModel = <IInMemoryRowModel> this.rowModel;
         inMemoryRowModel.getTopLevelNodes().forEach( (rowNode: RowNode) => {
-            rowNode.deptFirstSearch( (rowNode)=> {
+            rowNode.depthFirstSearch( (rowNode)=> {
                 if (rowNode.group) {
                     rowNode.calculateSelectedFromChildren();
                 }
@@ -133,6 +133,8 @@ export class SelectionController {
         if (this.selectedNodes[rowNode.id] !== undefined) {
             rowNode.setSelectedInitialValue(true);
             this.selectedNodes[rowNode.id] = rowNode;
+        } else {
+            rowNode.setSelectedInitialValue(false);
         }
     }
 
@@ -205,6 +207,11 @@ export class SelectionController {
                 rowNode.selectThisNode(false);
             }
         });
+        // the above does not clean up the parent rows if they are selected
+        if (this.rowModel.getType()===Constants.ROW_MODEL_TYPE_NORMAL && this.groupSelectsChildren) {
+            this.updateGroupsFromChildrenSelections();
+        }
+
         // we should not have to do this, as deselecting the nodes fires events
         // that we pick up, however it's good to clean it down, as we are still
         // left with entries pointing to 'undefined'

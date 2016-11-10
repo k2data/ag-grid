@@ -10,7 +10,7 @@ import {ValueService} from "./valueService";
 import {MasterSlaveService} from "./masterSlaveService";
 import {EventService} from "./eventService";
 import {FloatingRowModel} from "./rowControllers/floatingRowModel";
-import {ColDef, IAggFunc} from "./entities/colDef";
+import {ColDef, IAggFunc, ColGroupDef} from "./entities/colDef";
 import {RowNode} from "./entities/rowNode";
 import {Constants} from "./constants";
 import {Column} from "./entities/column";
@@ -27,10 +27,18 @@ import {IInMemoryRowModel} from "./interfaces/iInMemoryRowModel";
 import {Utils as _} from "./utils";
 import {IViewportDatasource} from "./interfaces/iViewportDatasource";
 import {IMenuFactory} from "./interfaces/iMenuFactory";
-import {VirtualPageRowModel} from "./rowControllers/virtualPageRowModel";
+import {VirtualPageRowModel} from "./rowControllers/virtualPagination/virtualPageRowModel";
 import {CellRendererFactory} from "./rendering/cellRendererFactory";
 import {CellEditorFactory} from "./rendering/cellEditorFactory";
 import {IAggFuncService} from "./interfaces/iAggFuncService";
+import {IFilter} from "./interfaces/iFilter";
+
+export interface StartEditingCellParams {
+    rowIndex: number;
+    colKey: string|Column|ColDef;
+    keyPress?: number;
+    charPress?: string;
+}
 
 @Bean('gridApi')
 export class GridApi {
@@ -61,11 +69,18 @@ export class GridApi {
     @Autowired('cellEditorFactory') private cellEditorFactory: CellEditorFactory;
 
     private inMemoryRowModel: IInMemoryRowModel;
+    private virtualPageRowModel: VirtualPageRowModel;
 
     @PostConstruct
     private init(): void {
-        if (this.rowModel.getType()===Constants.ROW_MODEL_TYPE_NORMAL) {
-            this.inMemoryRowModel = <IInMemoryRowModel> this.rowModel;
+        switch (this.rowModel.getType()) {
+            case Constants.ROW_MODEL_TYPE_NORMAL:
+            case Constants.ROW_MODEL_TYPE_PAGINATION:
+                this.inMemoryRowModel = <IInMemoryRowModel> this.rowModel;
+                break;
+            case Constants.ROW_MODEL_TYPE_VIRTUAL:
+                this.virtualPageRowModel = <VirtualPageRowModel> this.rowModel;
+                break;
         }
     }
 
@@ -113,6 +128,7 @@ export class GridApi {
     
     public setRowData(rowData: any[]) {
         if (this.gridOptionsWrapper.isRowModelDefault()) {
+            this.selectionController.reset();
             this.inMemoryRowModel.setRowData(rowData, true);
         } else {
             console.log('cannot call setRowData unless using normal row model');
@@ -127,7 +143,23 @@ export class GridApi {
         this.floatingRowModel.setFloatingBottomRowData(rows);
     }
 
-    public setColumnDefs(colDefs: ColDef[]) {
+    public getFloatingTopRowCount(): number {
+        return this.floatingRowModel.getFloatingTopRowCount();
+    }
+
+    public getFloatingBottomRowCount(): number {
+        return this.floatingRowModel.getFloatingBottomRowCount();
+    }
+
+    public getFloatingTopRow(index: number): RowNode {
+        return this.floatingRowModel.getFloatingTopRow(index);
+    }
+
+    public getFloatingBottomRow(index: number): RowNode {
+        return this.floatingRowModel.getFloatingBottomRow(index);
+    }
+
+    public setColumnDefs(colDefs: (ColDef|ColGroupDef)[]) {
         this.columnController.setColumnDefs(colDefs);
     }
 
@@ -350,16 +382,21 @@ export class GridApi {
         this.inMemoryRowModel.forEachNodeAfterFilterAndSort(callback);
     }
 
-    public getFilterApiForColDef(colDef:any) {
+    public getFilterApiForColDef(colDef: any): any {
         console.warn('ag-grid API method getFilterApiForColDef deprecated, use getFilterApi instead');
-        return this.getFilterApi(colDef);
+        return this.getFilterInstance(colDef);
+    }
+
+    public getFilterInstance(key: string|Column|ColDef): IFilter {
+        var column = this.columnController.getPrimaryColumn(key);
+        if (column) {
+            return this.filterManager.getFilterComponent(column);
+        }
     }
 
     public getFilterApi(key: string|Column|ColDef) {
-        var column = this.columnController.getPrimaryColumn(key);
-        if (column) {
-            return this.filterManager.getFilterApi(column);
-        }
+        console.warn('ag-Grid: getFilterApi is deprecated, use getFilterInstance instead');
+        return this.getFilterInstance(key);
     }
 
     public destroyFilter(key: string|Column|ColDef) {
@@ -407,7 +444,7 @@ export class GridApi {
     }
 
     public setHeaderHeight(headerHeight: number) {
-        this.gridOptionsWrapper.setHeaderHeight(headerHeight);
+        this.gridOptionsWrapper.setProperty(GridOptionsWrapper.PROP_HEADER_HEIGHT, headerHeight);
     }
 
     public showToolPanel(show:any) {
@@ -474,14 +511,15 @@ export class GridApi {
         this.rangeController.clearSelection();
     }
 
-    public copySelectedRowsToClipboard(): void {
+    public copySelectedRowsToClipboard(includeHeader: boolean, columnKeys?: (string|Column|ColDef)[]): void {
         if (!this.clipboardService) { console.warn('ag-Grid: clipboard is only available in ag-Grid Enterprise'); }
-        this.clipboardService.copySelectedRowsToClipboard();
+        var column: Column = null;
+        this.clipboardService.copySelectedRowsToClipboard(includeHeader, columnKeys);
     }
 
-    public copySelectedRangeToClipboard(): void {
+    public copySelectedRangeToClipboard(includeHeader: boolean): void {
         if (!this.clipboardService) { console.warn('ag-Grid: clipboard is only available in ag-Grid Enterprise'); }
-        this.clipboardService.copySelectedRangeToClipboard();
+        this.clipboardService.copySelectedRangeToClipboard(includeHeader);
     }
 
     public copySelectedRangeDown(): void {
@@ -494,13 +532,19 @@ export class GridApi {
         this.menuFactory.showMenuAfterButtonClick(column, buttonElement);
     }
 
-    public showColumnMenuAfterMouseClick(colKey: string|Column|ColDef, mouseEvent: MouseEvent): void {
+    public showColumnMenuAfterMouseClick(colKey: string|Column|ColDef, mouseEvent: MouseEvent|Touch): void {
         var column = this.columnController.getPrimaryColumn(colKey);
         this.menuFactory.showMenuAfterMouseEvent(column, mouseEvent);
     }
 
     public stopEditing(cancel: boolean = false): void {
         this.rowRenderer.stopEditing(cancel);
+    }
+
+    public startEditingCell(params: StartEditingCellParams): void {
+        var column = this.columnController.getGridColumn(params.colKey);
+        var gridCell = new GridCell(params.rowIndex, null, column);
+        this.rowRenderer.startEditingCell(gridCell, params.keyPress, params.charPress);
     }
 
     public addAggFunc(key: string, aggFunc: IAggFunc): void {
@@ -519,6 +563,70 @@ export class GridApi {
         if (this.aggFuncService) {
             this.aggFuncService.clear();
         }
+    }
+
+    public insertItemsAtIndex(index: number, items: any[]): void {
+        this.rowModel.insertItemsAtIndex(index, items);
+    }
+
+    public removeItems(rowNodes: RowNode[]): void {
+        this.rowModel.removeItems(rowNodes);
+    }
+
+    public addItems(items: any[]): void {
+        this.rowModel.addItems(items);
+    }
+
+    public refreshVirtualPageCache(): void {
+        if (this.virtualPageRowModel) {
+            this.virtualPageRowModel.refreshVirtualPageCache();
+        } else {
+            console.warn(`ag-Grid: api.refreshVirtualPageCache is only available when rowModelType='virtual'.`);
+        }
+    }
+
+    public purgeVirtualPageCache(): void {
+        if (this.virtualPageRowModel) {
+            this.virtualPageRowModel.purgeVirtualPageCache();
+        } else {
+            console.warn(`ag-Grid: api.refreshVirtualPageCache is only available when rowModelType='virtual'.`);
+        }
+    }
+
+    public getVirtualRowCount(): number {
+        if (this.virtualPageRowModel) {
+            return this.virtualPageRowModel.getVirtualRowCount();
+        } else {
+            console.warn(`ag-Grid: api.getVirtualRowCount is only available when rowModelType='virtual'.`);
+        }
+    }
+
+    public isMaxRowFound(): boolean {
+        if (this.virtualPageRowModel) {
+            return this.virtualPageRowModel.isMaxRowFound();
+        } else {
+            console.warn(`ag-Grid: api.isMaxRowFound is only available when rowModelType='virtual'.`);
+        }
+    }
+
+    public setVirtualRowCount(rowCount: number, maxRowFound?: boolean): void {
+        if (this.virtualPageRowModel) {
+            this.virtualPageRowModel.setVirtualRowCount(rowCount, maxRowFound);
+        } else {
+            console.warn(`ag-Grid: api.setVirtualRowCount is only available when rowModelType='virtual'.`);
+        }
+    }
+
+    public getVirtualPageState(): any {
+        if (this.virtualPageRowModel) {
+            return this.virtualPageRowModel.getVirtualPageState();
+        } else {
+            console.warn(`ag-Grid: api.getVirtualPageState is only available when rowModelType='virtual'.`);
+        }
+    }
+
+    public checkGridSize(): void {
+        this.gridPanel.sizeHeaderAndBody();
     }
 
     /*

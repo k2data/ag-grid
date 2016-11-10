@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -17,4 +17,6 @@ export declare class PopupEditorWrapper extends Component implements ICellEditor
     isPopup(): boolean;
     isCancelBeforeStart(): boolean;
     isCancelAfterEnd(): boolean;
+    focusIn(): void;
+    focusOut(): void;
 }

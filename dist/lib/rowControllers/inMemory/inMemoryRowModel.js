@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -23,6 +23,7 @@ var eventService_1 = require("../../eventService");
 var events_1 = require("../../events");
 var context_1 = require("../../context/context");
 var selectionController_1 = require("../../selectionController");
+var inMemoryNodeManager_1 = require("./inMemoryNodeManager");
 var RecursionType;
 (function (RecursionType) {
     RecursionType[RecursionType["Normal"] = 0] = "Normal";
@@ -43,12 +44,7 @@ var InMemoryRowModel = (function () {
         this.eventService.addModalPriorityEventListener(events_1.Events.EVENT_SORT_CHANGED, this.refreshModel.bind(this, constants_1.Constants.STEP_SORT));
         this.eventService.addModalPriorityEventListener(events_1.Events.EVENT_COLUMN_PIVOT_MODE_CHANGED, this.refreshModel.bind(this, constants_1.Constants.STEP_PIVOT));
         this.rootNode = new rowNode_1.RowNode();
-        this.rootNode.group = true;
-        this.rootNode.level = -1;
-        this.rootNode.allLeafChildren = [];
-        this.rootNode.childrenAfterGroup = [];
-        this.rootNode.childrenAfterSort = [];
-        this.rootNode.childrenAfterFilter = [];
+        this.nodeManager = new inMemoryNodeManager_1.InMemoryNodeManager(this.rootNode, this.gridOptionsWrapper, this.context, this.eventService);
         this.context.wireBean(this.rootNode);
         if (this.gridOptionsWrapper.isRowModelDefault()) {
             this.setRowData(this.gridOptionsWrapper.getRowData(), this.columnController.isReady());
@@ -108,8 +104,16 @@ var InMemoryRowModel = (function () {
         }
     };
     InMemoryRowModel.prototype.isEmpty = function () {
-        return utils_1.Utils.missing(this.rootNode) || utils_1.Utils.missing(this.rootNode.allLeafChildren)
-            || this.rootNode.allLeafChildren.length === 0 || !this.columnController.isReady();
+        var rowsMissing;
+        var rowsAlreadyGrouped = utils_1.Utils.exists(this.gridOptionsWrapper.getNodeChildDetailsFunc());
+        if (rowsAlreadyGrouped) {
+            rowsMissing = utils_1.Utils.missing(this.rootNode.childrenAfterGroup) || this.rootNode.childrenAfterGroup.length === 0;
+        }
+        else {
+            rowsMissing = utils_1.Utils.missing(this.rootNode.allLeafChildren) || this.rootNode.allLeafChildren.length === 0;
+        }
+        var empty = utils_1.Utils.missing(this.rootNode) || rowsMissing || !this.columnController.isReady();
+        return empty;
     };
     InMemoryRowModel.prototype.isRowsToRender = function () {
         return utils_1.Utils.exists(this.rowsToDisplay) && this.rowsToDisplay.length > 0;
@@ -306,13 +310,20 @@ var InMemoryRowModel = (function () {
             this.pivotStage.execute(this.rootNode);
         }
     };
+    InMemoryRowModel.prototype.getGroupState = function () {
+        if (!this.rootNode.childrenAfterGroup || !this.gridOptionsWrapper.isRememberGroupStateWhenNewData()) {
+            return null;
+        }
+        var result = {};
+        utils_1.Utils.traverseNodesWithKey(this.rootNode.childrenAfterGroup, function (node, key) { return result[key] = node.expanded; });
+        return result;
+    };
     // rows: the rows to put into the model
     // firstId: the first id to use, used for paging, where we are not on the first page
     InMemoryRowModel.prototype.setRowData = function (rowData, refresh, firstId) {
         // remember group state, so we can expand groups that should be expanded
         var groupState = this.getGroupState();
-        // place each row into a wrapper
-        this.createRowNodesFromData(rowData, firstId);
+        this.nodeManager.setRowData(rowData, firstId);
         // this event kicks off:
         // - clears selection
         // - updates filters
@@ -322,83 +333,30 @@ var InMemoryRowModel = (function () {
             this.refreshModel(constants_1.Constants.STEP_EVERYTHING, null, groupState);
         }
     };
-    InMemoryRowModel.prototype.getGroupState = function () {
-        if (!this.rootNode.childrenAfterGroup || !this.gridOptionsWrapper.isRememberGroupStateWhenNewData()) {
-            return null;
-        }
-        var result = {};
-        utils_1.Utils.traverseNodesWithKey(this.rootNode.childrenAfterGroup, function (node, key) { return result[key] = node.expanded; });
-        return result;
-    };
-    InMemoryRowModel.prototype.createRowNodesFromData = function (rowData, firstId) {
-        this.rootNode.childrenAfterFilter = null;
-        this.rootNode.childrenAfterGroup = null;
-        this.rootNode.childrenAfterSort = null;
-        this.rootNode.childrenMapped = null;
-        var context = this.context;
-        if (!rowData) {
-            this.rootNode.allLeafChildren = [];
-            this.rootNode.childrenAfterGroup = [];
-            return;
-        }
-        var rowNodeId = utils_1.Utils.exists(firstId) ? firstId : 0;
-        // func below doesn't have 'this' pointer, so need to pull out these bits
-        var nodeChildDetailsFunc = this.gridOptionsWrapper.getNodeChildDetailsFunc();
-        var suppressParentsInRowNodes = this.gridOptionsWrapper.isSuppressParentsInRowNodes();
-        var rowsAlreadyGrouped = utils_1.Utils.exists(nodeChildDetailsFunc);
-        // kick off recursion
-        var result = recursiveFunction(rowData, null, 0);
-        if (rowsAlreadyGrouped) {
-            this.rootNode.childrenAfterGroup = result;
-            setLeafChildren(this.rootNode);
-        }
-        else {
-            this.rootNode.allLeafChildren = result;
-        }
-        function setLeafChildren(node) {
-            node.allLeafChildren = [];
-            if (node.childrenAfterGroup) {
-                node.childrenAfterGroup.forEach(function (childAfterGroup) {
-                    if (childAfterGroup.group) {
-                        if (childAfterGroup.allLeafChildren) {
-                            childAfterGroup.allLeafChildren.forEach(function (leafChild) { return node.allLeafChildren.push(leafChild); });
-                        }
-                    }
-                    else {
-                        node.allLeafChildren.push(childAfterGroup);
-                    }
-                });
-            }
-        }
-        function recursiveFunction(rowData, parent, level) {
-            var rowNodes = [];
-            rowData.forEach(function (dataItem) {
-                var node = new rowNode_1.RowNode();
-                context.wireBean(node);
-                var nodeChildDetails = nodeChildDetailsFunc ? nodeChildDetailsFunc(dataItem) : null;
-                if (nodeChildDetails && nodeChildDetails.group) {
-                    node.group = true;
-                    node.childrenAfterGroup = recursiveFunction(nodeChildDetails.children, node, level + 1);
-                    node.expanded = nodeChildDetails.expanded === true;
-                    node.field = nodeChildDetails.field;
-                    node.key = nodeChildDetails.key;
-                    // pull out all the leaf children and add to our node
-                    setLeafChildren(node);
-                }
-                if (parent && !suppressParentsInRowNodes) {
-                    node.parent = parent;
-                }
-                node.level = level;
-                node.id = rowNodeId++;
-                node.data = dataItem;
-                rowNodes.push(node);
-            });
-            return rowNodes;
-        }
-    };
     InMemoryRowModel.prototype.doRowsToDisplay = function () {
-        // this.rowsToDisplay = this.flattenStage.execute(this.rowsAfterSort);
         this.rowsToDisplay = this.flattenStage.execute(this.rootNode);
+    };
+    InMemoryRowModel.prototype.insertItemsAtIndex = function (index, items) {
+        // remember group state, so we can expand groups that should be expanded
+        var groupState = this.getGroupState();
+        var newNodes = this.nodeManager.insertItemsAtIndex(index, items);
+        this.refreshAndFireEvent(events_1.Events.EVENT_ITEMS_ADDED, newNodes, groupState);
+    };
+    InMemoryRowModel.prototype.removeItems = function (rowNodes) {
+        var groupState = this.getGroupState();
+        var removedNodes = this.nodeManager.removeItems(rowNodes);
+        this.refreshAndFireEvent(events_1.Events.EVENT_ITEMS_REMOVED, removedNodes, groupState);
+    };
+    InMemoryRowModel.prototype.addItems = function (items) {
+        var groupState = this.getGroupState();
+        var newNodes = this.nodeManager.addItems(items);
+        this.refreshAndFireEvent(events_1.Events.EVENT_ITEMS_ADDED, newNodes, groupState);
+    };
+    InMemoryRowModel.prototype.refreshAndFireEvent = function (eventName, rowNodes, groupState) {
+        if (rowNodes) {
+            this.refreshModel(constants_1.Constants.STEP_EVERYTHING, null, groupState);
+            this.eventService.dispatchEvent(eventName, { rowNodes: rowNodes });
+        }
     };
     __decorate([
         context_1.Autowired('gridOptionsWrapper'), 
@@ -453,7 +411,6 @@ var InMemoryRowModel = (function () {
         __metadata('design:type', Object)
     ], InMemoryRowModel.prototype, "pivotStage", void 0);
     __decorate([
-        // the rows mapped to rows to display
         context_1.PostConstruct, 
         __metadata('design:type', Function), 
         __metadata('design:paramtypes', []), 

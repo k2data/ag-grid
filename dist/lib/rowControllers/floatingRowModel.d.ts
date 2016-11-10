@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -19,6 +19,12 @@ export declare class FloatingRowModel {
     getFloatingTopRowData(): RowNode[];
     getFloatingBottomRowData(): RowNode[];
     getFloatingTopTotalHeight(): number;
+    getFloatingTopRowCount(): number;
+    getFloatingBottomRowCount(): number;
+    getFloatingTopRow(index: number): RowNode;
+    getFloatingBottomRow(index: number): RowNode;
+    forEachFloatingTopRow(callback: (rowNode: RowNode, index: number) => void): void;
+    forEachFloatingBottomRow(callback: (rowNode: RowNode, index: number) => void): void;
     getFloatingBottomTotalHeight(): number;
     private getTotalHeight(rowNodes);
 }

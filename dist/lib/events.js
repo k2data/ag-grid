@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -39,20 +39,17 @@ var Events = (function () {
     Events.EVENT_ROW_DATA_CHANGED = 'rowDataChanged';
     Events.EVENT_FLOATING_ROW_DATA_CHANGED = 'floatingRowDataChanged';
     Events.EVENT_RANGE_SELECTION_CHANGED = 'rangeSelectionChanged';
-    Events.EVENT_COLUMN_ROW_GROUP_ADD_REQUEST = 'columnRowGroupAddRequest';
-    Events.EVENT_COLUMN_ROW_GROUP_REMOVE_REQUEST = 'columnRowGroupRemoveRequest';
-    Events.EVENT_COLUMN_PIVOT_ADD_REQUEST = 'columnPivotAddRequest';
-    Events.EVENT_COLUMN_PIVOT_REMOVE_REQUEST = 'columnPivotRemoveRequest';
-    Events.EVENT_COLUMN_VALUE_ADD_REQUEST = 'columnValueAddRequest';
-    Events.EVENT_COLUMN_VALUE_REMOVE_REQUEST = 'columnValueRemoveRequest';
+    Events.EVENT_COLUMN_ROW_GROUP_CHANGE_REQUEST = 'columnRowGroupChangeRequest';
+    Events.EVENT_COLUMN_PIVOT_CHANGE_REQUEST = 'columnPivotChangeRequest';
+    Events.EVENT_COLUMN_VALUE_CHANGE_REQUEST = 'columnValueChangeRequest';
     Events.EVENT_COLUMN_AGG_FUNC_CHANGE_REQUEST = 'columnAggFuncChangeRequest';
     Events.EVENT_FLASH_CELLS = 'clipboardPaste';
-    Events.EVENT_HEADER_HEIGHT_CHANGED = 'headerHeightChanged';
     Events.EVENT_MODEL_UPDATED = 'modelUpdated';
     Events.EVENT_CELL_CLICKED = 'cellClicked';
     Events.EVENT_CELL_DOUBLE_CLICKED = 'cellDoubleClicked';
     Events.EVENT_CELL_CONTEXT_MENU = 'cellContextMenu';
     Events.EVENT_CELL_VALUE_CHANGED = 'cellValueChanged';
+    Events.EVENT_ROW_VALUE_CHANGED = 'rowValueChanged';
     Events.EVENT_CELL_FOCUSED = 'cellFocused';
     Events.EVENT_ROW_SELECTED = 'rowSelected';
     Events.EVENT_SELECTION_CHANGED = 'selectionChanged';
@@ -71,6 +68,9 @@ var Events = (function () {
     Events.EVENT_VIEWPORT_CHANGED = 'viewportChanged';
     Events.EVENT_DRAG_STARTED = 'dragStarted';
     Events.EVENT_DRAG_STOPPED = 'dragStopped';
+    Events.EVENT_ITEMS_ADDED = 'itemsAdded';
+    Events.EVENT_ITEMS_REMOVED = 'itemsRemoved';
+    Events.EVENT_BODY_SCROLL = 'bodyScroll';
     return Events;
 })();
 exports.Events = Events;

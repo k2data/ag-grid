@@ -42,9 +42,6 @@ export class PopupEditorWrapper extends Component implements ICellEditor {
     
     public init(params: ICellEditorParams): void {
         this.params = params;
-        if (this.cellEditor.init) {
-            this.cellEditor.init(params);
-        }
     }
 
     public afterGuiAttached(): void {
@@ -70,6 +67,18 @@ export class PopupEditorWrapper extends Component implements ICellEditor {
     public isCancelAfterEnd(): boolean {
         if (this.cellEditor.isCancelAfterEnd) {
             return this.cellEditor.isCancelAfterEnd();
+        }
+    }
+
+    public focusIn(): void {
+        if (this.cellEditor.focusIn) {
+            this.cellEditor.focusIn();
+        }
+    }
+
+    public focusOut(): void {
+        if (this.cellEditor.focusOut) {
+            this.cellEditor.focusOut();
         }
     }
 

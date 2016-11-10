@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -24,6 +24,7 @@ var context_1 = require("../context/context");
 var cssClassApplier_1 = require("./cssClassApplier");
 var dragAndDropService_1 = require("../dragAndDrop/dragAndDropService");
 var setLeftFeature_1 = require("../rendering/features/setLeftFeature");
+var touchListener_1 = require("../widgets/touchListener");
 var svgFactory = svgFactory_1.SvgFactory.getInstance();
 var RenderedHeaderGroupCell = (function () {
     function RenderedHeaderGroupCell(columnGroup, eRoot, dragSourceDropTarget) {
@@ -42,8 +43,9 @@ var RenderedHeaderGroupCell = (function () {
     };
     RenderedHeaderGroupCell.prototype.init = function () {
         this.eHeaderGroupCell = document.createElement('div');
-        cssClassApplier_1.CssClassApplier.addHeaderClassesFromCollDef(this.columnGroup.getColGroupDef(), this.eHeaderGroupCell, this.gridOptionsWrapper);
-        this.displayName = this.columnGroup.getHeaderName();
+        cssClassApplier_1.CssClassApplier.addHeaderClassesFromCollDef(this.columnGroup.getColGroupDef(), this.eHeaderGroupCell, this.gridOptionsWrapper, null, this.columnGroup);
+        // this.displayName = this.columnGroup.getHeaderName();
+        this.displayName = this.columnController.getDisplayNameForColumnGroup(this.columnGroup);
         this.setupResize();
         this.addClasses();
         this.setupLabel();
@@ -74,11 +76,12 @@ var RenderedHeaderGroupCell = (function () {
         utils_1.Utils.addCssClass(this.eHeaderGroupCell, 'ag-header-group-cell');
         // having different classes below allows the style to not have a bottom border
         // on the group header, if no group is specified
-        if (this.columnGroup.getColGroupDef()) {
-            utils_1.Utils.addCssClass(this.eHeaderGroupCell, 'ag-header-group-cell-with-group');
+        // columnGroup.getColGroupDef
+        if (this.columnGroup.isPadding()) {
+            utils_1.Utils.addCssClass(this.eHeaderGroupCell, 'ag-header-group-cell-no-group');
         }
         else {
-            utils_1.Utils.addCssClass(this.eHeaderGroupCell, 'ag-header-group-cell-no-group');
+            utils_1.Utils.addCssClass(this.eHeaderGroupCell, 'ag-header-group-cell-with-group');
         }
     };
     RenderedHeaderGroupCell.prototype.setupResize = function () {
@@ -123,11 +126,12 @@ var RenderedHeaderGroupCell = (function () {
         });
         var result = childSuppressesMoving
             || this.gridOptionsWrapper.isSuppressMovableColumns()
-            || this.gridOptionsWrapper.isForPrint()
-            || this.columnController.isPivotMode();
+            || this.gridOptionsWrapper.isForPrint();
+        // || this.columnController.isPivotMode();
         return result;
     };
     RenderedHeaderGroupCell.prototype.setupMove = function () {
+        var _this = this;
         var eLabel = this.eHeaderGroupCell.querySelector('.ag-header-group-cell-label');
         if (!eLabel) {
             return;
@@ -137,13 +141,15 @@ var RenderedHeaderGroupCell = (function () {
         }
         if (eLabel) {
             var dragSource = {
+                type: dragAndDropService_1.DragSourceType.HeaderCell,
                 eElement: eLabel,
                 dragItemName: this.displayName,
                 // we add in the original group leaf columns, so we move both visible and non-visible items
                 dragItem: this.getAllColumnsInThisGroup(),
                 dragSourceDropTarget: this.dragSourceDropTarget
             };
-            this.dragAndDropService.addDragSource(dragSource);
+            this.dragAndDropService.addDragSource(dragSource, true);
+            this.destroyFunctions.push(function () { return _this.dragAndDropService.removeDragSource(dragSource); });
         }
     };
     // when moving the columns, we want to move all the columns in this group in one go, and in the order they
@@ -180,6 +186,7 @@ var RenderedHeaderGroupCell = (function () {
         });
     };
     RenderedHeaderGroupCell.prototype.addGroupExpandIcon = function (eGroupCellLabel) {
+        var _this = this;
         var eGroupIcon;
         if (this.columnGroup.isExpanded()) {
             eGroupIcon = utils_1.Utils.createIcon('columnGroupOpened', this.gridOptionsWrapper, null, svgFactory.createGroupContractedIcon);
@@ -189,11 +196,20 @@ var RenderedHeaderGroupCell = (function () {
         }
         eGroupIcon.className = 'ag-header-expand-icon';
         eGroupCellLabel.appendChild(eGroupIcon);
-        var that = this;
-        eGroupIcon.onclick = function () {
-            var newExpandedValue = !that.columnGroup.isExpanded();
-            that.columnController.setColumnGroupOpened(that.columnGroup, newExpandedValue);
+        var expandAction = function () {
+            var newExpandedValue = !_this.columnGroup.isExpanded();
+            _this.columnController.setColumnGroupOpened(_this.columnGroup, newExpandedValue);
         };
+        eGroupIcon.addEventListener('click', expandAction);
+        this.destroyFunctions.push(function () {
+            eGroupIcon.removeEventListener('click', expandAction);
+        });
+        var touchListener = new touchListener_1.TouchListener(eGroupIcon);
+        touchListener.addEventListener(touchListener_1.TouchListener.EVENT_TAP, expandAction);
+        this.destroyFunctions.push(function () {
+            touchListener.removeEventListener(touchListener_1.TouchListener.EVENT_TAP, expandAction);
+            touchListener.destroy();
+        });
     };
     RenderedHeaderGroupCell.prototype.onDragStart = function () {
         var _this = this;

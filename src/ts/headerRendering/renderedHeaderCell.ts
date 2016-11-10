@@ -10,9 +10,10 @@ import {IMenuFactory} from "../interfaces/iMenuFactory";
 import {Autowired, Context, PostConstruct} from "../context/context";
 import {CssClassApplier} from "./cssClassApplier";
 import {IRenderedHeaderElement} from "./iRenderedHeaderElement";
-import {DragAndDropService, DropTarget, DragSource} from "../dragAndDrop/dragAndDropService";
+import {DragAndDropService, DropTarget, DragSource, DragSourceType} from "../dragAndDrop/dragAndDropService";
 import {SortController} from "../sortController";
 import {SetLeftFeature} from "../rendering/features/setLeftFeature";
+import {TouchListener} from "../widgets/touchListener";
 
 export class RenderedHeaderCell implements IRenderedHeaderElement {
 
@@ -22,7 +23,7 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
     @Autowired('$compile') private $compile: any;
     @Autowired('gridCore') private gridCore: GridCore;
     @Autowired('headerTemplateLoader') private headerTemplateLoader: HeaderTemplateLoader;
-    @Autowired('horizontalDragService') private dragService: HorizontalDragService;
+    @Autowired('horizontalDragService') private horizontalDragService: HorizontalDragService;
     @Autowired('menuFactory') private menuFactory: IMenuFactory;
     @Autowired('gridOptionsWrapper') private gridOptionsWrapper: GridOptionsWrapper;
     @Autowired('dragAndDropService') private dragAndDropService: DragAndDropService;
@@ -62,16 +63,17 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
 
         this.createScope();
         this.addAttributes();
-        CssClassApplier.addHeaderClassesFromCollDef(this.column.getColDef(), this.eHeaderCell, this.gridOptionsWrapper);
+        CssClassApplier.addHeaderClassesFromCollDef(this.column.getColDef(), this.eHeaderCell, this.gridOptionsWrapper, this.column, null);
 
         // label div
         var eHeaderCellLabel = <HTMLElement> this.eHeaderCell.querySelector('#agHeaderCellLabel');
 
-        this.displayName = this.columnController.getDisplayNameForCol(this.column, true);
+        this.displayName = this.columnController.getDisplayNameForColumn(this.column, true);
 
         this.setupMovingCss();
         this.setupTooltip();
         this.setupResize();
+        this.setupTap();
         this.setupMove(eHeaderCellLabel);
         this.setupMenu();
         this.setupSort(eHeaderCellLabel);
@@ -127,9 +129,9 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
             _.addOrRemoveCssClass(eFilterIcon, 'ag-hidden', !filterPresent);
         };
 
-        this.column.addEventListener(Column.EVENT_FILTER_ACTIVE_CHANGED, filterChangedListener);
+        this.column.addEventListener(Column.EVENT_FILTER_CHANGED, filterChangedListener);
         this.destroyFunctions.push( () => {
-            this.column.removeEventListener(Column.EVENT_FILTER_ACTIVE_CHANGED, filterChangedListener);
+            this.column.removeEventListener(Column.EVENT_FILTER_CHANGED, filterChangedListener);
         });
 
         filterChangedListener();
@@ -232,20 +234,44 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
     private setupMove(eHeaderCellLabel: HTMLElement): void {
         var suppressMove = this.gridOptionsWrapper.isSuppressMovableColumns()
                             || this.column.getColDef().suppressMovable
-                            || this.gridOptionsWrapper.isForPrint()
-                            || this.columnController.isPivotMode();
+                            || this.gridOptionsWrapper.isForPrint();
+                            // || this.columnController.isPivotMode();
 
         if (suppressMove) { return; }
 
         if (eHeaderCellLabel) {
             var dragSource: DragSource = {
+                type: DragSourceType.HeaderCell,
                 eElement: eHeaderCellLabel,
                 dragItem: [this.column],
                 dragItemName: this.displayName,
                 dragSourceDropTarget: this.dragSourceDropTarget
             };
-            this.dragAndDropService.addDragSource(dragSource);
+            this.dragAndDropService.addDragSource(dragSource, true);
+            this.destroyFunctions.push( ()=> this.dragAndDropService.removeDragSource(dragSource) );
         }
+    }
+
+    private setupTap(): void {
+
+        if (this.gridOptionsWrapper.isSuppressTouch()) { return; }
+
+        let touchListener = new TouchListener(this.getGui());
+        let tapListener = (touch: Touch)=> {
+            this.sortController.progressSort(this.column, false);
+        };
+        let longTapListener = (touch: Touch)=> {
+            this.gridOptionsWrapper.getApi().showColumnMenuAfterMouseClick(this.column, touch);
+        };
+
+        touchListener.addEventListener(TouchListener.EVENT_TAP, tapListener);
+        touchListener.addEventListener(TouchListener.EVENT_LONG_TAP, longTapListener);
+
+        this.destroyFunctions.push( ()=> {
+            touchListener.removeEventListener(TouchListener.EVENT_TAP, tapListener);
+            touchListener.removeEventListener(TouchListener.EVENT_LONG_TAP, longTapListener);
+            touchListener.destroy();
+        });
     }
 
     private setupResize(): void {
@@ -263,7 +289,7 @@ export class RenderedHeaderCell implements IRenderedHeaderElement {
             return;
         }
 
-        this.dragService.addDragHandling({
+        this.horizontalDragService.addDragHandling({
             eDraggableElement: eResize,
             eBody: this.eRoot,
             cursor: 'col-resize',

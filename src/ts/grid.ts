@@ -10,7 +10,6 @@ import {FilterManager} from "./filter/filterManager";
 import {ValueService} from "./valueService";
 import {MasterSlaveService} from "./masterSlaveService";
 import {EventService} from "./eventService";
-import {OldToolPanelDragAndDropService} from "./dragAndDrop/oldToolPanelDragAndDropService";
 import {GridPanel} from "./gridPanel/gridPanel";
 import {GridApi} from "./gridApi";
 import {HeaderTemplateLoader} from "./headerRendering/headerTemplateLoader";
@@ -40,21 +39,33 @@ import {FlattenStage} from "./rowControllers/inMemory/flattenStage";
 import {FocusService} from "./misc/focusService";
 import {CellEditorFactory} from "./rendering/cellEditorFactory";
 import {Events} from "./events";
-import {VirtualPageRowModel} from "./rowControllers/virtualPageRowModel";
+import {VirtualPageRowModel} from "./rowControllers/virtualPagination/virtualPageRowModel";
 import {InMemoryRowModel} from "./rowControllers/inMemory/inMemoryRowModel";
 import {CellRendererFactory} from "./rendering/cellRendererFactory";
 import {CellRendererService} from "./rendering/cellRendererService";
 import {ValueFormatterService} from "./rendering/valueFormatterService";
 import {AgCheckbox} from "./widgets/agCheckbox";
-import {LargeTextCellEditor} from "./rendering/cellEditors/largeTextCellEditor";
+import {BaseFrameworkFactory} from "./baseFrameworkFactory";
+import {IFrameworkFactory} from "./interfaces/iFrameworkFactory";
+
+export interface GridParams {
+    // used by Web Components
+    globalEventListener?: Function;
+
+    // these are used by ng1 only
+    $scope?: any;
+    $compile?: any;
+    quickFilterOnScope?: any;
+
+    // this allows the base frameworks (React, NG2, etc) to provide alternative cellRenderers and cellEditors
+    frameworkFactory?: IFrameworkFactory;
+}
 
 export class Grid {
 
     private context: Context;
 
     private static enterpriseBeans: any[];
-
-    private static LARGE_TEXT = 'largeText';
 
     // the default is InMemoryRowModel, which is also used for pagination.
     // the enterprise adds viewport to this list.
@@ -70,7 +81,7 @@ export class Grid {
         _.iterateObject(rowModelClasses, (key: string, value: any)=> Grid.RowModelClasses[key] = value );
     }
 
-    constructor(eGridDiv: HTMLElement, gridOptions: GridOptions, globalEventListener: Function = null, $scope: any = null, $compile: any = null, quickFilterOnScope: any = null) {
+    constructor(eGridDiv: HTMLElement, gridOptions: GridOptions, params?: GridParams) {
 
         if (!eGridDiv) {
             console.error('ag-Grid: no div element provided to the grid');
@@ -83,23 +94,29 @@ export class Grid {
 
         var enterprise = _.exists(Grid.enterpriseBeans);
 
+        var frameworkFactory = params ? params.frameworkFactory : null;
+        if (_.missing(frameworkFactory)) {
+            frameworkFactory = new BaseFrameworkFactory();
+        }
+
         this.context = new Context({
             overrideBeans: Grid.enterpriseBeans,
             seed: {
                 enterprise: enterprise,
                 gridOptions: gridOptions,
                 eGridDiv: eGridDiv,
-                $scope: $scope,
-                $compile: $compile,
-                quickFilterOnScope: quickFilterOnScope,
-                globalEventListener: globalEventListener
+                $scope: params ? params.$scope : null,
+                $compile: params ? params.$compile : null,
+                quickFilterOnScope: params ? params.quickFilterOnScope : null,
+                globalEventListener: params ? params.globalEventListener : null,
+                frameworkFactory: frameworkFactory
             },
             beans: [rowModelClass, CellRendererFactory, HorizontalDragService, HeaderTemplateLoader, FloatingRowModel, DragService,
                 DisplayedGroupCreator, EventService, GridOptionsWrapper, SelectionController,
                 FilterManager, ColumnController, RowRenderer,
                 HeaderRenderer, ExpressionService, BalancedColumnTreeBuilder, CsvCreator,
                 TemplateService, GridPanel, PopupService, ValueService, MasterSlaveService,
-                LoggerFactory, OldToolPanelDragAndDropService, ColumnUtils, AutoWidthCalculator, GridApi,
+                LoggerFactory, ColumnUtils, AutoWidthCalculator, GridApi,
                 PaginationController, PopupService, GridCore, StandardMenuFactory,
                 DragAndDropService, SortController, ColumnApi, FocusedCellController, MouseEventService,
                 CellNavigationService, FilterStage, SortStage, FlattenStage, FocusService,
@@ -107,8 +124,6 @@ export class Grid {
             components: [{componentName: 'AgCheckbox', theClass: AgCheckbox}],
             debug: !!gridOptions.debug
         });
-
-        this.context.getBean('cellEditorFactory').addCellEditor(Grid.LARGE_TEXT, LargeTextCellEditor);
 
         var eventService = this.context.getBean('eventService');
         var readyEvent = {

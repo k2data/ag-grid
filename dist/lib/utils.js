@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -22,11 +22,50 @@ exports.Timer = Timer;
 var Utils = (function () {
     function Utils() {
     }
+    // returns true if the event is close to the original event by X pixels either vertically or horizontally.
+    // we only start dragging after X pixels so this allows us to know if we should start dragging yet.
+    Utils.areEventsNear = function (e1, e2, pixelCount) {
+        // by default, we wait 4 pixels before starting the drag
+        if (pixelCount === 0) {
+            return false;
+        }
+        var diffX = Math.abs(e1.clientX - e2.clientX);
+        var diffY = Math.abs(e1.clientY - e2.clientY);
+        return Math.max(diffX, diffY) <= pixelCount;
+    };
     Utils.getNameOfClass = function (TheClass) {
         var funcNameRegex = /function (.{1,})\(/;
         var funcAsString = TheClass.toString();
         var results = (funcNameRegex).exec(funcAsString);
         return (results && results.length > 1) ? results[1] : "";
+    };
+    Utils.values = function (object) {
+        var result = [];
+        this.iterateObject(object, function (key, value) {
+            result.push(value);
+        });
+        return result;
+    };
+    Utils.getValueUsingField = function (data, field, fieldContainsDots) {
+        if (!field || !data) {
+            return;
+        }
+        // if no '.', then it's not a deep value
+        if (!fieldContainsDots) {
+            return data[field];
+        }
+        else {
+            // otherwise it is a deep value, so need to dig for it
+            var fields = field.split('.');
+            var currentObject = data;
+            for (var i = 0; i < fields.length; i++) {
+                currentObject = currentObject[fields[i]];
+                if (this.missing(currentObject)) {
+                    return null;
+                }
+            }
+            return currentObject;
+        }
     };
     Utils.iterateObject = function (object, callback) {
         if (this.missing(object)) {
@@ -386,6 +425,14 @@ var Utils = (function () {
         }
         return true;
     };
+    Utils.toStringOrNull = function (value) {
+        if (this.exists(value) && value.toString) {
+            return value.toString();
+        }
+        else {
+            return null;
+        }
+    };
     Utils.formatWidth = function (width) {
         if (typeof width === "number") {
             return width + "px";
@@ -412,11 +459,11 @@ var Utils = (function () {
         eResult.appendChild(this.createIconNoSpan(iconName, gridOptionsWrapper, column, svgFactoryFunc));
         return eResult;
     };
-    Utils.createIconNoSpan = function (iconName, gridOptionsWrapper, colDefWrapper, svgFactoryFunc) {
+    Utils.createIconNoSpan = function (iconName, gridOptionsWrapper, column, svgFactoryFunc) {
         var userProvidedIcon;
         // check col for icon first
-        if (colDefWrapper && colDefWrapper.getColDef().icons) {
-            userProvidedIcon = colDefWrapper.getColDef().icons[iconName];
+        if (column && column.getColDef().icons) {
+            userProvidedIcon = column.getColDef().icons[iconName];
         }
         // it not in col, try grid options
         if (!userProvidedIcon && gridOptionsWrapper.getIcons()) {
@@ -461,6 +508,9 @@ var Utils = (function () {
         Object.keys(styles).forEach(function (key) {
             eElement.style[key] = styles[key];
         });
+    };
+    Utils.isScrollShowing = function (element) {
+        return element.clientHeight < element.scrollHeight;
     };
     Utils.getScrollbarWidth = function () {
         var outer = document.createElement("div");
@@ -508,6 +558,12 @@ var Utils = (function () {
             this.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
         }
         return this.isSafari;
+    };
+    // srcElement is only available in IE. In all other browsers it is target
+    // http://stackoverflow.com/questions/5301643/how-can-i-make-event-srcelement-work-in-firefox-and-what-does-it-mean
+    Utils.getTarget = function (event) {
+        var eventNoType = event;
+        return eventNoType.target || eventNoType.srcElement;
     };
     // taken from: http://stackoverflow.com/questions/1038727/how-to-get-browser-width-using-javascript-code
     Utils.getBodyWidth = function () {

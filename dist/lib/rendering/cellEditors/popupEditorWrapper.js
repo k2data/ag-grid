@@ -1,6 +1,6 @@
 /**
  * ag-grid - Advanced Data Grid / Data Table supporting Javascript / React / AngularJS / Web Components
- * @version v5.0.3
+ * @version v6.3.0
  * @link http://www.ag-grid.com/
  * @license MIT
  */
@@ -37,9 +37,6 @@ var PopupEditorWrapper = (function (_super) {
     };
     PopupEditorWrapper.prototype.init = function (params) {
         this.params = params;
-        if (this.cellEditor.init) {
-            this.cellEditor.init(params);
-        }
     };
     PopupEditorWrapper.prototype.afterGuiAttached = function () {
         if (this.cellEditor.afterGuiAttached) {
@@ -60,6 +57,16 @@ var PopupEditorWrapper = (function (_super) {
     PopupEditorWrapper.prototype.isCancelAfterEnd = function () {
         if (this.cellEditor.isCancelAfterEnd) {
             return this.cellEditor.isCancelAfterEnd();
+        }
+    };
+    PopupEditorWrapper.prototype.focusIn = function () {
+        if (this.cellEditor.focusIn) {
+            this.cellEditor.focusIn();
+        }
+    };
+    PopupEditorWrapper.prototype.focusOut = function () {
+        if (this.cellEditor.focusOut) {
+            this.cellEditor.focusOut();
         }
     };
     return PopupEditorWrapper;

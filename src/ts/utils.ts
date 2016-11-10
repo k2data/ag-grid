@@ -26,11 +26,53 @@ export class Utils {
     private static isSafari: boolean;
     private static isIE: boolean;
 
+    // returns true if the event is close to the original event by X pixels either vertically or horizontally.
+    // we only start dragging after X pixels so this allows us to know if we should start dragging yet.
+    static areEventsNear(e1: MouseEvent|Touch, e2: MouseEvent|Touch, pixelCount: number): boolean {
+        // by default, we wait 4 pixels before starting the drag
+        if (pixelCount===0) {
+            return false;
+        }
+        var diffX = Math.abs(e1.clientX - e2.clientX);
+        var diffY = Math.abs(e1.clientY - e2.clientY);
+
+        return Math.max(diffX, diffY) <= pixelCount;
+    }
+
     static getNameOfClass(TheClass: any) {
         var funcNameRegex = /function (.{1,})\(/;
         var funcAsString = TheClass.toString();
         var results  = (funcNameRegex).exec(funcAsString);
         return (results && results.length > 1) ? results[1] : "";
+    }
+
+    static values<T>(object: {[key: string]: T}): T[] {
+        var result: T[] = [];
+        this.iterateObject(object, (key: string, value: T)=> {
+            result.push(value);
+        });
+        return result;
+    }
+
+    static getValueUsingField(data: any, field: string, fieldContainsDots: boolean): any {
+        if (!field || !data) {
+            return;
+        }
+        // if no '.', then it's not a deep value
+        if (!fieldContainsDots) {
+            return data[field];
+        } else {
+            // otherwise it is a deep value, so need to dig for it
+            var fields = field.split('.');
+            var currentObject = data;
+            for (var i = 0; i<fields.length; i++) {
+                currentObject = currentObject[fields[i]];
+                if (this.missing(currentObject)) {
+                    return null;
+                }
+            }
+            return currentObject;
+        }
     }
 
     static iterateObject(object: any, callback: (key:string, value: any) => void) {
@@ -85,7 +127,7 @@ export class Utils {
 
     static filter<T>(array: T[], callback: (item: T) => boolean): T[] {
         var result: T[] = [];
-        array.forEach(function(item: T) {
+        array.forEach(function (item: T) {
             if (callback(item)) {
                 result.push(item);
             }
@@ -344,7 +386,7 @@ export class Utils {
         }
 
     }
-    
+
     static removeFromArray<T>(array: T[], object: T) {
         if (array.indexOf(object) >= 0) {
             array.splice(array.indexOf(object), 1);
@@ -417,7 +459,15 @@ export class Utils {
         }
         return true;
     }
-    
+
+    static toStringOrNull(value: any): string {
+        if (this.exists(value) && value.toString) {
+            return value.toString();
+        } else {
+            return null;
+        }
+    }
+
     static formatWidth(width: number | string) {
         if (typeof width === "number") {
             return width + "px";
@@ -445,11 +495,11 @@ export class Utils {
         return eResult;
     }
 
-    static createIconNoSpan(iconName: string, gridOptionsWrapper: GridOptionsWrapper, colDefWrapper: Column, svgFactoryFunc: () => HTMLElement): HTMLElement {
+    static createIconNoSpan(iconName: string, gridOptionsWrapper: GridOptionsWrapper, column: Column, svgFactoryFunc: () => HTMLElement): HTMLElement {
         var userProvidedIcon: Function | string;
         // check col for icon first
-        if (colDefWrapper && colDefWrapper.getColDef().icons) {
-            userProvidedIcon = colDefWrapper.getColDef().icons[iconName];
+        if (column && column.getColDef().icons) {
+            userProvidedIcon = column.getColDef().icons[iconName];
         }
         // it not in col, try grid options
         if (!userProvidedIcon && gridOptionsWrapper.getIcons()) {
@@ -487,6 +537,10 @@ export class Utils {
         Object.keys(styles).forEach(function (key) {
             eElement.style[key] = styles[key];
         });
+    }
+
+    static isScrollShowing(element: HTMLElement): boolean {
+        return element.clientHeight < element.scrollHeight
     }
 
     static getScrollbarWidth() {
@@ -543,6 +597,13 @@ export class Utils {
             this.isSafari = Object.prototype.toString.call((<any>window).HTMLElement).indexOf('Constructor') > 0;
         }
         return this.isSafari;
+    }
+
+    // srcElement is only available in IE. In all other browsers it is target
+    // http://stackoverflow.com/questions/5301643/how-can-i-make-event-srcelement-work-in-firefox-and-what-does-it-mean
+    static getTarget(event: Event): Element {
+        var eventNoType = <any> event;
+        return eventNoType.target || eventNoType.srcElement;
     }
 
     // taken from: http://stackoverflow.com/questions/1038727/how-to-get-browser-width-using-javascript-code

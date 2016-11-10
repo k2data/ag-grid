@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -34,19 +34,26 @@ export declare class RowRenderer {
     private eAllBodyContainers;
     private eAllPinnedLeftContainers;
     private eAllPinnedRightContainers;
+    private eFullWidthContainer;
     private eBodyContainer;
+    private eBodyContainerDF;
     private eBodyViewport;
     private ePinnedLeftColsContainer;
+    private ePinnedLeftColsContainerDF;
     private ePinnedRightColsContainer;
+    private ePinnedRightColsContainerDF;
     private eFloatingTopContainer;
     private eFloatingTopPinnedLeftContainer;
     private eFloatingTopPinnedRightContainer;
+    private eFloatingTopFullWidthContainer;
     private eFloatingBottomContainer;
     private eFloatingBottomPinnedLeftContainer;
     private eFloatingBottomPinnedRightContainer;
+    private eFloatingBottomFullWithContainer;
     private logger;
     private destroyFunctions;
     agWire(loggerFactory: LoggerFactory): void;
+    private setupDocumentFragments();
     init(): void;
     onColumnEvent(event: ColumnChangeEvent): void;
     getContainersFromGridPanel(): void;
@@ -54,7 +61,7 @@ export declare class RowRenderer {
     getAllCellsForColumn(column: Column): HTMLElement[];
     setMainRowWidths(): void;
     refreshAllFloatingRows(): void;
-    private refreshFloatingRows(renderedRows, rowNodes, pinnedLeftContainer, pinnedRightContainer, bodyContainer);
+    private refreshFloatingRows(renderedRows, rowNodes, ePinnedLeftContainer, ePinnedRightContainer, eBodyContainer, eFullWidthContainer);
     refreshView(refreshEvent?: any): void;
     private restoreFocusedCell(gridCell);
     softRefreshView(): void;
@@ -75,10 +82,13 @@ export declare class RowRenderer {
     getFirstVirtualRenderedRow(): number;
     getLastVirtualRenderedRow(): number;
     private ensureRowsRendered();
-    onMouseEvent(eventName: string, mouseEvent: MouseEvent, eventSource: HTMLElement, cell: GridCell): void;
     private insertRow(node, rowIndex);
     getRenderedNodes(): any[];
     navigateToNextCell(key: any, rowIndex: number, column: Column, floating: string): void;
+    startEditingCell(gridCell: GridCell, keyPress: number, charPress: string): void;
     private getComponentForCell(gridCell);
-    moveFocusToNextCell(rowIndex: any, column: any, floating: string, shiftKey: boolean, startEditing: boolean): boolean;
+    onTabKeyDown(previousRenderedCell: RenderedCell, keyboardEvent: KeyboardEvent): void;
+    private moveEditToNextCell(previousRenderedCell, nextRenderedCell);
+    private moveEditToNextRow(previousRenderedCell, nextRenderedCell);
+    private moveFocusToNextCell(gridCell, shiftKey, startEditing);
 }

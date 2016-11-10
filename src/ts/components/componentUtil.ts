@@ -14,12 +14,13 @@ export class ComponentUtil {
 
     public static STRING_PROPERTIES = [
         'sortingOrder', 'rowClass', 'rowSelection', 'overlayLoadingTemplate',
-        'overlayNoRowsTemplate', 'headerCellTemplate', 'quickFilterText', 'rowModelType'];
+        'overlayNoRowsTemplate', 'headerCellTemplate', 'quickFilterText', 'rowModelType',
+        'editType'];
 
     public static OBJECT_PROPERTIES = [
         'rowStyle','context','groupColumnDef','localeText','icons','datasource','viewportDatasource',
-        'groupRowRendererParams', 'aggFuncs'
-        //,'cellRenderers','cellEditors'
+        'groupRowRendererParams', 'aggFuncs', 'fullWidthCellRendererParams','defaultColGroupDef','defaultColDef'
+    //,'cellRenderers','cellEditors'
     ];
 
     public static ARRAY_PROPERTIES = [
@@ -29,7 +30,8 @@ export class ComponentUtil {
     public static NUMBER_PROPERTIES = [
         'rowHeight','rowBuffer','colWidth','headerHeight','groupDefaultExpanded',
         'minColWidth','maxColWidth','viewportRowModelPageSize','viewportRowModelBufferSize',
-        'layoutInterval'
+        'layoutInterval','autoSizePadding','maxPagesInCache','maxConcurrentDatasourceRequests',
+        'paginationOverflowSize','paginationPageSize','paginationInitialRowCount','scrollbarWidth'
     ];
 
     public static BOOLEAN_PROPERTIES = [
@@ -43,19 +45,20 @@ export class ComponentUtil {
         'singleClickEdit','suppressLoadingOverlay','suppressNoRowsOverlay','suppressAutoSize',
         'suppressParentsInRowNodes','showToolPanel','suppressColumnMoveAnimation','suppressMovableColumns',
         'suppressFieldDotNotation','enableRangeSelection','suppressEnterprise','rowGroupPanelShow',
-        'pivotPanelShow',
+        'pivotPanelShow', 'suppressTouch',
         'suppressContextMenu','suppressMenuFilterPanel','suppressMenuMainPanel','suppressMenuColumnPanel',
         'enableStatusBar','rememberGroupStateWhenNewData', 'enableCellChangeFlash', 'suppressDragLeaveHidesColumns',
         'suppressMiddleClickScrolls','suppressPreventDefaultOnMouseWheel', 'suppressUseColIdForGroups',
         'suppressCopyRowsToClipboard','pivotMode', 'suppressAggFuncInHeader', 'suppressColumnVirtualisation',
-        'suppressFocusAfterRefresh', 'functionsPassive', 'functionsReadOnly'
+        'suppressFocusAfterRefresh', 'functionsPassive', 'functionsReadOnly', 'suppressRowHoverClass'
     ];
 
-    public static FUNCTION_PROPERTIES = ['headerCellRenderer', 'localeTextFunc', 'groupRowInnerRenderer',
-        'groupRowRenderer', 'isScrollLag', 'isExternalFilterPresent', 'getRowHeight',
+    public static FUNCTION_PROPERTIES = ['headerCellRenderer', 'localeTextFunc', 'groupRowInnerRenderer', 'groupRowInnerRendererFramework',
+        'groupRowRenderer', 'groupRowRendererFramework', 'isScrollLag', 'isExternalFilterPresent', 'getRowHeight',
         'doesExternalFilterPass', 'getRowClass','getRowStyle', 'getHeaderCellTemplate', 'traverseNode',
         'getContextMenuItems', 'getMainMenuItems', 'processRowPostCreate', 'processCellForClipboard',
-        'getNodeChildDetails', 'groupRowAggNodes'];
+        'getNodeChildDetails', 'groupRowAggNodes', 'getRowNodeId', 'isFullWidthCell', 'fullWidthCellRenderer',
+        'fullWidthCellRendererFramework', 'doesDataFlower', 'processSecondaryColDef','processSecondaryColGroupDef'];
 
     public static ALL_PROPERTIES = ComponentUtil.ARRAY_PROPERTIES
         .concat(ComponentUtil.OBJECT_PROPERTIES)

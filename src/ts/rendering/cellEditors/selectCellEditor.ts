@@ -5,12 +5,17 @@ import {Constants} from "../../constants";
 
 export class SelectCellEditor extends Component implements ICellEditor {
 
+    private focusAfterAttached: boolean;
+    private eSelect: HTMLSelectElement;
+
     constructor() {
         super('<div class="ag-cell-edit-input"><select class="ag-cell-edit-input"/></div>');
+        this.eSelect = <HTMLSelectElement> this.getGui().querySelector('select');
     }
 
     public init(params: any) {
-        var eSelect = <HTMLSelectElement> this.getGui().querySelector('select');
+        this.focusAfterAttached = params.cellStartedEdit;
+
         if (_.missing(params.values)) {
             console.log('ag-Grid: no values found for select cellEditor');
             return;
@@ -22,31 +27,35 @@ export class SelectCellEditor extends Component implements ICellEditor {
             if (params.value === value) {
                 option.selected = true;
             }
-            eSelect.appendChild(option);
+            this.eSelect.appendChild(option);
         });
 
-        this.addDestroyableEventListener(eSelect, 'change', ()=> params.stopEditing() );
+        this.addDestroyableEventListener(this.eSelect, 'change', ()=> params.stopEditing() );
 
-        this.addDestroyableEventListener(eSelect, 'keydown', (event: KeyboardEvent)=> {
+        this.addDestroyableEventListener(this.eSelect, 'keydown', (event: KeyboardEvent)=> {
             var isNavigationKey = event.keyCode===Constants.KEY_UP || event.keyCode===Constants.KEY_DOWN;
             if (isNavigationKey) {
                 event.stopPropagation();
             }
         });
 
-        this.addDestroyableEventListener(eSelect, 'mousedown', (event: KeyboardEvent)=> {
+        this.addDestroyableEventListener(this.eSelect, 'mousedown', (event: KeyboardEvent)=> {
             event.stopPropagation();
         });
     }
 
     public afterGuiAttached() {
-        var eSelect = <HTMLSelectElement> this.getGui().querySelector('select');
-        eSelect.focus();
+        if (this.focusAfterAttached) {
+            this.eSelect.focus();
+        }
+    }
+
+    public focusIn(): void {
+        this.eSelect.focus();
     }
 
     public getValue(): any {
-        var eSelect = <HTMLSelectElement> this.getGui().querySelector('select');
-        return eSelect.value;
+        return this.eSelect.value;
     }
 
 }

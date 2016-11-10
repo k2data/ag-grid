@@ -2,10 +2,11 @@ import {RowRenderer} from "./rowRenderer";
 import {GridPanel} from "../gridPanel/gridPanel";
 import {Column} from "../entities/column";
 import {Bean} from "../context/context";
-import {Qualifier} from "../context/context";
+import {Utils as _} from "../utils";
 import {Autowired} from "../context/context";
 import {HeaderRenderer} from "../headerRendering/headerRenderer";
 import {RenderedHeaderCell} from "../headerRendering/renderedHeaderCell";
+import {GridOptionsWrapper} from "../gridOptionsWrapper";
 
 @Bean('autoWidthCalculator')
 export class AutoWidthCalculator {
@@ -13,12 +14,19 @@ export class AutoWidthCalculator {
     @Autowired('rowRenderer') private rowRenderer: RowRenderer;
     @Autowired('headerRenderer') private headerRenderer: HeaderRenderer;
     @Autowired('gridPanel') private gridPanel: GridPanel;
+    @Autowired('gridOptionsWrapper') private gridOptionsWrapper: GridOptionsWrapper;
 
     // this is the trick: we create a dummy container and clone all the cells
     // into the dummy, then check the dummy's width. then destroy the dummy
     // as we don't need it any more.
     // drawback: only the cells visible on the screen are considered
     public getPreferredWidthForColumn(column: Column): number {
+        var renderedHeaderCell = this.getHeaderCellForColumn(column);
+        // cell isn't visible
+        if (!renderedHeaderCell) { 
+            return -1; 
+        }
+
         var eDummyContainer = document.createElement('span');
         // position fixed, so it isn't restricted to the boundaries of the parent
         eDummyContainer.style.position = 'fixed';
@@ -33,11 +41,10 @@ export class AutoWidthCalculator {
         this.putRowCellsIntoDummyContainer(column, eDummyContainer);
 
         // also put header cell in
-        var headerExists = this.putHeaderCellsIntoDummyContainer(column, eDummyContainer);
-        
-        if (!headerExists) {
-            return -1;
-        }
+        // we only consider the lowest level cell, not the group cell. in 99% of the time, this
+        // will be enough. if we consider groups, then it gets to complicated for what it's worth,
+        // as the groups can span columns and this class only considers one column at a time.
+        this.cloneItemIntoDummy(renderedHeaderCell.getGui(), eDummyContainer);
 
         // at this point, all the clones are lined up vertically with natural widths. the dummy
         // container will have a width wide enough just to fit the largest.
@@ -46,22 +53,12 @@ export class AutoWidthCalculator {
         // we are finished with the dummy container, so get rid of it
         eBodyContainer.removeChild(eDummyContainer);
 
-        // we add 4 as I found without it, the gui still put '...' after some of the texts
-        return dummyContainerWidth + 4;
-    }
-
-    // we only consider the lowest level cell, not the group cell. in 99% of the time, this
-    // will be enough. if we consider groups, then it gets to complicated for what it's worth,
-    // as the groups can span columns and this class only considers one column at a time.
-    private putHeaderCellsIntoDummyContainer(column: Column, eDummyContainer: HTMLElement): boolean {
-
-        var renderedHeaderCell = this.getHeaderCellForColumn(column);
-
-        if (!renderedHeaderCell) { return false; }
-
-        this.cloneItemIntoDummy(renderedHeaderCell.getGui(), eDummyContainer);
-        
-        return true;
+        // we add padding as I found without it, the gui still put '...' after some of the texts
+        var autoSizePadding = this.gridOptionsWrapper.getAutoSizePadding();
+        if (typeof autoSizePadding !== 'number' || autoSizePadding < 0) {
+            autoSizePadding = 4;
+        }
+        return dummyContainerWidth + autoSizePadding;
     }
 
     private getHeaderCellForColumn(column: Column): RenderedHeaderCell {

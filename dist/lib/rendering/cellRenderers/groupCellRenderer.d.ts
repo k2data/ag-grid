@@ -1,4 +1,4 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -31,6 +31,7 @@ export declare class GroupCellRenderer extends Component implements ICellRendere
     private addChildCount(params);
     private getGroupName(params);
     private createLeafCell(params);
+    private isUserWantsSelected(params);
     private addCheckboxIfNeeded(params);
     private addExpandAndContract(eGroupCell);
     private onKeyDown(event);

@@ -1,8 +1,9 @@
-// Type definitions for ag-grid v5.0.3
+// Type definitions for ag-grid v6.3.0
 // Project: http://www.ag-grid.com/
 // Definitions by: Niall Crosby <https://github.com/ceolter/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 import { Column } from "../entities/column";
+import { IFilter } from "../interfaces/iFilter";
 export declare class FilterManager {
     private $compile;
     private $scope;
@@ -26,10 +27,12 @@ export declare class FilterManager {
     private setModelOnFilterWrapper(filter, newModel);
     getFilterModel(): any;
     isAdvancedFilterPresent(): boolean;
+    private updateFilterFlagInColumns();
     isAnyFilterPresent(): boolean;
     private doesFilterPass(node, filterToSkip?);
     private parseQuickFilter(newFilter);
     setQuickFilter(newFilter: any): void;
+    private checkExternalFilter();
     onFilterChanged(): void;
     isQuickFilterPresent(): boolean;
     doesRowPassOtherFilters(filterToSkip: any, node: any): boolean;
@@ -37,18 +40,23 @@ export declare class FilterManager {
     private aggregateRowForQuickFilter(node);
     private onNewRowsLoaded();
     private createValueGetter(column);
-    getFilterApi(column: Column): any;
+    getFilterComponent(column: Column): IFilter;
     getOrCreateFilterWrapper(column: Column): FilterWrapper;
-    destroyFilter(column: Column): void;
+    private createFilterInstance(column);
+    private checkFilterHasAllMandatoryMethods(filterInstance, column);
+    private createParams(filterWrapper);
     private createFilterWrapper(column);
+    private initialiseFilterAndPutIntoGui(filterWrapper);
     private getFilterFromCache(filterType);
     private onNewColumnsLoaded();
+    destroyFilter(column: Column): void;
+    private disposeFilterWrapper(filterWrapper);
     destroy(): void;
     private assertMethodHasNoParameters(theMethod);
 }
 export interface FilterWrapper {
     column: Column;
-    filter: any;
+    filter: IFilter;
     scope: any;
     gui: HTMLElement;
 }

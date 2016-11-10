@@ -93,6 +93,32 @@ export class FloatingRowModel {
         return this.getTotalHeight(this.floatingTopRows);
     }
 
+    public getFloatingTopRowCount(): number {
+        return this.floatingTopRows ? this.floatingTopRows.length : 0;
+    }
+
+    public getFloatingBottomRowCount(): number {
+        return this.floatingBottomRows ? this.floatingBottomRows.length : 0;
+    }
+
+    public getFloatingTopRow(index: number): RowNode {
+        return this.floatingTopRows[index];
+    }
+
+    public getFloatingBottomRow(index: number): RowNode {
+        return this.floatingBottomRows[index];
+    }
+
+    public forEachFloatingTopRow(callback: (rowNode: RowNode, index: number)=>void): void {
+        if (_.missingOrEmpty(this.floatingTopRows)) { return; }
+        this.floatingTopRows.forEach(callback);
+    }
+
+    public forEachFloatingBottomRow(callback: (rowNode: RowNode, index: number)=>void): void {
+        if (_.missingOrEmpty(this.floatingBottomRows)) { return; }
+        this.floatingBottomRows.forEach(callback);
+    }
+
     public getFloatingBottomTotalHeight(): number {
         return this.getTotalHeight(this.floatingBottomRows);
     }
