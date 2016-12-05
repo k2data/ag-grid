@@ -22,6 +22,9 @@ export declare class PaginationController {
     private lbFirstRowOnPage;
     private lbLastRowOnPage;
     private ePageRowSummaryPanel;
+    private agGridK2Controll;
+    private agGridControllLoad;
+    private agGridControllBack;
     private callVersion;
     private datasource;
     private pageSize;
@@ -31,6 +34,7 @@ export declare class PaginationController {
     private currentPage;
     init(): void;
     setDatasource(datasource: any): void;
+    private pageActive(num);
     private reset();
     private myToLocaleString(input);
     private setTotalLabels();
@@ -47,6 +51,7 @@ export declare class PaginationController {
     private isZeroPagesToDisplay();
     private enableOrDisableButtons();
     private createTemplate();
+    private currentClick;
     getGui(): any;
     private setupComponents();
 }
