@@ -13167,8 +13167,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	    '<button type="button" class="ag-paging-button" id="btLast">[LAST]</button>' +
 	    '</span>' +
 	    '</div>';
+	var templateLg = '<div class="ag-paging-panel ag-font-style">' +
+	    '<span id="pageRowSummaryPanel" class="ag-paging-row-summary-panel" style="display:none">' +
+	    '<span id="firstRowOnPage"></span>' +
+	    ' [TO] ' +
+	    '<span id="lastRowOnPage"></span>' +
+	    ' [OF] ' +
+	    '<span id="recordCount"></span>' +
+	    '</span>' +
+	    '<span class="ag-paging-page-summary-panel ag-grid-k2-page-controll" style="float:right;line-height:30px;">' +
+	    '<button type="button" class="ag-paging-button" id="btFirst">[FIRST]</button>' +
+	    '<button type="button" class="ag-paging-button" id="btPrevious">[PREVIOUS]</button>' +
+	    '<button class="ag-paging-show-more" id="agGridControllBack" style="display: none">...</button>' +
+	    '<ul id="agGridK2Controll">' +
+	    '</ul>' +
+	    '<button class="ag-paging-show-more" id="agGridControllLoad">...</button>' +
+	    '<span id="current" style="display:none"></span>' +
+	    '<span id="total" style="display:none"></span>' +
+	    '<button type="button" class="ag-paging-button" id="btNext">[NEXT]</button>' +
+	    '<button type="button" class="ag-paging-button" id="btLast">[LAST]</button>' +
+	    '</span>' +
+	    '</div>';
 	var PaginationController = (function () {
 	    function PaginationController() {
+	        this.currentClick = function (value) {
+	            this.currentPage = value - 1;
+	            this.loadPage();
+	        };
 	    }
 	    PaginationController.prototype.init = function () {
 	        var _this = this;
@@ -13209,6 +13234,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	            console.error('ag-Grid: since version 5.1.x, pageSize is replaced with grid property paginationPageSize');
 	        }
 	    };
+	    PaginationController.prototype.pageActive = function (num) {
+	        if (num > 0 && num < (this.totalPages + 1)) {
+	            var pages = Math.ceil(this.totalPages / 5);
+	            var agGridControllLoad = document.querySelector('#agGridControllLoad');
+	            var agGridControllBack = document.querySelector('#agGridControllBack');
+	            var agGridK2Controll = document.querySelector('#agGridK2Controll');
+	            var currentView = Math.ceil(num / 5);
+	            agGridK2Controll.innerHTML = '';
+	            for (var i = 0; i < 5; i++) {
+	                var liTemp = document.createElement('li');
+	                var content = (currentView - 1) * 5 + i + 1;
+	                liTemp.innerHTML = content;
+	                if (num === content) {
+	                    liTemp.className = 'active';
+	                }
+	                if (content < (this.totalPages + 1)) {
+	                    agGridK2Controll.appendChild(liTemp);
+	                }
+	            }
+	            if (currentView > 1) {
+	                agGridControllBack.style.display = 'inline-block';
+	            }
+	            if (currentView === pages) {
+	                agGridControllLoad.style.display = 'none';
+	            }
+	            if (currentView === 1) {
+	                agGridControllBack.style.display = 'none';
+	                agGridControllLoad.style.display = 'inline-block';
+	            }
+	            if (pages === 1) {
+	                agGridControllBack.style.display = 'none';
+	                agGridControllLoad.style.display = 'none';
+	            }
+	        }
+	    };
+	    ;
 	    PaginationController.prototype.reset = function (freshDatasource) {
 	        // important to return here, as the user could be setting filter or sort before
 	        // data-source is set
@@ -13258,6 +13319,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    PaginationController.prototype.setTotalLabels = function () {
 	        if (this.foundMaxRow) {
+	            var that = this;
+	            var loadPages = function (total) {
+	                if (total) {
+	                    for (var i = 0; i < total; i++) {
+	                        var liTemp;
+	                        if (total < 6) {
+	                            liTemp = document.createElement('li');
+	                            liTemp.innerHTML = i + 1;
+	                            that.agGridK2Controll.appendChild(liTemp);
+	                            that.agGridControllLoad.style.display = 'none';
+	                            that.agGridControllBack.style.display = 'none';
+	                        }
+	                        else {
+	                            if (i < 5) {
+	                                liTemp = document.createElement('li');
+	                                liTemp.innerHTML = i + 1;
+	                                that.agGridK2Controll.appendChild(liTemp);
+	                                that.agGridControllBack.style.display = 'none';
+	                                that.agGridControllLoad.style.display = 'inline-block';
+	                            }
+	                        }
+	                        i === 0 ? liTemp.className = 'active' : '';
+	                    }
+	                }
+	                else {
+	                    that.agGridK2Controll.innerHTML = '...';
+	                }
+	            };
+	            if (that.gridOptionsWrapper.gridOptions.localeText.pageType === 'pageLg') {
+	                loadPages(this.totalPages);
+	            }
 	            this.lbTotal.innerHTML = this.myToLocaleString(this.totalPages);
 	            this.lbRecordCount.innerHTML = this.myToLocaleString(this.rowCount);
 	        }
@@ -13366,19 +13458,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	    PaginationController.prototype.onBtNext = function () {
 	        this.currentPage = this.currentPage ? this.currentPage : this.lbCurrent.value - 1;
 	        this.currentPage++;
+	        if (this.gridOptionsWrapper.gridOptions.localeText.pageType === 'pageLg') {
+	            this.pageActive(this.currentPage + 1);
+	        }
 	        this.loadPage();
 	    };
 	    PaginationController.prototype.onBtPrevious = function () {
 	        this.currentPage = this.currentPage ? this.currentPage : this.lbCurrent.value - 1;
 	        this.currentPage--;
+	        if (this.gridOptionsWrapper.gridOptions.localeText.pageType === 'pageLg') {
+	            this.pageActive(this.currentPage + 1);
+	        }
+	        ;
 	        this.loadPage();
 	    };
 	    PaginationController.prototype.onBtFirst = function () {
 	        this.currentPage = 0;
+	        if (this.gridOptionsWrapper.gridOptions.localeText.pageType === 'pageLg') {
+	            this.pageActive(1);
+	        }
+	        ;
 	        this.loadPage();
 	    };
 	    PaginationController.prototype.onBtLast = function () {
 	        this.currentPage = this.totalPages - 1;
+	        if (this.gridOptionsWrapper.gridOptions.localeText.pageType === 'pageLg') {
+	            this.pageActive(this.totalPages);
+	        }
+	        ;
 	        this.loadPage();
 	    };
 	    PaginationController.prototype.onInput = function (event) {
@@ -13404,15 +13511,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    PaginationController.prototype.createTemplate = function () {
 	        var localeTextFunc = this.gridOptionsWrapper.getLocaleTextFunc();
-	        return template
-	            .replace('[PAGE]', localeTextFunc('page', 'Page'))
-	            .replace('[TO]', localeTextFunc('to', 'to'))
-	            .replace('[OF]', localeTextFunc('of', 'of'))
-	            .replace('[OF]', localeTextFunc('of', 'of'))
-	            .replace('[FIRST]', localeTextFunc('first', 'First'))
-	            .replace('[PREVIOUS]', localeTextFunc('previous', 'Previous'))
-	            .replace('[NEXT]', localeTextFunc('next', 'Next'))
-	            .replace('[LAST]', localeTextFunc('last', 'Last'));
+	        var pageType = this.gridOptionsWrapper.gridOptions.localeText.pageType;
+	        if (pageType && pageType === 'pageLg') {
+	            return templateLg
+	                .replace('[PAGE]', localeTextFunc('page', 'Page'))
+	                .replace('[TO]', localeTextFunc('to', 'to'))
+	                .replace('[OF]', localeTextFunc('of', 'of'))
+	                .replace('[OF]', localeTextFunc('of', 'of'))
+	                .replace('[FIRST]', localeTextFunc('first', 'First'))
+	                .replace('[PREVIOUS]', localeTextFunc('previous', 'Previous'))
+	                .replace('[NEXT]', localeTextFunc('next', 'Next'))
+	                .replace('[LAST]', localeTextFunc('last', 'Last'));
+	        }
+	        else {
+	            return template
+	                .replace('[PAGE]', localeTextFunc('page', 'Page'))
+	                .replace('[TO]', localeTextFunc('to', 'to'))
+	                .replace('[OF]', localeTextFunc('of', 'of'))
+	                .replace('[OF]', localeTextFunc('of', 'of'))
+	                .replace('[FIRST]', localeTextFunc('first', 'First'))
+	                .replace('[PREVIOUS]', localeTextFunc('previous', 'Previous'))
+	                .replace('[NEXT]', localeTextFunc('next', 'Next'))
+	                .replace('[LAST]', localeTextFunc('last', 'Last'));
+	        }
 	    };
 	    PaginationController.prototype.getGui = function () {
 	        return this.eGui;
@@ -13429,6 +13550,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.lbFirstRowOnPage = this.eGui.querySelector('#firstRowOnPage');
 	        this.lbLastRowOnPage = this.eGui.querySelector('#lastRowOnPage');
 	        this.ePageRowSummaryPanel = this.eGui.querySelector('#pageRowSummaryPanel');
+	        this.agGridK2Controll = this.eGui.querySelector('#agGridK2Controll');
+	        this.agGridControllLoad = this.eGui.querySelector('#agGridControllLoad');
+	        this.agGridControllBack = this.eGui.querySelector('#agGridControllBack');
 	        var that = this;
 	        this.btNext.addEventListener('click', function () {
 	            that.onBtNext();
@@ -13442,9 +13566,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.btLast.addEventListener('click', function () {
 	            that.onBtLast();
 	        });
-	        this.lbCurrent.addEventListener('keyup', function () {
-	            that.onInput(event);
-	        });
+	        if (this.gridOptionsWrapper.gridOptions.localeText.pageType === 'pageLg') {
+	            this.agGridK2Controll.addEventListener('click', function (e) {
+	                if (e.target.innerHTML && e.target.innerHTML.indexOf('<') === -1) {
+	                    var liArr = this.getElementsByTagName('li');
+	                    for (var i = 0, len = liArr.length; i < len; i++) {
+	                        liArr[i].className = '';
+	                    }
+	                    e.target.className = 'active';
+	                    that.currentClick(new Number(e.target.innerHTML));
+	                }
+	            }, false);
+	            this.agGridControllLoad.addEventListener('click', function () {
+	                console.log('load...');
+	                var liArr = that.agGridK2Controll.getElementsByTagName('li');
+	                var currentIndex = new Number(liArr[liArr.length - 1].innerHTML);
+	                var currentPage = Math.ceil(currentIndex / 5);
+	                var pages = Math.ceil(that.totalPages / 5);
+	                if (currentIndex < that.totalPages) {
+	                    that.agGridControllBack.style.display = 'inline-block';
+	                    that.pageActive(currentIndex + 1);
+	                    that.currentClick(new Number(currentIndex + 1));
+	                }
+	                if (currentPage === pages - 1) {
+	                    this.style.display = 'none';
+	                }
+	            }, false);
+	            this.agGridControllBack.addEventListener('click', function () {
+	                console.log('back...');
+	                var liArr = that.agGridK2Controll.getElementsByTagName('li');
+	                var currentIndex = new Number(liArr[0].innerHTML);
+	                var currentPage = Math.ceil(currentIndex / 5);
+	                var pages = Math.ceil(that.totalPages / 5);
+	                if (currentIndex < that.totalPages) {
+	                    that.agGridControllLoad.style.display = 'inline-block';
+	                    that.pageActive(currentIndex - 1);
+	                    that.currentClick(new Number(currentIndex - 1));
+	                }
+	                if (currentPage - 1 === 1) {
+	                    this.style.display = 'none';
+	                }
+	            }, false);
+	        }
+	        else {
+	            this.lbCurrent.addEventListener('keyup', function () {
+	                that.onInput(event);
+	            });
+	        }
 	    };
 	    __decorate([
 	        context_1.Autowired('filterManager'), 

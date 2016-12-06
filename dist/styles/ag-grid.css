@@ -19,6 +19,50 @@ ag-grid-ng2 {
 /* was getting some 'should be there' scrolls, this sorts it out */
   overflow: hidden;
 }
+.ag-grid-k2-page-controll {
+  padding: 2px 5px;
+}
+.ag-grid-k2-page-controll ul,
+.ag-grid-k2-page-controll li {
+  list-style: none;
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+}
+.ag-grid-k2-page-controll li {
+  font-size: 12px;
+  color: #666;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  border: 1px solid #e3e3e3;
+  border-radius: 2px;
+  margin: 0px 2px;
+}
+.ag-paging-show-more {
+  display: inline-block;
+  border: none;
+  background-color: transparent;
+  border: 1px solid #e3e3e3;
+  width: 32px;
+  height: 32px;
+  border-radius: 2px;
+  padding: 0px;
+  cursor: pointer;
+}
+.ag-paging-show-more:hover {
+  border-color: #108ee9;
+}
+.ag-grid-k2-page-controll .active {
+  color: #108ee9;
+  border-color: #108ee9;
+}
+.ag-grid-k2-page-controll li:hover {
+  cursor: pointer;
+  color: #108ee9;
+  border-color: #108ee9;
+}
 .ag-font-style {
   cursor: default;
 /* disable user mouse selection */

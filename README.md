@@ -69,7 +69,7 @@ For large changes:
 - Make your doc changes in project [ag-grid-docs](https://github.com/ceolter/ag-grid-docs), a feature is not complete unless it's documented!
 - Do manual end to end testing off all examples in documentation
 
-PR's on new features **are not** generally accepted. 
+PR's on new features **are not** generally accepted.
 
 PR's on small bug fixes **are** generally accepted.
 
