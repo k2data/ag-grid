@@ -568,7 +568,7 @@ export class PaginationController {
 
           } else {
 
-            this.lbCurrent.addEventListener('keyup', function () {
+            this.lbCurrent.addEventListener('keyup', function (event: any) {
                 that.onInput(event);
             });
           }

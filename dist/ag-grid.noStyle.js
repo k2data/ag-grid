@@ -13609,7 +13609,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }, false);
 	        }
 	        else {
-	            this.lbCurrent.addEventListener('keyup', function () {
+	            this.lbCurrent.addEventListener('keyup', function (event) {
 	                that.onInput(event);
 	            });
 	        }
